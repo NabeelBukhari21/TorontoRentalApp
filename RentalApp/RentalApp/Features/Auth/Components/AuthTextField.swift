@@ -83,8 +83,18 @@ struct AuthTextField: View {
                     .textInputAutocapitalization(keyboardType == .emailAddress ? .never : .sentences)
                     .autocorrectionDisabled(keyboardType == .emailAddress || isSecure)
                     .focused($isFocused)
+                    // The floating label is a separate `Text`, so the field
+                    // itself has no visible name — give VoiceOver one.
+                    .accessibilityLabel(label)
                     .offset(y: isFloating ? 7 : 0)
-                    .opacity(isFloating ? 1 : 0)
+                    // No `.opacity(isFloating ? 1 : 0)` here. That used to
+                    // hide the input while empty and unfocused, and SwiftUI
+                    // does not hit-test fully transparent views — so the
+                    // field could never be tapped, so it could never gain
+                    // focus, so it could never become visible. Every auth and
+                    // org-setup field was untypeable. An empty field with an
+                    // empty placeholder draws nothing anyway; hiding it was
+                    // never needed.
                 }
                 .animation(DS.Motion.snappy, value: isFloating)
 
@@ -117,6 +127,11 @@ struct AuthTextField: View {
             }
             .padding(.horizontal, DS.Spacing.lg)
             .frame(height: 58)
+            // The whole field is the tap target — icon, label and padding
+            // included — not just the text run. Taps that land on the input
+            // itself, or on the trailing buttons, are handled by them first.
+            .contentShape(RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+            .onTapGesture { isFocused = true }
             .background(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                     .fill(isFocused ? DS.Colors.surfaceRaised : DS.Colors.surfaceSecondary)
