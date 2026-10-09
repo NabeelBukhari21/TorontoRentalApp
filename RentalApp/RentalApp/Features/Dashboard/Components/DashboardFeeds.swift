@@ -17,7 +17,7 @@ struct DashboardAIInsightsCard: View {
     @State private var selection = 0
 
     var body: some View {
-        DSCard(style: .glass, cornerRadius: DS.Radius.xl) {
+        DSCard(style: .raised, cornerRadius: DS.Radius.xl) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 // Header.
                 HStack(spacing: DS.Spacing.sm) {
@@ -101,7 +101,7 @@ struct DashboardTasksCard: View {
     let onToggle: (UpcomingTask) -> Void
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     Text("Upcoming Tasks").dsOverline()
@@ -146,7 +146,7 @@ struct DashboardTasksCard: View {
                     if task.isDone {
                         Image(systemName: "checkmark")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnAccent)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -189,7 +189,7 @@ struct DashboardActivityCard: View {
     let onSeeAll: () -> Void
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack(spacing: DS.Spacing.sm) {
                     Text("Recent Activity").dsOverline()
@@ -242,7 +242,7 @@ struct DashboardActivityCard: View {
                     if item.isNew {
                         Text("NEW")
                             .font(.system(size: 8.5, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
                             .background(DS.Gradients.brand, in: Capsule())

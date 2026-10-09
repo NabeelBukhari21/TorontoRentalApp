@@ -17,11 +17,11 @@ struct SelectionTick: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(isOn ? AnyShapeStyle(DS.Gradients.champagne) : AnyShapeStyle(.ultraThinMaterial))
+                .fill(isOn ? AnyShapeStyle(DS.Gradients.highlight) : AnyShapeStyle(DS.Colors.surfaceRaised))
                 .frame(width: 26, height: 26)
                 .overlay(
                     Circle().strokeBorder(
-                        isOn ? RentOSBrand.gold : Color.white.opacity(0.35),
+                        isOn ? DS.Colors.brand : DS.Colors.outline,
                         lineWidth: 1.5
                     )
                 )
@@ -29,7 +29,7 @@ struct SelectionTick: View {
             if isOn {
                 Image(systemName: "checkmark")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(RentOSBrand.obsidian)
+                    .foregroundStyle(DS.Colors.onHighlight)
             }
         }
         .dsShadow(DS.Shadows.soft)
@@ -72,10 +72,10 @@ struct BulkActionBar: View {
                     Text("Archive")
                         .font(.system(size: 13.5, weight: .bold, design: .rounded))
                 }
-                .foregroundStyle(DS.Colors.onGold)
+                .foregroundStyle(DS.Colors.onHighlight)
                 .padding(.horizontal, DS.Spacing.md + 2)
                 .padding(.vertical, DS.Spacing.sm + 1)
-                .background(DS.Gradients.champagne, in: Capsule())
+                .background(DS.Gradients.highlight, in: Capsule())
             }
             .buttonStyle(DSPressStyle(scale: 0.94))
             .disabled(count == 0)
@@ -83,8 +83,8 @@ struct BulkActionBar: View {
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1))
+        .background(DS.Colors.surfaceRaised, in: Capsule())
+        .overlay(Capsule().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1))
         .dsShadow(DS.Shadows.floating)
         .padding(.horizontal, DS.Spacing.lg)
         .animation(DS.Motion.snappy, value: count)
@@ -158,7 +158,7 @@ private struct ArchivedRow: View {
     let onRestore: () -> Void
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             HStack(spacing: DS.Spacing.md) {
                 Image(systemName: property.kind.icon)
                     .font(.system(size: 15, weight: .semibold))
@@ -181,7 +181,7 @@ private struct ArchivedRow: View {
                 Button(action: onRestore) {
                     Text("Restore")
                         .font(.system(size: 12.5, weight: .bold, design: .rounded))
-                        .foregroundStyle(DS.Colors.brand)
+                        .foregroundStyle(DS.Colors.brandInk)
                         .padding(.horizontal, DS.Spacing.md)
                         .padding(.vertical, DS.Spacing.sm)
                         .background(DS.Colors.brand.opacity(0.12), in: Capsule())

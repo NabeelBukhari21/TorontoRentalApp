@@ -25,7 +25,7 @@ struct DSToggleStyle: ToggleStyle {
                         configuration.isOn
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [RentOSBrand.gold, RentOSBrand.goldDeep],
+                                    colors: [DS.Colors.brand, DS.Colors.brandInk],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )
@@ -34,14 +34,14 @@ struct DSToggleStyle: ToggleStyle {
                     )
                     .overlay(
                         Capsule().strokeBorder(
-                            configuration.isOn ? RentOSBrand.champagne.opacity(0.6) : DS.Colors.outline,
+                            configuration.isOn ? DS.Colors.highlightLine : DS.Colors.outline,
                             lineWidth: 1
                         )
                     )
 
                 Circle()
-                    .fill(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                    .fill(DS.Colors.onFixedColor)
+                    .shadow(color: DS.Colors.scrim.opacity(0.45), radius: 2, y: 1)
                     .padding(2.5)
             }
             .frame(width: 48, height: 29)
@@ -78,10 +78,10 @@ struct SettingsSectionCard<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                    .strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
             )
             .dsShadow(DS.Shadows.soft)
         }
@@ -103,7 +103,7 @@ struct SettingsRowDivider: View {
 struct SettingsIconTile: View {
 
     let icon: String
-    var tint: Color = DS.Colors.brand
+    var tint: Color = DS.Colors.brandInk
 
     var body: some View {
         Image(systemName: icon)
@@ -122,7 +122,7 @@ struct SettingsNavRow: View {
     let icon: String
     let title: String
     var subtitle: String? = nil
-    var tint: Color = DS.Colors.brand
+    var tint: Color = DS.Colors.brandInk
     var badge: String? = nil
     let action: () -> Void
 
@@ -167,7 +167,7 @@ struct SettingsToggleRow: View {
     let icon: String
     let title: String
     var subtitle: String? = nil
-    var tint: Color = DS.Colors.brand
+    var tint: Color = DS.Colors.brandInk
     @Binding var isOn: Bool
 
     var body: some View {
@@ -204,7 +204,7 @@ struct SettingsValueRow: View {
     let icon: String
     let title: String
     let value: String
-    var tint: Color = DS.Colors.brand
+    var tint: Color = DS.Colors.brandInk
 
     var body: some View {
         HStack(spacing: DS.Spacing.md) {
@@ -252,7 +252,7 @@ struct SettingsSaveButton: View {
                 if isSaving {
                     ProgressView()
                         .controlSize(.small)
-                        .tint(.white)
+                        .tint(DS.Colors.textOnBrand)
                 } else if isSaved {
                     Image(systemName: "checkmark.circle.fill")
                 }
@@ -261,14 +261,14 @@ struct SettingsSaveButton: View {
                     .contentTransition(.opacity)
             }
             .font(DS.Typography.headline)
-            .foregroundStyle(.white)
+            .foregroundStyle(isSaved ? DS.Colors.textOnAccent : DS.Colors.textOnBrand)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
                 isSaved ? AnyShapeStyle(DS.Gradients.success) : AnyShapeStyle(DS.Gradients.brand),
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
-            .dsShadow(DS.Shadows.glow(isSaved ? DS.Colors.success : DS.Colors.brand, intensity: 0.35))
+            .dsShadow(DS.Shadows.glow(isSaved ? DS.Colors.accentMint : DS.Colors.brand, intensity: 0.35))
         }
         .buttonStyle(DSPressStyle())
         .animation(DS.Motion.bouncy, value: isSaved)

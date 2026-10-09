@@ -96,7 +96,7 @@ struct DSStepperField: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, DS.Spacing.sm + 2)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                     .strokeBorder(DS.Colors.outline, lineWidth: 1)
@@ -109,7 +109,7 @@ struct DSStepperField: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(enabled ? DS.Colors.brand : DS.Colors.textTertiary)
+                .foregroundStyle(enabled ? DS.Colors.brandInk : DS.Colors.textTertiary)
                 .frame(width: 30, height: 30)
                 .background(
                     Circle().fill(enabled ? DS.Colors.brand.opacity(0.12) : Color.clear)

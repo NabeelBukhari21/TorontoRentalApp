@@ -25,10 +25,10 @@ struct DSEmptyState: View {
                     .blur(radius: 12)
 
                 Circle()
-                    .fill(.ultraThinMaterial)
+                    .fill(DS.Colors.surfaceRaised)
                     .frame(width: 76, height: 76)
                     .overlay(
-                        Circle().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                        Circle().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
                     )
 
                 Image(systemName: icon)

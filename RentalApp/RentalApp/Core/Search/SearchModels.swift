@@ -73,16 +73,20 @@ enum SearchKind: String, Codable, Sendable, CaseIterable, Identifiable {
         }
     }
 
-    var tint: Color {
+    /// Grouped by domain: portfolio violet, people sky, operations coral,
+    /// files sunny, conversation mint.
+    var accent: DSAccent {
         switch self {
-        case .property, .unit:    DS.Colors.brand
-        case .tenant, .lease:     DS.Colors.info
-        case .maintenanceRequest: DS.Colors.warning
-        case .document:           DS.Colors.neutral
-        case .message:            DS.Colors.success
-        case .vendor:             DS.Colors.accentAmber
+        case .property, .unit:            .violet
+        case .tenant, .lease:             .sky
+        case .maintenanceRequest, .vendor: .coral
+        case .document:                   .sunny
+        case .message:                    .mint
         }
     }
+
+    /// AA-safe foreground, also used at low opacity for the chip background.
+    var tint: Color { accent.ink }
 
     /// Display order in grouped results — roughly how often a manager wants
     /// each one, so the common case is at the top without scrolling.

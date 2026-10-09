@@ -66,7 +66,7 @@ struct DSNavigationHeader: View {
                         if let badge = action.badge, badge > 0 {
                             Text(badge > 9 ? "9+" : "\(badge)")
                                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(DS.Colors.textOnBrand)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 2)
                                 .background(DS.Colors.danger, in: Capsule())
@@ -77,7 +77,7 @@ struct DSNavigationHeader: View {
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .background(.ultraThinMaterial)
+        .background(DS.Colors.surfaceRaised)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(DS.Colors.outline)

@@ -167,7 +167,7 @@ struct PropertyDetailView: View {
             PropertyHeroImage(property: property, height: 260)
 
             LinearGradient(
-                colors: [.clear, .black.opacity(0.6)],
+                colors: [.clear, DS.Colors.mediaBackground.opacity(0.6)],
                 startPoint: .center,
                 endPoint: .bottom
             )
@@ -178,7 +178,7 @@ struct PropertyDetailView: View {
 
                 Text(property.name)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.onFixedColor)
 
                 HStack(spacing: DS.Spacing.xs) {
                     Image(systemName: "mappin.circle.fill")
@@ -186,7 +186,7 @@ struct PropertyDetailView: View {
                     Text("\(property.neighborhood) · \(property.address)")
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(DS.Colors.onFixedColor)
             }
             .padding(DS.Spacing.lg)
             .dsEntrance(index: 0)
@@ -223,10 +223,10 @@ struct PropertyDetailView: View {
                     } label: {
                         Image(systemName: DS.Icons.more)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textPrimary)
                             .frame(width: 38, height: 38)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .overlay(Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1))
+                            .background(DS.Colors.surfaceRaised, in: Circle())
+                            .overlay(Circle().strokeBorder(DS.Colors.outline, lineWidth: 1))
                     }
                 }
                 .padding(.horizontal, DS.Spacing.lg)
@@ -267,7 +267,7 @@ struct PropertyDetailView: View {
                 Text(tab.title)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(isSelected ? .white : DS.Colors.textSecondary)
+            .foregroundStyle(isSelected ? DS.Colors.textOnBrand : DS.Colors.textSecondary)
             .padding(.horizontal, DS.Spacing.md + 2)
             .padding(.vertical, DS.Spacing.sm + 2)
             .background {
@@ -277,7 +277,7 @@ struct PropertyDetailView: View {
                         .matchedGeometryEffect(id: "property.tab.pill", in: tabNamespace)
                 } else {
                     Capsule()
-                        .fill(.ultraThinMaterial)
+                        .fill(DS.Colors.surfaceRaised)
                         .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
                 }
             }

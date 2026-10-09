@@ -67,7 +67,7 @@ struct SettingsProfilePage: View {
             }
             .dsEntrance(index: 0)
 
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(spacing: DS.Spacing.lg) {
                     DSTextField(label: "Full name", placeholder: "Your name", text: $viewModel.fullName, icon: "person.fill")
                     DSTextField(label: "Email", placeholder: "you@email.com", text: $viewModel.email, icon: "envelope.fill", keyboardType: .emailAddress)
@@ -105,18 +105,18 @@ struct SettingsOrganizationPage: View {
 
         VStack(spacing: DS.Spacing.lg) {
             // Workspace identity.
-            DSCard(style: .glass, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
+            DSCard(style: .raised, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
                 HStack(spacing: DS.Spacing.lg) {
                     Circle()
-                        .fill(DS.Gradients.obsidian)
+                        .fill(DS.Gradients.hero)
                         .frame(width: 64, height: 64)
                         .overlay(
                             Text(orgMonogram)
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(hex: 0xD4AF37))
+                                .foregroundStyle(DS.Colors.textOnBrand)
                         )
                         .overlay(
-                            Circle().strokeBorder(Color(hex: 0xD4AF37).opacity(0.45), lineWidth: 1)
+                            Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
                         )
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -135,7 +135,7 @@ struct SettingsOrganizationPage: View {
             }
             .dsEntrance(index: 0)
 
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(spacing: DS.Spacing.lg) {
                     DSTextField(label: "Organization name", placeholder: "Name", text: $viewModel.orgName, icon: "building.2.fill")
                     DSTextField(label: "Workspace URL", placeholder: "slug", text: $viewModel.orgSlug, icon: "link")
@@ -179,7 +179,7 @@ struct SettingsTeamPage: View {
 
         return VStack(spacing: DS.Spacing.lg) {
             // Invite.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Invite teammate").dsOverline()
 
@@ -243,9 +243,9 @@ struct SettingsTeamPage: View {
             SettingsSectionCard(title: "Roles") {
                 SettingsValueRow(icon: "crown.fill", title: "Owner", value: "Everything")
                 SettingsRowDivider()
-                SettingsValueRow(icon: DS.Icons.tenant, title: "Property Manager", value: "Manage & message", tint: DS.Colors.brandCyan)
+                SettingsValueRow(icon: DS.Icons.tenant, title: "Property Manager", value: "Manage & message", tint: DS.Colors.accentSkyInk)
                 SettingsRowDivider()
-                SettingsValueRow(icon: DS.Icons.maintenance, title: "Maintenance Coordinator", value: "Tickets & vendors", tint: DS.Colors.brandViolet)
+                SettingsValueRow(icon: DS.Icons.maintenance, title: "Maintenance Coordinator", value: "Tickets & vendors", tint: DS.Colors.accentSunnyInk)
             }
             .dsEntrance(index: 2)
         }

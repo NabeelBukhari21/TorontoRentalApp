@@ -22,11 +22,11 @@ struct OnboardingProgressIndicator: View {
                     .fill(
                         page == current
                             ? AnyShapeStyle(DS.Gradients.ai)
-                            : AnyShapeStyle(Color.white.opacity(0.25))
+                            : AnyShapeStyle(DS.Colors.track)
                     )
                     .frame(width: page == current ? 30 : 8, height: 8)
                     .overlay(
-                        Capsule().strokeBorder(.white.opacity(page == current ? 0.4 : 0), lineWidth: 0.5)
+                        Capsule().strokeBorder(DS.Colors.highlightLine.opacity(page == current ? 1 : 0), lineWidth: 0.5)
                     )
             }
         }
@@ -42,7 +42,7 @@ struct OnboardingFloatingChip: View {
 
     let icon: String
     let text: String
-    var tint: Color = DS.Colors.brandCyan
+    var tint: Color = DS.Colors.accentSkyInk
     var isActive: Bool = false
     var entranceDelay: Double = 0
     var floatDuration: Double = 3.0
@@ -55,18 +55,14 @@ struct OnboardingFloatingChip: View {
 
             Text(text)
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(DS.Colors.textPrimary)
         }
         .padding(.horizontal, DS.Spacing.md)
         .padding(.vertical, DS.Spacing.sm)
-        .background(.ultraThinMaterial, in: Capsule())
+        .background(DS.Colors.surfaceRaised, in: Capsule())
         .overlay(
             Capsule().strokeBorder(
-                LinearGradient(
-                    colors: [.white.opacity(0.5), .white.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
+                DS.Gradients.cardHairline,
                 lineWidth: 1
             )
         )
@@ -87,6 +83,8 @@ struct OnboardingMiniCard<Trailing: View>: View {
     let title: String
     let subtitle: String
     var iconGradient: LinearGradient = DS.Gradients.brand
+    /// Glyph colour on `iconGradient` — `textOnAccent` for `warm`/`fresh`.
+    var iconForeground: Color = DS.Colors.textOnBrand
     private let trailing: Trailing
 
     init(
@@ -94,12 +92,14 @@ struct OnboardingMiniCard<Trailing: View>: View {
         title: String,
         subtitle: String,
         iconGradient: LinearGradient = DS.Gradients.brand,
+        iconForeground: Color = DS.Colors.textOnBrand,
         @ViewBuilder trailing: () -> Trailing = { EmptyView() }
     ) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
         self.iconGradient = iconGradient
+        self.iconForeground = iconForeground
         self.trailing = trailing()
     }
 
@@ -107,7 +107,7 @@ struct OnboardingMiniCard<Trailing: View>: View {
         HStack(spacing: DS.Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(iconForeground)
                 .frame(width: 38, height: 38)
                 .background(iconGradient)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -115,12 +115,12 @@ struct OnboardingMiniCard<Trailing: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
                     .lineLimit(1)
 
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .lineLimit(1)
             }
 
@@ -129,15 +129,11 @@ struct OnboardingMiniCard<Trailing: View>: View {
             trailing
         }
         .padding(DS.Spacing.md)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                 .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.45), .white.opacity(0.05)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
+                    DS.Gradients.cardHairline,
                     lineWidth: 1
                 )
         )

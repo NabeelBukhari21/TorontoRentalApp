@@ -27,7 +27,7 @@ struct SettingsBillingPage: View {
                     Text("CURRENT PLAN")
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .kerning(1.2)
-                        .foregroundStyle(Color(hex: 0xD4AF37))
+                        .foregroundStyle(DS.Colors.textOnBrand)
 
                     Spacer()
 
@@ -37,11 +37,11 @@ struct SettingsBillingPage: View {
                         Text("Premium")
                             .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                     }
-                    .foregroundStyle(DS.Colors.onGold)
+                    .foregroundStyle(DS.Colors.onHighlight)
                     .padding(.horizontal, DS.Spacing.sm)
                     .padding(.vertical, 3)
                     .background(
-                        DS.Gradients.champagne,
+                        DS.Gradients.highlight,
                         in: Capsule()
                     )
                 }
@@ -49,14 +49,14 @@ struct SettingsBillingPage: View {
                 HStack(alignment: .firstTextBaseline, spacing: DS.Spacing.xs) {
                     Text(viewModel.planName)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.textOnBrand)
 
                     Spacer()
 
                     Text(viewModel.planPrice)
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .foregroundStyle(Color(hex: 0xD4AF37))
+                        .foregroundStyle(DS.Colors.textOnBrand)
                 }
 
                 // Usage.
@@ -64,23 +64,23 @@ struct SettingsBillingPage: View {
                     HStack {
                         Text("Units used")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(DS.Colors.textOnBrand)
 
                         Spacer()
 
                         Text("\(viewModel.unitsUsed) / \(viewModel.unitQuota)")
                             .font(.system(size: 12, weight: .bold, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
                     }
 
                     GeometryReader { proxy in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(.white.opacity(0.12))
+                            Capsule().fill(DS.Colors.textOnBrand.opacity(0.25))
 
                             Capsule()
                                 .fill(
-                                    DS.Gradients.goldSweep
+                                    DS.Gradients.warm
                                 )
                                 .frame(
                                     width: proxy.size.width
@@ -92,11 +92,11 @@ struct SettingsBillingPage: View {
 
                     Text("AI features, unlimited team members, priority support included.")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(DS.Colors.textOnBrand)
                 }
             }
             .padding(DS.Spacing.xl)
-        .dsObsidianSurface()
+        .dsHeroSurface()
             .dsEntrance(index: 0)
             .onAppear {
                 withAnimation(DS.Motion.entrance.delay(0.25)) {
@@ -106,7 +106,7 @@ struct SettingsBillingPage: View {
 
             HStack(spacing: DS.Spacing.md) {
                 DSButton(title: "Change Plan", variant: .secondary, isFullWidth: true) {}
-                DSButton(title: "Payment Method", variant: .glass, isFullWidth: true) {}
+                DSButton(title: "Payment Method", variant: .soft, isFullWidth: true) {}
             }
             .dsEntrance(index: 1)
 
@@ -208,7 +208,7 @@ struct SettingsNotificationsPage: View {
                 SettingsToggleRow(
                     icon: "moon.fill", title: "Quiet hours",
                     subtitle: "10 PM – 8 AM · urgent alerts still deliver",
-                    tint: DS.Colors.brandViolet, isOn: $viewModel.quietHoursEnabled
+                    tint: DS.Colors.accentSunnyInk, isOn: $viewModel.quietHoursEnabled
                 )
             }
             .dsEntrance(index: 2)
@@ -231,7 +231,7 @@ struct SettingsAppearancePage: View {
 
         VStack(spacing: DS.Spacing.lg) {
             // Theme picker with live preview tiles.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Theme").dsOverline()
 
@@ -257,7 +257,7 @@ struct SettingsAppearancePage: View {
                 SettingsToggleRow(
                     icon: "circle.hexagongrid.fill", title: "Reduce glass effects",
                     subtitle: "Simpler surfaces, better battery",
-                    tint: DS.Colors.brandCyan, isOn: $viewModel.reduceGlassEffects
+                    tint: DS.Colors.accentSkyInk, isOn: $viewModel.reduceGlassEffects
                 )
                 SettingsRowDivider()
                 SettingsToggleRow(
@@ -287,7 +287,7 @@ struct SettingsAppearancePage: View {
 
                     VStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color(hex: 0xD4AF37))
+                            .fill(previewAccent(theme))
                             .frame(width: 26, height: 5)
 
                         RoundedRectangle(cornerRadius: 2)
@@ -326,19 +326,28 @@ struct SettingsAppearancePage: View {
     private func previewBackground(_ theme: AppTheme) -> LinearGradient {
         switch theme {
         case .light:
-            LinearGradient(colors: [Color(hex: 0xF7F6F2), Color(hex: 0xEFEDE6)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [DS.Colors.ThemeSwatch.lightBackground, DS.Colors.ThemeSwatch.lightSurface], startPoint: .top, endPoint: .bottom)
         case .dark:
-            LinearGradient(colors: [Color(hex: 0x121212), Color(hex: 0x2A2D34)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [DS.Colors.ThemeSwatch.darkBackground, DS.Colors.ThemeSwatch.darkSurface], startPoint: .top, endPoint: .bottom)
         case .system:
-            LinearGradient(colors: [Color(hex: 0xF7F6F2), DS.Colors.onGold], startPoint: .leading, endPoint: .trailing)
+            LinearGradient(colors: [DS.Colors.ThemeSwatch.lightBackground, DS.Colors.ThemeSwatch.darkBackground], startPoint: .leading, endPoint: .trailing)
+        }
+    }
+
+    /// The accent bar in each preview tile — the brand violet as it
+    /// actually renders in that mode.
+    private func previewAccent(_ theme: AppTheme) -> Color {
+        switch theme {
+        case .light, .system: DS.Colors.ThemeSwatch.lightAccent
+        case .dark: DS.Colors.ThemeSwatch.darkAccent
         }
     }
 
     private func previewCard(_ theme: AppTheme) -> Color {
         switch theme {
-        case .light: Color(hex: 0xFFFFFF)
-        case .dark: Color(hex: 0x2A2D34)
-        case .system: Color(hex: 0x9B9890).opacity(0.6)
+        case .light: DS.Colors.ThemeSwatch.lightSurface
+        case .dark: DS.Colors.ThemeSwatch.darkSurface
+        case .system: DS.Colors.ThemeSwatch.lightAccent.opacity(0.25)
         }
     }
 }
@@ -358,18 +367,18 @@ struct SettingsAIPage: View {
 
         VStack(spacing: DS.Spacing.lg) {
             // Copilot identity.
-            AIObsidianPanel {
+            AIHeroPanel {
                 HStack(spacing: DS.Spacing.lg) {
                     AIOrb(size: 52)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("RentOS Intelligence")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
 
                         Text("v2 · trained on property operations")
                             .font(.system(size: 11.5, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.55))
+                            .foregroundStyle(DS.Colors.textOnBrand)
                     }
 
                     Spacer()
@@ -416,7 +425,7 @@ struct SettingsAIPage: View {
             .dsEntrance(index: 2)
 
             // Proactiveness slider.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     HStack {
                         Text("Proactiveness").dsOverline()
@@ -504,7 +513,7 @@ struct SettingsIntegrationsPage: View {
             }
             .dsEntrance(index: 0)
 
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 HStack(spacing: DS.Spacing.md) {
                     Image(systemName: DS.Icons.ai)
                         .font(.system(size: 14, weight: .semibold))

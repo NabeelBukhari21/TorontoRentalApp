@@ -77,11 +77,11 @@ struct MaintenanceDetailView: View {
     // MARK: Header
 
     private func headerCard(_ ticket: MaintenanceTicket) -> some View {
-        DSCard(style: .glass, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
+        DSCard(style: .raised, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     TicketPriorityBadge(priority: ticket.priority)
-                    DSBadge(text: ticket.category.rawValue, kind: .neutral, icon: ticket.category.icon)
+                    DSBadge(text: ticket.category.rawValue, icon: ticket.category.icon, accent: ticket.category.accent)
                     Spacer()
                     Text(ticket.createdAgo)
                         .font(DS.Typography.caption)
@@ -126,7 +126,7 @@ struct MaintenanceDetailView: View {
     // MARK: Workflow
 
     private func workflowCard(_ ticket: MaintenanceTicket) -> some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack {
                     Text("Workflow").dsOverline()
@@ -151,33 +151,33 @@ struct MaintenanceDetailView: View {
                 Image(systemName: DS.Icons.ai)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(
-                        DS.Gradients.champagne
+                        DS.Gradients.highlight
                     )
                     .symbolEffect(.pulse, options: .repeating)
 
                 Text("AI ANALYSIS")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .kerning(1.2)
-                    .foregroundStyle(Color(hex: 0xD4AF37))
+                    .foregroundStyle(DS.Colors.textOnBrand)
 
                 Spacer()
 
                 Text("\(Int(ticket.ai.categoryConfidence * 100))% confidence")
                     .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(DS.Colors.textOnBrand)
             }
 
             // Urgency gauge + summary.
             HStack(spacing: DS.Spacing.lg) {
                 ZStack {
                     Circle()
-                        .stroke(.white.opacity(0.12), lineWidth: 7)
+                        .stroke(DS.Colors.textOnBrand.opacity(0.25), lineWidth: 7)
 
                     Circle()
                         .trim(from: 0, to: ticket.ai.urgencyScore)
                         .stroke(
                             AngularGradient(
-                                colors: [Color(hex: 0xD4AF37), ticket.priority.color],
+                                colors: [DS.Colors.accentSunny, DS.Colors.accentCoral],
                                 center: .center
                             ),
                             style: StrokeStyle(lineWidth: 7, lineCap: .round)
@@ -188,17 +188,17 @@ struct MaintenanceDetailView: View {
                         Text("\(Int(ticket.ai.urgencyScore * 100))")
                             .font(.system(size: 19, weight: .bold, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
                         Text("urgency")
                             .font(.system(size: 8, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(DS.Colors.textOnBrand)
                     }
                 }
                 .frame(width: 74, height: 74)
 
                 Text(ticket.ai.summary)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(DS.Colors.textOnBrand)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -208,12 +208,12 @@ struct MaintenanceDetailView: View {
                     HStack(alignment: .top, spacing: DS.Spacing.sm) {
                         Image(systemName: "sparkle")
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(Color(hex: 0xFFB703))
+                            .foregroundStyle(DS.Colors.textOnBrand)
                             .padding(.top, 3)
 
                         Text(action)
                             .font(.system(size: 12.5, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.75))
+                            .foregroundStyle(DS.Colors.textOnBrand)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .dsEntrance(index: index)
@@ -225,18 +225,18 @@ struct MaintenanceDetailView: View {
                 Text("DRAFT TENANT REPLY")
                     .font(.system(size: 9, weight: .semibold, design: .rounded))
                     .kerning(1)
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(DS.Colors.textOnBrand)
 
                 Text(ticket.ai.draftReply)
                     .font(.system(size: 12.5, weight: .medium))
                     .italic()
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(DS.Colors.textOnBrand)
                     .padding(DS.Spacing.md)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+                    .background(DS.Colors.textOnBrand.opacity(0.12), in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                            .strokeBorder(Color(hex: 0xD4AF37).opacity(0.25), lineWidth: 1)
+                            .strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
                     )
 
                 Button {
@@ -248,20 +248,20 @@ struct MaintenanceDetailView: View {
                         Text(ticket.replySent ? "Reply Sent" : "Send to Tenant")
                     }
                     .font(.system(size: 13.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ticket.replySent ? DS.Colors.onGold : .white)
+                    .foregroundStyle(ticket.replySent ? DS.Colors.textOnBrand : DS.Colors.brandInk)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .background(
                         ticket.replySent
                             ? AnyShapeStyle(
-                                DS.Gradients.champagne
+                                DS.Colors.textOnBrand.opacity(0.15)
                               )
-                            : AnyShapeStyle(Color.white.opacity(0.1)),
+                            : AnyShapeStyle(DS.Colors.surfaceRaised),
                         in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                            .strokeBorder(Color(hex: 0xD4AF37).opacity(0.4), lineWidth: 1)
+                            .strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
                     )
                 }
                 .buttonStyle(DSPressStyle())
@@ -269,13 +269,13 @@ struct MaintenanceDetailView: View {
             }
         }
         .padding(DS.Spacing.xl)
-        .dsObsidianSurface()
+        .dsHeroSurface()
     }
 
     // MARK: Photos
 
     private func photosCard(_ ticket: MaintenanceTicket) -> some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     Text("Photos").dsOverline()
@@ -311,7 +311,7 @@ struct MaintenanceDetailView: View {
     // MARK: Vendor
 
     private func vendorCard(_ ticket: MaintenanceTicket) -> some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 Text("Vendor").dsOverline()
 
@@ -401,7 +401,7 @@ struct MaintenanceDetailView: View {
 
     private func commentsCard(_ ticket: MaintenanceTicket) -> some View {
         @Bindable var viewModel = viewModel
-        return DSCard(style: .glass) {
+        return DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     Text("Comments").dsOverline()
@@ -432,7 +432,7 @@ struct MaintenanceDetailView: View {
                                 if comment.isManager {
                                     Text("MANAGER")
                                         .font(.system(size: 7.5, weight: .heavy, design: .rounded))
-                                        .foregroundStyle(DS.Colors.brand)
+                                        .foregroundStyle(DS.Colors.brandInk)
                                         .padding(.horizontal, 4)
                                         .padding(.vertical, 1.5)
                                         .background(DS.Colors.brand.opacity(0.12), in: Capsule())
@@ -485,7 +485,7 @@ struct MaintenanceDetailView: View {
     // MARK: Timeline
 
     private func timelineCard(_ ticket: MaintenanceTicket) -> some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 Text("Timeline").dsOverline()
 

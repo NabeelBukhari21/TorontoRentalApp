@@ -73,7 +73,7 @@ struct MaintenanceInboxView: View {
     private var controls: some View {
         VStack(spacing: DS.Spacing.md) {
             // Stats strip.
-            DSCard(style: .glass, padding: DS.Spacing.md) {
+            DSCard(style: .raised, padding: DS.Spacing.md) {
                 HStack(spacing: DS.Spacing.lg) {
                     stat(value: "\(viewModel.openCount)", label: "Open")
                     statDivider
@@ -132,7 +132,7 @@ struct MaintenanceInboxView: View {
                 } label: {
                     Image(systemName: mode.icon)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(viewModel.mode == mode ? .white : DS.Colors.textSecondary)
+                        .foregroundStyle(viewModel.mode == mode ? DS.Colors.textOnBrand : DS.Colors.textSecondary)
                         .frame(width: 40, height: 38)
                         .background {
                             if viewModel.mode == mode {
@@ -147,7 +147,7 @@ struct MaintenanceInboxView: View {
             }
         }
         .padding(3)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                 .strokeBorder(DS.Colors.outline, lineWidth: 1)

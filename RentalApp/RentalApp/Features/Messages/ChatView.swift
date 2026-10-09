@@ -121,7 +121,7 @@ struct ChatView: View {
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .background(.ultraThinMaterial)
+        .background(DS.Colors.surfaceRaised)
         .overlay(alignment: .bottom) {
             Rectangle().fill(DS.Colors.outline).frame(height: 0.5)
         }
@@ -197,7 +197,7 @@ struct ChatView: View {
             } label: {
                 Image(systemName: DS.Icons.add)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(DS.Colors.brand)
+                    .foregroundStyle(DS.Colors.brandInk)
                     .frame(width: 38, height: 38)
                     .background(DS.Colors.brand.opacity(0.12), in: Circle())
             }
@@ -212,7 +212,7 @@ struct ChatView: View {
                     .padding(.horizontal, DS.Spacing.md)
                     .padding(.vertical, DS.Spacing.sm + 2)
             }
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .strokeBorder(
@@ -232,10 +232,10 @@ struct ChatView: View {
                 } label: {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(DS.Colors.onGold)
+                        .foregroundStyle(DS.Colors.onHighlight)
                         .frame(width: 38, height: 38)
                         .background(
-                            DS.Gradients.champagne,
+                            DS.Gradients.highlight,
                             in: Circle()
                         )
                         .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.4))
@@ -248,7 +248,7 @@ struct ChatView: View {
         .animation(DS.Motion.bouncy, value: viewModel.canSend)
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .background(.ultraThinMaterial)
+        .background(DS.Colors.surfaceRaised)
         .overlay(alignment: .top) {
             Rectangle().fill(DS.Colors.outline).frame(height: 0.5)
         }

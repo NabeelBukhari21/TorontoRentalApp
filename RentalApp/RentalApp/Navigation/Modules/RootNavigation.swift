@@ -89,6 +89,13 @@ struct RootNavigation: View {
             }
         }
         .animation(.easeInOut(duration: 0.7), value: showsSplash)
+        // One colour-scheme source for the whole app, launch flow included.
+        // Previously this was applied only inside the main tab shell, and
+        // the launch, onboarding and auth screens forced themselves dark —
+        // so the Appearance setting never reached them. Light is the
+        // default (see `InMemoryPreferencesRepository.theme`); System and
+        // Dark remain available in Settings → Appearance.
+        .preferredColorScheme(container.preferences.theme.colorScheme)
         .environment(session)
         .environment(\.toasts, toasts)
         .dsToastLayer()
@@ -185,7 +192,6 @@ private struct MFAFlowView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .environment(\.colorScheme, .dark)
     }
 }
 

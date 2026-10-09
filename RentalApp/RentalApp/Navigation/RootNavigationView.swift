@@ -41,8 +41,10 @@ struct RootNavigationView: View {
         }
         .environment(router)
         .environment(providedSession ?? PreviewSession.shared)
-        // Appearance setting drives the whole app's scheme.
-        .preferredColorScheme(container.preferences.theme.colorScheme)
+        // The colour scheme is applied once, at `RootNavigation`, so that
+        // splash, onboarding and auth follow the Appearance setting too.
+        // Applying it here as well would give the window two competing
+        // preferences.
     }
 }
 

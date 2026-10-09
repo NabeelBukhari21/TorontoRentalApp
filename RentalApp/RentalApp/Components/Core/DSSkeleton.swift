@@ -21,9 +21,9 @@ struct DSShimmerModifier: ViewModifier {
                 GeometryReader { proxy in
                     LinearGradient(
                         colors: [
-                            .white.opacity(0),
-                            .white.opacity(0.5),
-                            .white.opacity(0)
+                            DS.Colors.surfaceRaised.opacity(0),
+                            DS.Colors.surfaceRaised.opacity(0.9),
+                            DS.Colors.surfaceRaised.opacity(0)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
@@ -66,7 +66,7 @@ struct DSSkeleton: View {
 
     var body: some View {
         placeholder
-            .foregroundStyle(DS.Colors.surfaceSecondary)
+            .foregroundStyle(DS.Colors.track)
             .dsShimmer()
     }
 

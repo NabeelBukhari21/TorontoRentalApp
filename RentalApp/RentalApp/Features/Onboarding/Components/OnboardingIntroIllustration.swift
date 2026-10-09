@@ -16,7 +16,7 @@ struct OnboardingIntroIllustration: View {
         ZStack {
             // Central glow.
             Circle()
-                .fill(DS.Colors.brandViolet.opacity(0.5))
+                .fill(DS.Colors.accentSunnyInk.opacity(0.5))
                 .frame(width: 180, height: 180)
                 .blur(radius: 50)
                 .opacity(isActive ? 1 : 0)
@@ -34,7 +34,7 @@ struct OnboardingIntroIllustration: View {
             OnboardingFloatingChip(
                 icon: DS.Icons.tenants,
                 text: "Tenants",
-                tint: DS.Colors.brandCyan,
+                tint: DS.Colors.accentSkyInk,
                 isActive: isActive,
                 entranceDelay: 0.30,
                 floatDuration: 2.9
@@ -44,7 +44,7 @@ struct OnboardingIntroIllustration: View {
             OnboardingFloatingChip(
                 icon: DS.Icons.maintenance,
                 text: "Maintenance",
-                tint: DS.Colors.accentAmber,
+                tint: DS.Colors.accentSunnyInk,
                 isActive: isActive,
                 entranceDelay: 0.42,
                 floatDuration: 3.5
@@ -54,7 +54,7 @@ struct OnboardingIntroIllustration: View {
             OnboardingFloatingChip(
                 icon: DS.Icons.messages,
                 text: "Messages",
-                tint: DS.Colors.accentCoral,
+                tint: DS.Colors.accentCoralInk,
                 isActive: isActive,
                 entranceDelay: 0.54,
                 floatDuration: 3.1
@@ -96,5 +96,4 @@ struct OnboardingIntroIllustration: View {
         SplashBackground()
         OnboardingIntroIllustration(isActive: true)
     }
-    .environment(\.colorScheme, .dark)
 }

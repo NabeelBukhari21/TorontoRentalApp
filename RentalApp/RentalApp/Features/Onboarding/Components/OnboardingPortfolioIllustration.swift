@@ -20,6 +20,7 @@ struct OnboardingPortfolioIllustration: View {
                 detail: "12 units",
                 occupancy: 0.83,
                 gradient: DS.Gradients.warm,
+                iconForeground: DS.Colors.textOnAccent,
                 delay: 0.1,
                 floatDuration: 4.0
             )
@@ -31,6 +32,7 @@ struct OnboardingPortfolioIllustration: View {
                 detail: "3 units",
                 occupancy: 1.0,
                 gradient: DS.Gradients.success,
+                iconForeground: DS.Colors.textOnAccent,
                 delay: 0.25,
                 floatDuration: 3.4
             )
@@ -57,6 +59,7 @@ struct OnboardingPortfolioIllustration: View {
         detail: String,
         occupancy: Double,
         gradient: LinearGradient,
+        iconForeground: Color = DS.Colors.textOnBrand,
         delay: Double,
         floatDuration: Double
     ) -> some View {
@@ -64,7 +67,7 @@ struct OnboardingPortfolioIllustration: View {
             HStack(spacing: DS.Spacing.md) {
                 Image(systemName: DS.Icons.properties)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(iconForeground)
                     .frame(width: 34, height: 34)
                     .background(gradient)
                     .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -72,11 +75,11 @@ struct OnboardingPortfolioIllustration: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(name)
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.textPrimary)
 
                     Text(detail)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(DS.Colors.textSecondary)
                 }
 
                 Spacer(minLength: 0)
@@ -84,13 +87,13 @@ struct OnboardingPortfolioIllustration: View {
                 Text("\(Int(occupancy * 100))%")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundStyle(occupancy >= 0.9 ? DS.Colors.success : DS.Colors.accentAmber)
+                    .foregroundStyle(occupancy >= 0.9 ? DS.Colors.success : DS.Colors.accentSunnyInk)
             }
 
             // Occupancy bar that fills when the page activates.
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(.white.opacity(0.12))
+                    Capsule().fill(DS.Colors.track)
                     Capsule()
                         .fill(gradient)
                         .frame(width: proxy.size.width * (isActive ? occupancy : 0))
@@ -101,15 +104,11 @@ struct OnboardingPortfolioIllustration: View {
         }
         .padding(DS.Spacing.lg)
         .frame(width: 270)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                 .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.45), .white.opacity(0.05)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
+                    DS.Gradients.cardHairline,
                     lineWidth: 1
                 )
         )
@@ -125,5 +124,4 @@ struct OnboardingPortfolioIllustration: View {
         SplashBackground()
         OnboardingPortfolioIllustration(isActive: true)
     }
-    .environment(\.colorScheme, .dark)
 }

@@ -16,45 +16,55 @@ struct SplashLogoView: View {
     /// Whether the glass tile has revealed.
     var isRevealed: Bool = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var glowBreathes = false
 
     var body: some View {
         ZStack {
-            // Breathing glow behind everything.
+            // Breathing violet-and-sunny glow behind everything.
             Circle()
-                .fill(RentOSBrand.gold.opacity(0.4))
-                .frame(width: 150, height: 150)
-                .blur(radius: 42)
+                .fill(
+                    RadialGradient(
+                        colors: [DS.Colors.accentSunny.opacity(0.45), DS.Colors.brand.opacity(0.25), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 80
+                    )
+                )
+                .frame(width: 160, height: 160)
+                .blur(radius: 30)
                 .scaleEffect(glowBreathes ? 1.18 : 0.9)
                 .opacity(isRevealed ? 1 : 0)
 
-            // Self-drawing gradient ring.
+            // Self-drawing rainbow ring.
             Circle()
                 .trim(from: 0, to: ringProgress)
                 .stroke(
                     AngularGradient(
                         colors: [
-                            RentOSBrand.goldDeep,
-                            RentOSBrand.gold,
-                            RentOSBrand.champagne,
-                            RentOSBrand.saffron,
-                            RentOSBrand.goldDeep
+                            DS.Colors.brand,
+                            DS.Colors.accentSky,
+                            DS.Colors.accentMint,
+                            DS.Colors.accentSunny,
+                            DS.Colors.accentCoral,
+                            DS.Colors.brand
                         ],
                         center: .center
                     ),
-                    style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
                 )
                 .frame(width: 136, height: 136)
                 .rotationEffect(.degrees(-90))
-                .shadow(color: DS.Colors.brand.opacity(0.6), radius: 12)
+                .shadow(color: DS.Colors.brand.opacity(0.35), radius: 10)
 
-            // Glass tile with the RentOS skyline mark.
+            // The tile with the RentOS mark.
             RentOSLogoTile(size: 96)
                 .scaleEffect(isRevealed ? 1 : 0.5)
                 .blur(radius: isRevealed ? 0 : 14)
                 .opacity(isRevealed ? 1 : 0)
         }
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
                 glowBreathes = true
             }

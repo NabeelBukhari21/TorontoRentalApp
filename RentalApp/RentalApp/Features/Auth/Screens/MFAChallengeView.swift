@@ -152,18 +152,18 @@ private struct DigitBox: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-            .fill(.ultraThinMaterial)
+            .fill(isActive ? DS.Colors.surfaceRaised : DS.Colors.surfaceSecondary)
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                     .strokeBorder(
-                        isActive ? RentOSBrand.gold.opacity(0.8) : Color.white.opacity(0.14),
+                        isActive ? DS.Colors.brand : DS.Colors.outline,
                         lineWidth: isActive ? 1.5 : 1
                     )
             )
             .overlay(
                 Text(character ?? "")
                     .font(.system(size: 22, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
                     .contentTransition(.numericText())
             )
             .frame(height: 56)

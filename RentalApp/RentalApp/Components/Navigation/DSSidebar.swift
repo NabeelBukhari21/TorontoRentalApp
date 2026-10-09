@@ -103,7 +103,7 @@ struct DSSidebar: View {
     private func iconTile(_ icon: String, highlighted: Bool) -> some View {
         Image(systemName: icon)
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(highlighted ? AnyShapeStyle(Color.white) : AnyShapeStyle(DS.Colors.brand))
+            .foregroundStyle(highlighted ? AnyShapeStyle(DS.Colors.textOnBrand) : AnyShapeStyle(DS.Colors.brandInk))
             .frame(width: 30, height: 30)
             .background {
                 if highlighted {

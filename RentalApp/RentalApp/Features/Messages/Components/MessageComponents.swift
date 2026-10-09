@@ -76,11 +76,11 @@ struct ConversationRow: View {
                         Text("\(conversation.unreadCount)")
                             .font(.system(size: 11, weight: .bold, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(DS.Colors.onGold)
+                            .foregroundStyle(DS.Colors.onHighlight)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2.5)
                             .background(
-                                DS.Gradients.champagne,
+                                DS.Gradients.highlight,
                                 in: Capsule()
                             )
                             .transition(.scale.combined(with: .opacity))
@@ -89,7 +89,7 @@ struct ConversationRow: View {
             }
             .padding(DS.Spacing.md)
             .background(
-                isSelected ? AnyShapeStyle(DS.Colors.brand.opacity(0.1)) : AnyShapeStyle(.ultraThinMaterial),
+                isSelected ? AnyShapeStyle(DS.Colors.brand.opacity(0.1)) : AnyShapeStyle(DS.Colors.surfaceRaised),
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
@@ -99,7 +99,7 @@ struct ConversationRow: View {
                             ? AnyShapeStyle(DS.Colors.brand.opacity(0.45))
                             : (conversation.unreadCount > 0
                                 ? AnyShapeStyle(DS.Colors.brand.opacity(0.3))
-                                : AnyShapeStyle(DS.Gradients.glassHighlight)),
+                                : AnyShapeStyle(DS.Gradients.cardHairline)),
                         lineWidth: 1
                     )
             )
@@ -134,7 +134,7 @@ struct ChatBubble: View {
                 if !message.text.isEmpty {
                     Text(message.text)
                         .font(.system(size: 14.5, weight: .regular))
-                        .foregroundStyle(message.isMine ? DS.Colors.onGold : DS.Colors.textPrimary)
+                        .foregroundStyle(message.isMine ? DS.Colors.onHighlight : DS.Colors.textPrimary)
                         .padding(.horizontal, DS.Spacing.md + 2)
                         .padding(.vertical, DS.Spacing.sm + 2)
                         .background(bubbleBackground)
@@ -184,9 +184,9 @@ struct ChatBubble: View {
     private var bubbleBackground: AnyShapeStyle {
         message.isMine
             ? AnyShapeStyle(
-                DS.Gradients.champagne
+                DS.Gradients.highlight
               )
-            : AnyShapeStyle(.ultraThinMaterial)
+            : AnyShapeStyle(DS.Colors.surfaceRaised)
     }
 }
 
@@ -239,29 +239,29 @@ struct ChatAttachmentView: View {
                         let rect = CGRect(x: x, y: y, width: 26, height: 26)
                         context.fill(
                             Path(ellipseIn: rect),
-                            with: .color(.white.opacity(0.12))
+                            with: .color(DS.Colors.onFixedColor.opacity(0.18))
                         )
                     }
                 }
 
                 Image(systemName: DS.Icons.camera)
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.75))
+                    .foregroundStyle(DS.Colors.onFixedColor)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 Text("Photo")
                     .font(.system(size: 9, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.onFixedColor)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(.black.opacity(0.35), in: Capsule())
+                    .background(DS.Colors.mediaBackground.opacity(0.35), in: Capsule())
                     .padding(6)
             }
             .frame(width: 190, height: 130)
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                    .strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
             )
             .dsShadow(DS.Shadows.soft)
 
@@ -269,35 +269,35 @@ struct ChatAttachmentView: View {
             HStack(spacing: DS.Spacing.sm) {
                 Image(systemName: "doc.fill")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(isMine ? DS.Colors.onGold : DS.Colors.brand)
+                    .foregroundStyle(isMine ? DS.Colors.onHighlight : DS.Colors.brandInk)
                     .frame(width: 36, height: 36)
                     .background(
-                        isMine ? .white.opacity(0.35) : DS.Colors.brand.opacity(0.12),
+                        isMine ? DS.Colors.onHighlight.opacity(0.2) : DS.Colors.brand.opacity(0.12),
                         in: RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
                     )
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(name)
                         .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(isMine ? DS.Colors.onGold : DS.Colors.textPrimary)
+                        .foregroundStyle(isMine ? DS.Colors.onHighlight : DS.Colors.textPrimary)
                         .lineLimit(1)
 
                     Text(size)
                         .font(.system(size: 10.5, weight: .medium))
-                        .foregroundStyle(isMine ? Color(hex: 0x121212).opacity(0.6) : DS.Colors.textTertiary)
+                        .foregroundStyle(isMine ? DS.Colors.onHighlight : DS.Colors.textTertiary)
                 }
 
                 Image(systemName: "arrow.down.circle.fill")
                     .font(.system(size: 18))
-                    .foregroundStyle(isMine ? Color(hex: 0x121212).opacity(0.7) : DS.Colors.brand)
+                    .foregroundStyle(isMine ? DS.Colors.onHighlight : DS.Colors.brandInk)
             }
             .padding(DS.Spacing.sm + 2)
             .background(
                 isMine
                     ? AnyShapeStyle(
-                        DS.Gradients.champagne
+                        DS.Gradients.highlight
                       )
-                    : AnyShapeStyle(.ultraThinMaterial),
+                    : AnyShapeStyle(DS.Colors.surfaceRaised),
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
@@ -337,7 +337,7 @@ struct TypingIndicatorBubble: View {
             }
             .padding(.horizontal, DS.Spacing.md + 2)
             .padding(.vertical, DS.Spacing.md)
-            .background(.ultraThinMaterial, in: Capsule())
+            .background(DS.Colors.surfaceRaised, in: Capsule())
             .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
 
             Spacer(minLength: 48)

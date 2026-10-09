@@ -43,7 +43,7 @@ struct PropertyOverviewTab: View {
                 .dsEntrance(index: 1)
 
             // About.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("About").dsOverline()
 
@@ -62,7 +62,7 @@ struct PropertyOverviewTab: View {
         HStack(spacing: DS.Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(DS.Colors.brand)
+                .foregroundStyle(DS.Colors.brandInk)
                 .frame(width: 28, height: 28)
                 .background(DS.Colors.brand.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -137,7 +137,7 @@ struct PropertyUnitsTab: View {
             }
 
             ForEach(Array(viewModel.units.enumerated()), id: \.element.id) { index, unit in
-                DSCard(style: .glass, padding: DS.Spacing.lg) {
+                DSCard(style: .raised, padding: DS.Spacing.lg) {
                     HStack(spacing: DS.Spacing.md) {
                         Image(systemName: DS.Icons.unit)
                             .font(.system(size: 15, weight: .semibold))
@@ -243,7 +243,7 @@ struct PropertyTenantsTab: View {
                 )
             } else {
                 ForEach(Array(tenants.enumerated()), id: \.element.id) { index, tenant in
-                    DSCard(style: .glass, padding: DS.Spacing.lg) {
+                    DSCard(style: .raised, padding: DS.Spacing.lg) {
                         HStack(spacing: DS.Spacing.md) {
                             DSAvatar(name: tenant.name, size: .medium, status: tenant.rentKind == .success ? .success : .danger)
 
@@ -288,7 +288,7 @@ struct PropertyMaintenanceTab: View {
                 )
             } else {
                 ForEach(Array(requests.enumerated()), id: \.element.id) { index, request in
-                    DSCard(style: .glass, padding: DS.Spacing.lg) {
+                    DSCard(style: .raised, padding: DS.Spacing.lg) {
                         HStack(spacing: DS.Spacing.md) {
                             ZStack {
                                 Circle()
@@ -337,11 +337,11 @@ struct PropertyDocumentsTab: View {
     var body: some View {
         VStack(spacing: DS.Spacing.md) {
             ForEach(Array(viewModel.documentRows.enumerated()), id: \.element.id) { index, doc in
-                DSCard(style: .glass, padding: DS.Spacing.lg) {
+                DSCard(style: .raised, padding: DS.Spacing.lg) {
                     HStack(spacing: DS.Spacing.md) {
                         Image(systemName: doc.icon)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(DS.Colors.brand)
+                            .foregroundStyle(DS.Colors.brandInk)
                             .frame(width: 38, height: 38)
                             .background(DS.Colors.brand.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -382,7 +382,7 @@ struct PropertyAnalyticsTab: View {
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
             // Occupancy trend.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Occupancy · 12 months").dsOverline()
 
@@ -425,7 +425,7 @@ struct PropertyAnalyticsTab: View {
             .dsEntrance(index: 0)
 
             // Revenue bars.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Revenue · 6 months").dsOverline()
 
@@ -452,7 +452,7 @@ struct PropertyAnalyticsTab: View {
             .dsEntrance(index: 1)
 
             // AI note.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 HStack(spacing: DS.Spacing.md) {
                     Image(systemName: DS.Icons.ai)
                         .font(.system(size: 15, weight: .semibold))

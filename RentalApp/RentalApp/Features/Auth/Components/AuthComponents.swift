@@ -22,22 +22,7 @@ struct AuthCard<Content: View>: View {
     var body: some View {
         content
             .padding(DS.Spacing.xxl)
-            .background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: DS.Radius.xxl, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DS.Radius.xxl, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [.white.opacity(0.4), .white.opacity(0.04)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .dsShadow(DS.Shadows.floating)
+            .dsSurface(cornerRadius: DS.Radius.xxl, shadow: DS.Shadows.floating)
             .frame(maxWidth: 460)
     }
 }
@@ -58,12 +43,12 @@ struct AuthHeader: View {
             VStack(spacing: DS.Spacing.xs) {
                 Text(title)
                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
                     .multilineTextAlignment(.center)
 
                 Text(subtitle)
                     .font(DS.Typography.callout)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -84,25 +69,26 @@ struct AuthSocialButton: View {
                 if isLoading {
                     ProgressView()
                         .controlSize(.small)
-                        .tint(.white)
+                        .tint(DS.Colors.textPrimary)
                 } else {
                     logo
                 }
 
                 Text(title)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
             .background(
-                .ultraThinMaterial,
+                DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                    .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                    .strokeBorder(DS.Colors.outline, lineWidth: 1)
             )
+            .dsShadow(DS.Shadows.soft)
         }
         .buttonStyle(DSPressStyle())
         .disabled(isLoading)
@@ -116,13 +102,13 @@ struct AuthSocialButton: View {
         case .apple:
             Image(systemName: "apple.logo")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(DS.Colors.textPrimary)
         case .google:
             Text("G")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color(hex: 0x4285F4), Color(hex: 0x34A853)],
+                        colors: [DS.Colors.Partner.googleBlue, DS.Colors.Partner.googleGreen],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -142,7 +128,7 @@ struct AuthDivider: View {
             line
             Text(text)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.4))
+                .foregroundStyle(DS.Colors.textSecondary)
                 .fixedSize()
             line
         }
@@ -150,7 +136,7 @@ struct AuthDivider: View {
 
     private var line: some View {
         LinearGradient(
-            colors: [.white.opacity(0), .white.opacity(0.2)],
+            colors: [DS.Colors.outline.opacity(0), DS.Colors.outline],
             startPoint: .leading,
             endPoint: .trailing
         )
@@ -170,7 +156,7 @@ struct AuthFooterLink: View {
     var body: some View {
         HStack(spacing: DS.Spacing.xs) {
             Text(prompt)
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(DS.Colors.textSecondary)
 
             Button(action: action) {
                 Text(actionTitle)
@@ -193,10 +179,11 @@ struct AuthBackButton: View {
         Button(action: action) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(DS.Colors.textPrimary)
                 .frame(width: 38, height: 38)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+                .background(DS.Colors.surfaceRaised, in: Circle())
+                .overlay(Circle().strokeBorder(DS.Colors.outline, lineWidth: 1))
+                .dsShadow(DS.Shadows.soft)
         }
         .buttonStyle(DSPressStyle(scale: 0.9))
         .accessibilityLabel("Back")
@@ -330,23 +317,23 @@ struct AuthSelectedRoleChip: View {
         HStack(spacing: DS.Spacing.sm) {
             Image(systemName: role.icon)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(RentOSBrand.gold)
+                .foregroundStyle(DS.Colors.brandInk)
 
             Text("Signing up as \(role.title)")
                 .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(DS.Colors.textSecondary)
 
             Button(action: onChange) {
                 Text("Change")
                     .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DS.Colors.brand)
+                    .foregroundStyle(DS.Colors.brandInk)
             }
             .buttonStyle(DSPressStyle(scale: 0.94))
         }
         .padding(.horizontal, DS.Spacing.md)
         .padding(.vertical, DS.Spacing.sm)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1))
+        .background(DS.Colors.brand.opacity(0.10), in: Capsule())
+        .overlay(Capsule().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1))
     }
 }
 
@@ -361,16 +348,16 @@ struct AuthDemoHint: View {
             Text("Demo accounts")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .kerning(1.1)
-                .foregroundStyle(.white.opacity(0.35))
+                .foregroundStyle(DS.Colors.textTertiary)
 
             Text("owner@rentos.ca · manager@rentos.ca · tenant@rentos.ca · vendor@rentos.ca")
                 .font(.system(size: 10.5, weight: .medium))
-                .foregroundStyle(.white.opacity(0.42))
+                .foregroundStyle(DS.Colors.textTertiary)
                 .multilineTextAlignment(.center)
 
             Text("Password: \(MockAccountDirectory.demoPassword) · MFA code: \(MockAccountDirectory.demoMFACode)")
                 .font(.system(size: 10.5, weight: .medium))
-                .foregroundStyle(.white.opacity(0.42))
+                .foregroundStyle(DS.Colors.textTertiary)
         }
         .padding(.horizontal, DS.Spacing.md)
     }
@@ -392,5 +379,4 @@ struct AuthDemoHint: View {
         }
         .padding(DS.Spacing.xxl)
     }
-    .environment(\.colorScheme, .dark)
 }

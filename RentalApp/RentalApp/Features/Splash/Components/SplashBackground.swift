@@ -2,15 +2,23 @@
 //  SplashBackground.swift
 //  RentalApp
 //
-//  Splash — Deep animated gradient background with drifting light orbs.
-//  Shared by the splash and onboarding so the transition between them
-//  feels like one continuous space.
+//  Splash — Bright background with drifting colour orbs.
+//
+//  Shared by splash, onboarding, auth, org setup and MFA so the whole
+//  launch flow feels like one continuous space. White first, with soft
+//  violet, sky, coral and sunny light drifting behind the content — the
+//  launch flow's equivalent of `DSAmbientBackground`, a little bolder
+//  because there is less content on screen competing with it.
+//
+//  Follows the app's colour scheme: white in light mode (the default),
+//  the dark DS background in dark mode.
 //
 
 import SwiftUI
 
 struct SplashBackground: View {
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var drift = false
 
     var body: some View {
@@ -18,60 +26,47 @@ struct SplashBackground: View {
             let size = proxy.size
 
             ZStack {
-                // Obsidian → titanium base.
-                LinearGradient(
-                    colors: [
-                        Color(hex: 0x0A0A0B),
-                        RentOSBrand.obsidian,
-                        Color(hex: 0x2A2D34)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                DS.Colors.background
 
-                // Drifting champagne light orbs.
-                Circle()
-                    .fill(Color(hex: 0xD4AF37).opacity(0.24))
-                    .frame(width: size.width * 1.0)
-                    .blur(radius: 100)
-                    .offset(
-                        x: drift ? -size.width * 0.35 : size.width * 0.25,
-                        y: drift ? -size.height * 0.30 : -size.height * 0.15
-                    )
+                orb(DS.Colors.brand.opacity(0.20), width: size.width * 1.0, blur: 100,
+                    from: CGPoint(x: 0.25, y: -0.18), to: CGPoint(x: -0.35, y: -0.32), in: size)
 
-                Circle()
-                    .fill(Color(hex: 0xC7CDD6).opacity(0.14))
-                    .frame(width: size.width * 0.9)
-                    .blur(radius: 110)
-                    .offset(
-                        x: drift ? size.width * 0.35 : -size.width * 0.25,
-                        y: drift ? size.height * 0.32 : size.height * 0.15
-                    )
+                orb(DS.Colors.accentSky.opacity(0.20), width: size.width * 0.9, blur: 110,
+                    from: CGPoint(x: -0.25, y: 0.15), to: CGPoint(x: 0.35, y: 0.32), in: size)
 
-                Circle()
-                    .fill(Color(hex: 0xFFB703).opacity(0.12))
-                    .frame(width: size.width * 0.7)
-                    .blur(radius: 90)
-                    .offset(
-                        x: drift ? size.width * 0.10 : -size.width * 0.10,
-                        y: drift ? -size.height * 0.05 : size.height * 0.10
-                    )
+                orb(DS.Colors.accentCoral.opacity(0.14), width: size.width * 0.7, blur: 90,
+                    from: CGPoint(x: -0.10, y: 0.10), to: CGPoint(x: 0.10, y: -0.05), in: size)
 
-                // Soft vignette to focus the center.
-                RadialGradient(
-                    colors: [.clear, Color(hex: 0x050505).opacity(0.6)],
-                    center: .center,
-                    startRadius: size.width * 0.25,
-                    endRadius: size.width * 0.9
-                )
+                orb(DS.Colors.accentSunny.opacity(0.22), width: size.width * 0.6, blur: 90,
+                    from: CGPoint(x: 0.30, y: 0.38), to: CGPoint(x: -0.20, y: 0.20), in: size)
+
+                orb(DS.Colors.accentMint.opacity(0.14), width: size.width * 0.5, blur: 80,
+                    from: CGPoint(x: -0.30, y: -0.40), to: CGPoint(x: 0.05, y: -0.10), in: size)
             }
             .onAppear {
+                guard !reduceMotion else { return }
                 withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
                     drift = true
                 }
             }
         }
         .ignoresSafeArea()
+    }
+
+    private func orb(
+        _ color: Color,
+        width: CGFloat,
+        blur: CGFloat,
+        from: CGPoint,
+        to: CGPoint,
+        in size: CGSize
+    ) -> some View {
+        let point = drift ? to : from
+        return Circle()
+            .fill(color)
+            .frame(width: width)
+            .blur(radius: blur)
+            .offset(x: size.width * point.x, y: size.height * point.y)
     }
 }
 

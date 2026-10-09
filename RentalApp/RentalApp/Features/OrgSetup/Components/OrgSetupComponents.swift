@@ -22,7 +22,7 @@ struct OrgSetupProgressBar: View {
             HStack {
                 Text("Step \(stepIndex + 1) of \(stepCount)")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .contentTransition(.numericText())
 
                 Spacer()
@@ -37,7 +37,7 @@ struct OrgSetupProgressBar: View {
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(.white.opacity(0.12))
+                        .fill(DS.Colors.track)
 
                     Capsule()
                         .fill(DS.Gradients.ai)
@@ -63,7 +63,7 @@ struct OrgSetupStepHeader: View {
                 .font(.system(size: 26, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.white, RentOSBrand.champagne],
+                        colors: [DS.Colors.textPrimary, DS.Colors.brandInk],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -72,7 +72,7 @@ struct OrgSetupStepHeader: View {
 
             Text(step.subtitle)
                 .font(DS.Typography.callout)
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(DS.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -96,7 +96,7 @@ struct OrgOptionCard: View {
             HStack(spacing: DS.Spacing.md) {
                 Image(systemName: icon)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(isSelected ? AnyShapeStyle(Color.white) : AnyShapeStyle(DS.Colors.brand))
+                    .foregroundStyle(isSelected ? AnyShapeStyle(DS.Colors.textOnBrand) : AnyShapeStyle(DS.Colors.brandInk))
                     .frame(width: 42, height: 42)
                     .background {
                         if isSelected {
@@ -104,19 +104,19 @@ struct OrgOptionCard: View {
                                 .fill(DS.Gradients.brand)
                         } else {
                             RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
-                                .fill(.white.opacity(0.08))
+                                .fill(DS.Colors.brand.opacity(0.12))
                         }
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 15.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.textPrimary)
 
                     if let subtitle {
                         Text(subtitle)
                             .font(.system(size: 12.5, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.55))
+                            .foregroundStyle(DS.Colors.textSecondary)
                     }
                 }
 
@@ -125,7 +125,7 @@ struct OrgOptionCard: View {
                 ZStack {
                     Circle()
                         .strokeBorder(
-                            isSelected ? Color.clear : .white.opacity(0.25),
+                            isSelected ? Color.clear : DS.Colors.outline,
                             lineWidth: 1.5
                         )
                         .background(
@@ -136,14 +136,13 @@ struct OrgOptionCard: View {
                     if isSelected {
                         Image(systemName: "checkmark")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
             }
             .padding(DS.Spacing.lg)
-            .background(
-                .ultraThinMaterial,
+            .background(DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
@@ -152,12 +151,12 @@ struct OrgOptionCard: View {
                         isSelected
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [DS.Colors.brand.opacity(0.9), DS.Colors.brandViolet.opacity(0.7)],
+                                    colors: [DS.Colors.brand.opacity(0.9), DS.Colors.accentSunnyInk.opacity(0.7)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                               )
-                            : AnyShapeStyle(Color.white.opacity(0.14)),
+                            : AnyShapeStyle(DS.Colors.outline),
                         lineWidth: isSelected ? 1.5 : 1
                     )
             )
@@ -186,22 +185,22 @@ struct OrgInviteChip: View {
 
             Text(email)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(DS.Colors.textPrimary)
                 .lineLimit(1)
 
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 15))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(DS.Colors.textTertiary)
             }
             .buttonStyle(DSPressStyle(scale: 0.85))
             .accessibilityLabel("Remove \(email)")
         }
         .padding(.horizontal, DS.Spacing.sm)
         .padding(.vertical, DS.Spacing.xs + 2)
-        .background(.ultraThinMaterial, in: Capsule())
+        .background(DS.Colors.surfaceRaised, in: Capsule())
         .overlay(
-            Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1)
+            Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1)
         )
         .transition(.scale(scale: 0.7).combined(with: .opacity))
     }

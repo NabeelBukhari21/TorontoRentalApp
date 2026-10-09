@@ -162,14 +162,10 @@ final class OrgSetupViewModel {
     var inviteInput = ""
     var inviteError: String?
 
-    /// Gradient choices for the generated monogram — luxury materials.
-    static let monogramGradients: [[Color]] = [
-        [Color(hex: 0xD4AF37), Color(hex: 0x8C6D1F)], // champagne gold
-        [Color(hex: 0x43474F), RentOSBrand.obsidian], // obsidian
-        [Color(hex: 0xC7CDD6), Color(hex: 0x6E7681)], // platinum
-        [Color(hex: 0xFFB703), Color(hex: 0xB45309)], // saffron bronze
-        [Color(hex: 0x1F6E5A), Color(hex: 0x0B3B30)]  // deep emerald
-    ]
+    /// Gradient choices for the generated monogram. Defined in the design
+    /// system (`DS.Gradients.monogramStops`), where the index contract and
+    /// the contrast of the white letters are documented.
+    static let monogramGradients: [[Color]] = DS.Gradients.monogramStops
 
     var monogramGradient: LinearGradient {
         let colors = Self.monogramGradients[

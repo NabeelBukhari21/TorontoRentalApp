@@ -80,7 +80,11 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var quietHoursEnabled = true
 
     // Appearance
-    var theme: AppTheme = .system
+    //
+    // Light by default: the brand is white-first, and on `.system` a phone
+    // in dark mode would never show it. Dark mode is fully supported and
+    // one tap away in Settings → Appearance.
+    var theme: AppTheme = .light
     var reduceGlassEffects = false
     var showPortfolioValueOnHome = true
 

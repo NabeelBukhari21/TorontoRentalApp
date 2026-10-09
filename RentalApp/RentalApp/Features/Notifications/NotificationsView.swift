@@ -151,7 +151,7 @@ private struct NotificationRow: View {
                     Spacer()
                     Image(systemName: "trash.fill")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.textOnBrand)
                         .frame(width: 40, height: 40)
                         .background(DS.Colors.danger, in: Circle())
                         .scaleEffect(min(1, -dragOffset / 80))
@@ -285,13 +285,13 @@ private struct NotificationRow: View {
                 }
             }
             .padding(DS.Spacing.md + 2)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     .strokeBorder(
                         notification.isUnread
                             ? AnyShapeStyle(DS.Colors.brand.opacity(0.4))
-                            : AnyShapeStyle(DS.Gradients.glassHighlight),
+                            : AnyShapeStyle(DS.Gradients.cardHairline),
                         lineWidth: 1
                     )
             )

@@ -15,6 +15,10 @@ struct DSBadge: View {
     let text: String
     var kind: DSStatusKind = .neutral
     var icon: String? = nil
+    /// A category colour instead of a status colour — for chips that label
+    /// *what* something is (Plumbing, PDF) rather than *how* it is (Urgent).
+    /// Takes precedence over `kind` when set.
+    var accent: DSAccent? = nil
 
     var body: some View {
         HStack(spacing: DS.Spacing.xs) {
@@ -25,10 +29,10 @@ struct DSBadge: View {
             Text(text)
                 .font(DS.Typography.caption)
         }
-        .foregroundStyle(kind.color)
+        .foregroundStyle(accent?.ink ?? kind.color)
         .padding(.horizontal, DS.Spacing.sm + 2)
         .padding(.vertical, DS.Spacing.xs + 1)
-        .background(kind.tint, in: Capsule())
+        .background(accent?.tint ?? kind.tint, in: Capsule())
     }
 }
 
@@ -124,7 +128,7 @@ struct DSChip: View {
     private var chipBackground: AnyShapeStyle {
         isSelected
             ? AnyShapeStyle(DS.Gradients.brand)
-            : AnyShapeStyle(.ultraThinMaterial)
+            : AnyShapeStyle(DS.Colors.surfaceRaised)
     }
 }
 

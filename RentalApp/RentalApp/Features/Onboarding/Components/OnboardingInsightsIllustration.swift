@@ -26,12 +26,12 @@ struct OnboardingInsightsIllustration: View {
                         Text("MONTHLY REVENUE")
                             .font(.system(size: 10, weight: .semibold, design: .rounded))
                             .kerning(1.2)
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(DS.Colors.textSecondary)
 
                         Text("$\(revenue)K")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .monospacedDigit()
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textPrimary)
                             .contentTransition(.numericText())
                     }
 
@@ -51,7 +51,7 @@ struct OnboardingInsightsIllustration: View {
                                 .fill(
                                     index == bars.count - 1
                                         ? AnyShapeStyle(DS.Gradients.ai)
-                                        : AnyShapeStyle(Color.white.opacity(0.22))
+                                        : AnyShapeStyle(DS.Colors.accentSky.opacity(0.35))
                                 )
                                 .frame(height: 110 * bars[index])
                                 .scaleEffect(
@@ -70,15 +70,11 @@ struct OnboardingInsightsIllustration: View {
             }
             .padding(DS.Spacing.xl)
             .frame(width: 300)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous)
                     .strokeBorder(
-                        LinearGradient(
-                            colors: [.white.opacity(0.45), .white.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
+                        DS.Gradients.cardHairline,
                         lineWidth: 1
                     )
             )
@@ -97,23 +93,23 @@ struct OnboardingInsightsIllustration: View {
 
                 Text("3 leases renew next month — start early")
                     .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(DS.Colors.textPrimary)
                     .lineLimit(1)
             }
             .padding(.horizontal, DS.Spacing.lg)
             .padding(.vertical, DS.Spacing.md)
-            .background(.ultraThinMaterial, in: Capsule())
+            .background(DS.Colors.surfaceRaised, in: Capsule())
             .overlay(
                 Capsule().strokeBorder(
                     LinearGradient(
-                        colors: [DS.Colors.brandCyan.opacity(0.6), .white.opacity(0.05)],
+                        colors: [DS.Colors.accentSkyInk.opacity(0.6), DS.Colors.accentSky.opacity(0.10)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
                     lineWidth: 1
                 )
             )
-            .dsShadow(DS.Shadows.glow(DS.Colors.brandCyan, intensity: 0.25))
+            .dsShadow(DS.Shadows.glow(DS.Colors.accentSkyInk, intensity: 0.25))
             .scaleEffect(isActive ? 1 : 0.6)
             .opacity(isActive ? 1 : 0)
             .animation(DS.Motion.bouncy.delay(1.0), value: isActive)
@@ -137,5 +133,4 @@ struct OnboardingInsightsIllustration: View {
         SplashBackground()
         OnboardingInsightsIllustration(isActive: true)
     }
-    .environment(\.colorScheme, .dark)
 }

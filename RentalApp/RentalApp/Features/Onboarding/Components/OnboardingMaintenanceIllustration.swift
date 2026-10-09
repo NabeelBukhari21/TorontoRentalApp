@@ -23,11 +23,12 @@ struct OnboardingMaintenanceIllustration: View {
                     icon: "drop.fill",
                     title: "Leaking kitchen faucet",
                     subtitle: "Unit 304 · Reported 8 min ago",
-                    iconGradient: DS.Gradients.warm
+                    iconGradient: DS.Gradients.warm,
+                    iconForeground: DS.Colors.textOnAccent
                 ) {
                     Image(systemName: DS.Icons.camera)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .foregroundStyle(DS.Colors.textSecondary)
                 }
 
                 OnboardingMiniCard(
@@ -37,7 +38,7 @@ struct OnboardingMaintenanceIllustration: View {
                 ) {
                     Image(systemName: DS.Icons.messages)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .foregroundStyle(DS.Colors.textSecondary)
                 }
             }
             .frame(width: 290)
@@ -46,9 +47,9 @@ struct OnboardingMaintenanceIllustration: View {
                 LinearGradient(
                     colors: [
                         .clear,
-                        DS.Colors.brandCyan.opacity(0.45),
-                        .white.opacity(0.35),
-                        DS.Colors.brandCyan.opacity(0.45),
+                        DS.Colors.accentSkyInk.opacity(0.45),
+                        DS.Colors.accentSky.opacity(0.35),
+                        DS.Colors.accentSkyInk.opacity(0.45),
                         .clear
                     ],
                     startPoint: .top,
@@ -74,7 +75,7 @@ struct OnboardingMaintenanceIllustration: View {
 
                 Text("AI classified in 0.4s")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(DS.Colors.textSecondary)
             }
             .opacity(isActive ? 1 : 0)
             .animation(DS.Motion.smooth.delay(0.7), value: isActive)
@@ -109,5 +110,4 @@ struct OnboardingMaintenanceIllustration: View {
         SplashBackground()
         OnboardingMaintenanceIllustration(isActive: true)
     }
-    .environment(\.colorScheme, .dark)
 }

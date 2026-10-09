@@ -111,7 +111,7 @@ struct SignUpView: View {
 
                     Text("By continuing you agree to our Terms of Service and Privacy Policy.")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.4))
+                        .foregroundStyle(DS.Colors.textTertiary)
                         .multilineTextAlignment(.center)
 
                     AuthDivider()

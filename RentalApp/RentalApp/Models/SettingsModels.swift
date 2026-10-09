@@ -62,17 +62,20 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable, Codable {
         }
     }
 
-    var tint: Color {
+    var accent: DSAccent {
         switch self {
-        case .profile, .organization: DS.Colors.brand
-        case .team: DS.Colors.brandCyan
-        case .billing: DS.Colors.success
-        case .notifications: DS.Colors.accentCoral
-        case .appearance: DS.Colors.brandViolet
-        case .aiPreferences: DS.Colors.brand
-        case .integrations: DS.Colors.info
+        case .profile, .organization: .violet
+        case .team:                   .sky
+        case .billing:                .mint
+        case .notifications:          .coral
+        case .appearance:             .sunny
+        case .aiPreferences:          .violet
+        case .integrations:           .sky
         }
     }
+
+    /// AA-safe foreground for the section's icon tile.
+    var tint: Color { accent.ink }
 }
 
 // MARK: - Theme

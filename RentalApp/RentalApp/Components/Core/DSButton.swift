@@ -21,8 +21,9 @@ struct DSButton: View {
         case ghost
         /// Red fill for destructive actions.
         case destructive
-        /// Glass surface. For use over ambient/photo backgrounds.
-        case glass
+        /// White surface with a hairline. For use over ambient, coloured or
+        /// photo backgrounds. (Was `.glass` in the previous theme.)
+        case soft
     }
 
     // MARK: Size
@@ -110,8 +111,12 @@ struct DSButton: View {
 
     private var foregroundColor: Color {
         switch variant {
+        // White on violet 4.86 / on coral-ink 5.52 (light); dark ink in dark.
         case .primary, .destructive: DS.Colors.textOnBrand
-        case .secondary, .glass: DS.Colors.brand
+        // `brandInk`, not `brand`: on the 12% violet tint `brand` is 4.14,
+        // under AA; `brandInk` is 5.16.
+        case .secondary: DS.Colors.brandInk
+        case .soft: DS.Colors.brandInk
         case .ghost: DS.Colors.textSecondary
         }
     }
@@ -127,23 +132,24 @@ struct DSButton: View {
             Color.clear
         case .destructive:
             DS.Colors.danger
-        case .glass:
-            Rectangle().fill(.ultraThinMaterial)
+        case .soft:
+            DS.Colors.surfaceRaised
         }
     }
 
     @ViewBuilder
     private var border: some View {
-        if variant == .glass {
+        if variant == .soft {
             RoundedRectangle(cornerRadius: size.cornerRadius, style: .continuous)
-                .strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                .strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
         }
     }
 
     private var shadow: DSShadowStyle {
         switch variant {
         case .primary: DS.Shadows.glow(DS.Colors.brand)
-        case .destructive: DS.Shadows.glow(DS.Colors.danger, intensity: 0.25)
+        case .destructive: DS.Shadows.glow(DS.Colors.accentCoralInk, intensity: 0.30)
+        case .soft: DS.Shadows.soft
         default: DSShadowStyle(color: .clear, radius: 0, y: 0)
         }
     }
@@ -155,7 +161,7 @@ struct DSButton: View {
 struct DSIconButton: View {
 
     let icon: String
-    var variant: DSButton.Variant = .glass
+    var variant: DSButton.Variant = .soft
     var diameter: CGFloat = 40
     let action: () -> Void
 
@@ -163,16 +169,17 @@ struct DSIconButton: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: diameter * 0.4, weight: .semibold))
-                .foregroundStyle(variant == .primary ? DS.Colors.textOnBrand : DS.Colors.brand)
+                .foregroundStyle(variant == .primary ? DS.Colors.textOnBrand : DS.Colors.brandInk)
                 .frame(width: diameter, height: diameter)
                 .background(iconBackground)
                 .overlay(
                     Circle().strokeBorder(
-                        variant == .glass ? AnyShapeStyle(DS.Gradients.glassHighlight) : AnyShapeStyle(Color.clear),
+                        variant == .soft ? AnyShapeStyle(DS.Gradients.cardHairline) : AnyShapeStyle(Color.clear),
                         lineWidth: 1
                     )
                 )
                 .clipShape(Circle())
+                .dsShadow(variant == .soft ? DS.Shadows.soft : DSShadowStyle(color: .clear, radius: 0, y: 0))
         }
         .buttonStyle(DSPressStyle(scale: 0.9))
     }
@@ -182,8 +189,8 @@ struct DSIconButton: View {
         switch variant {
         case .primary:
             DS.Gradients.brand
-        case .glass:
-            Circle().fill(.ultraThinMaterial)
+        case .soft:
+            DS.Colors.surfaceRaised
         default:
             DS.Colors.brand.opacity(0.12)
         }
@@ -201,7 +208,7 @@ struct DSIconButton: View {
             DSButton(title: "View Report", variant: .secondary) {}
             DSButton(title: "Skip for now", variant: .ghost) {}
             DSButton(title: "Delete Lease", variant: .destructive) {}
-            DSButton(title: "Ask AI", icon: DS.Icons.ai, variant: .glass) {}
+            DSButton(title: "Ask AI", icon: DS.Icons.ai, variant: .soft) {}
             DSButton(title: "Saving…", variant: .primary, isLoading: true) {}
 
             HStack(spacing: DS.Spacing.md) {

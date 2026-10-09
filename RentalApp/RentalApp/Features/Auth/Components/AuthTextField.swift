@@ -76,7 +76,7 @@ struct AuthTextField: View {
                         }
                     }
                     .font(.system(size: 15.5, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
                     .tint(DS.Colors.brand)
                     .keyboardType(keyboardType)
                     .textContentType(textContentType)
@@ -95,7 +95,7 @@ struct AuthTextField: View {
                     } label: {
                         Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
                             .font(.system(size: 15))
-                            .foregroundStyle(.white.opacity(0.45))
+                            .foregroundStyle(DS.Colors.textSecondary)
                             .contentTransition(.symbolEffect(.replace))
                     }
                     .accessibilityLabel(isPasswordVisible ? "Hide password" : "Show password")
@@ -119,11 +119,7 @@ struct AuthTextField: View {
             .frame(height: 58)
             .background(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                    .fill(.white.opacity(isFocused ? 0.10 : 0.06))
-            )
-            .background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                    .fill(isFocused ? DS.Colors.surfaceRaised : DS.Colors.surfaceSecondary)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
@@ -154,13 +150,15 @@ struct AuthTextField: View {
 
     private var iconColor: Color {
         if hasError { return DS.Colors.danger }
-        return isFocused ? DS.Colors.brand : .white.opacity(0.45)
+        return isFocused ? DS.Colors.brand : DS.Colors.textSecondary
     }
 
     private var labelColor: Color {
-        if hasError { return DS.Colors.danger.opacity(0.9) }
+        // Solid colours, not opacity: a translucent label's contrast
+        // depends on whatever is behind it, so it can't be verified.
+        if hasError { return DS.Colors.danger }
         if isFocused { return DS.Colors.brand }
-        return .white.opacity(0.5)
+        return DS.Colors.textSecondary
     }
 
     private var borderStyle: AnyShapeStyle {
@@ -170,13 +168,13 @@ struct AuthTextField: View {
         if isFocused {
             return AnyShapeStyle(
                 LinearGradient(
-                    colors: [DS.Colors.brand.opacity(0.85), DS.Colors.accentAmber.opacity(0.55)],
+                    colors: [DS.Colors.brand, DS.Colors.accentSky],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
         }
-        return AnyShapeStyle(Color.white.opacity(0.14))
+        return AnyShapeStyle(DS.Colors.outline)
     }
 }
 
@@ -191,14 +189,18 @@ struct AuthPasswordStrengthMeter: View {
         strength <= 0 ? 0 : max(1, Int(ceil(strength * 4)))
     }
 
-    private var tint: Color {
+    /// Strength as an accent: the bars use its bright fill, the caption its
+    /// AA-safe ink.
+    private var accent: DSAccent {
         switch strength {
-        case ..<0.35: DS.Colors.danger
-        case ..<0.6: DS.Colors.accentAmber
-        case ..<0.85: DS.Colors.brandCyan
-        default: DS.Colors.success
+        case ..<0.35: .coral
+        case ..<0.6: .sunny
+        case ..<0.85: .sky
+        default: .mint
         }
     }
+
+    private var tint: Color { accent.ink }
 
     private var caption: String {
         switch strength {
@@ -214,7 +216,7 @@ struct AuthPasswordStrengthMeter: View {
         HStack(spacing: DS.Spacing.sm) {
             ForEach(0..<4, id: \.self) { index in
                 Capsule()
-                    .fill(index < filledSegments ? tint : Color.white.opacity(0.12))
+                    .fill(index < filledSegments ? accent.fill : DS.Colors.track)
                     .frame(height: 4)
             }
 
@@ -265,7 +267,6 @@ struct AuthPasswordStrengthMeter: View {
                 }
                 .padding(DS.Spacing.xxl)
             }
-            .environment(\.colorScheme, .dark)
         }
     }
     return Demo()

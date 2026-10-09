@@ -109,11 +109,11 @@ struct ResetPasswordView: View {
             VStack(spacing: DS.Spacing.sm) {
                 Text("Password updated")
                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
 
                 Text("Your new password is ready to use.")
                     .font(DS.Typography.callout)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
 

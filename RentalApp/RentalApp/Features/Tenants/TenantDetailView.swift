@@ -105,7 +105,7 @@ struct TenantDetailView: View {
     // MARK: Profile Header
 
     private func profileHeader(_ tenant: Tenant) -> some View {
-        DSCard(style: .glass, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
+        DSCard(style: .raised, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
             VStack(spacing: DS.Spacing.lg) {
                 DSAvatar(
                     name: tenant.name,
@@ -163,7 +163,7 @@ struct TenantDetailView: View {
             VStack(spacing: DS.Spacing.xs) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(DS.Colors.brand)
+                    .foregroundStyle(DS.Colors.brandInk)
                     .frame(width: 44, height: 44)
                     .background(DS.Colors.brand.opacity(0.12), in: Circle())
                     .overlay(Circle().strokeBorder(DS.Colors.brand.opacity(0.25), lineWidth: 1))
@@ -202,7 +202,7 @@ struct TenantDetailView: View {
                 Text(tab.title)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(isSelected ? .white : DS.Colors.textSecondary)
+            .foregroundStyle(isSelected ? DS.Colors.textOnBrand : DS.Colors.textSecondary)
             .padding(.horizontal, DS.Spacing.md + 2)
             .padding(.vertical, DS.Spacing.sm + 2)
             .background {
@@ -212,7 +212,7 @@ struct TenantDetailView: View {
                         .matchedGeometryEffect(id: "tenant.tab.pill", in: tabNamespace)
                 } else {
                     Capsule()
-                        .fill(.ultraThinMaterial)
+                        .fill(DS.Colors.surfaceRaised)
                         .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
                 }
             }
@@ -245,7 +245,7 @@ struct TenantDetailView: View {
             TenantLeaseCard(tenant: tenant)
                 .dsEntrance(index: 0)
 
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Contact").dsOverline()
 
@@ -258,7 +258,7 @@ struct TenantDetailView: View {
             .dsEntrance(index: 1)
 
             // Recent activity preview.
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     HStack {
                         Text("Recent Activity").dsOverline()
@@ -291,7 +291,7 @@ struct TenantDetailView: View {
         HStack(spacing: DS.Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(DS.Colors.brand)
+                .foregroundStyle(DS.Colors.brandInk)
                 .frame(width: 28, height: 28)
                 .background(DS.Colors.brand.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -308,7 +308,7 @@ struct TenantDetailView: View {
     // MARK: Timeline
 
     private func timelineTab(_ tenant: Tenant) -> some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 Text("Full Timeline").dsOverline()
 
@@ -329,7 +329,7 @@ struct TenantDetailView: View {
     private func maintenanceTab(_ tenant: Tenant) -> some View {
         VStack(spacing: DS.Spacing.md) {
             ForEach(Array(viewModel.maintenanceRows.enumerated()), id: \.element.id) { index, request in
-                DSCard(style: .glass, padding: DS.Spacing.lg) {
+                DSCard(style: .raised, padding: DS.Spacing.lg) {
                     HStack(spacing: DS.Spacing.md) {
                         ZStack {
                             Circle()
@@ -367,11 +367,11 @@ struct TenantDetailView: View {
     private func documentsTab(_ tenant: Tenant) -> some View {
         VStack(spacing: DS.Spacing.md) {
             ForEach(Array(viewModel.documentRows.enumerated()), id: \.element.id) { index, doc in
-                DSCard(style: .glass, padding: DS.Spacing.lg) {
+                DSCard(style: .raised, padding: DS.Spacing.lg) {
                     HStack(spacing: DS.Spacing.md) {
                         Image(systemName: doc.icon)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(DS.Colors.brand)
+                            .foregroundStyle(DS.Colors.brandInk)
                             .frame(width: 38, height: 38)
                             .background(DS.Colors.brand.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -403,7 +403,7 @@ struct TenantDetailView: View {
 
     private func messagesTab(_ tenant: Tenant) -> some View {
         VStack(spacing: DS.Spacing.lg) {
-            DSCard(style: .glass) {
+            DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
                     Text("Latest Thread").dsOverline()
 
@@ -441,7 +441,7 @@ struct TenantDetailView: View {
             VStack(alignment: message.isFromTenant ? .leading : .trailing, spacing: 2) {
                 Text(message.text)
                     .font(DS.Typography.footnote)
-                    .foregroundStyle(message.isFromTenant ? DS.Colors.textPrimary : .white)
+                    .foregroundStyle(message.isFromTenant ? DS.Colors.textPrimary : DS.Colors.textOnBrand)
                     .padding(.horizontal, DS.Spacing.md)
                     .padding(.vertical, DS.Spacing.sm + 2)
                     .background(

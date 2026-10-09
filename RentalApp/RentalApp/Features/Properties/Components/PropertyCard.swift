@@ -39,8 +39,8 @@ struct PropertyHeroImage: View {
                             Path(roundedRect: rect, cornerRadius: 2),
                             with: .color(
                                 lit
-                                    ? Color(hex: 0xD4AF37).opacity(0.55)
-                                    : Color.white.opacity(0.06)
+                                    ? DS.Colors.onFixedColor.opacity(0.85)
+                                    : DS.Colors.onFixedColor.opacity(0.22)
                             )
                         )
                         x += cell
@@ -53,7 +53,7 @@ struct PropertyHeroImage: View {
 
             // Depth vignette.
             LinearGradient(
-                colors: [.clear, .black.opacity(0.45)],
+                colors: [.clear, DS.Colors.mediaBackground.opacity(0.25)],
                 startPoint: .center,
                 endPoint: .bottom
             )
@@ -65,11 +65,11 @@ struct PropertyHeroImage: View {
                 Text(property.kind.rawValue)
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(DS.Colors.textPrimary)
             .padding(.horizontal, DS.Spacing.sm + 2)
             .padding(.vertical, DS.Spacing.xs + 1)
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+            .background(DS.Colors.surfaceRaised, in: Capsule())
+            .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
             .padding(DS.Spacing.md)
         }
         .frame(height: height)
@@ -153,12 +153,12 @@ struct PropertyCard: View {
                     }
                 }
                 .padding(DS.Spacing.lg)
-                .background(.ultraThinMaterial)
+                .background(DS.Colors.surfaceRaised)
             }
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous)
-                    .strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                    .strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
             )
             .dsShadow(DS.Shadows.card)
         }
@@ -240,7 +240,7 @@ struct PropertyMapPreview: View {
 
                 Image(systemName: "mappin.circle.fill")
                     .font(.system(size: 34))
-                    .foregroundStyle(.white, DS.Colors.brand)
+                    .foregroundStyle(DS.Colors.textOnBrand, DS.Colors.brand)
                     .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.5))
                     .offset(y: pinDropped ? 0 : -26)
                     .scaleEffect(pinDropped ? 1 : 0.6)
@@ -266,7 +266,7 @@ struct PropertyMapPreview: View {
                     .foregroundStyle(DS.Colors.brand)
                 }
                 .padding(DS.Spacing.md)
-                .background(.ultraThinMaterial)
+                .background(DS.Colors.surfaceRaised)
             }
         }
         .frame(height: height)

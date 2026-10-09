@@ -123,14 +123,10 @@ struct OccupancyTrendPoint: Identifiable {
 // MARK: - Palettes (photo placeholders)
 
 enum PropertyPalettes {
-    static let all: [[Color]] = [
-        [Color(hex: 0x43474F), Color(hex: 0x2A2D34), Color(hex: 0x121212)], // polished titanium
-        [Color(hex: 0x8C6D1F), RentOSBrand.obsidian, Color(hex: 0x000000)], // obsidian gold
-        [Color(hex: 0x7C2438), Color(hex: 0x3E1220), Color(hex: 0x1C060C)], // burgundy
-        [Color(hex: 0x1F6E5A), Color(hex: 0x0E3B30), Color(hex: 0x081F19)], // deep emerald
-        [Color(hex: 0xB45309), Color(hex: 0x5C2E0B), Color(hex: 0x1A1206)], // saffron bronze
-        [Color(hex: 0x6E7681), Color(hex: 0x3B3E45), Color(hex: 0x0F1013)]  // graphite platinum
-    ]
+    /// Defined in the design system, where the stored-index contract is
+    /// documented. Six entries, same as before, so every saved
+    /// `paletteIndex` still resolves to a slot.
+    static let all: [[Color]] = DS.Gradients.placeholderStops
 
     static func gradient(_ index: Int) -> LinearGradient {
         LinearGradient(

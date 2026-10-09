@@ -86,7 +86,6 @@ struct AuthFlowView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .environment(\.colorScheme, .dark)
     }
 
     // MARK: Screens

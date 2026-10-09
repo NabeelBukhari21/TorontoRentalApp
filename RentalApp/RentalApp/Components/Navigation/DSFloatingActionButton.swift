@@ -40,7 +40,7 @@ struct DSFloatingActionButton: View {
         ZStack(alignment: .bottomTrailing) {
             if isExpanded {
                 // Scrim — tap anywhere to collapse.
-                Color.black.opacity(0.25)
+                DS.Colors.scrim.opacity(0.55)
                     .ignoresSafeArea()
                     .onTapGesture { toggle() }
                     .transition(.opacity)
@@ -71,13 +71,13 @@ struct DSFloatingActionButton: View {
         } label: {
             Image(systemName: icon)
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(DS.Colors.textOnBrand)
                 .rotationEffect(.degrees(isExpanded ? 45 : 0))
                 .frame(width: 58, height: 58)
                 .background(DS.Gradients.brand)
                 .clipShape(Circle())
                 .overlay(
-                    Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1)
+                    Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
                 )
                 .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.45))
         }
@@ -98,18 +98,18 @@ struct DSFloatingActionButton: View {
                     .foregroundStyle(DS.Colors.textPrimary)
                     .padding(.horizontal, DS.Spacing.md)
                     .padding(.vertical, DS.Spacing.sm)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .background(DS.Colors.surfaceRaised, in: Capsule())
                     .overlay(
-                        Capsule().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                        Capsule().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
                     )
 
                 Image(systemName: action.icon)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(DS.Colors.brand)
                     .frame(width: 44, height: 44)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .background(DS.Colors.surfaceRaised, in: Circle())
                     .overlay(
-                        Circle().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                        Circle().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
                     )
                     .dsShadow(DS.Shadows.card)
             }

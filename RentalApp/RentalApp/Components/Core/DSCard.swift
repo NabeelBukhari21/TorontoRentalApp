@@ -11,10 +11,13 @@ import SwiftUI
 struct DSCard<Content: View>: View {
 
     enum Style {
-        /// Solid surface with soft shadow. Default for list content.
+        /// Soft grey `surface` card with a light shadow. Grouped content
+        /// sitting directly on the white page.
         case elevated
-        /// Translucent glass. For content over ambient backgrounds.
-        case glass
+        /// White card, hairline edge, soft violet shadow. The standard card
+        /// — reads cleanly on white and on the ambient background.
+        /// (Was `.glass` in the previous theme.)
+        case raised
         /// Hairline border, no shadow. For nested/secondary content.
         case outlined
     }
@@ -47,10 +50,10 @@ struct DSCard<Content: View>: View {
                 )
                 .dsShadow(DS.Shadows.soft)
 
-        case .glass:
+        case .raised:
             content
                 .padding(padding)
-                .dsGlass(cornerRadius: cornerRadius)
+                .dsSurface(cornerRadius: cornerRadius)
 
         case .outlined:
             content
@@ -76,17 +79,21 @@ struct DSStatCard: View {
     let value: String
     var icon: String? = nil
     var iconGradient: LinearGradient = DS.Gradients.brand
+    /// Glyph colour on `iconGradient`. `textOnBrand` suits the violet
+    /// gradients; pass `textOnAccent` with `warm` or `fresh`, where white
+    /// fails even the 3:1 icon minimum (1.38 on sunny).
+    var iconForeground: Color = DS.Colors.textOnBrand
     var trend: String? = nil
     var trendKind: DSStatusKind = .success
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     if let icon {
                         Image(systemName: icon)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(iconForeground)
                             .frame(width: 34, height: 34)
                             .background(iconGradient)
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
@@ -139,6 +146,7 @@ struct DSStatCard: View {
                     value: "12",
                     icon: DS.Icons.maintenance,
                     iconGradient: DS.Gradients.warm,
+                    iconForeground: DS.Colors.textOnAccent,
                     trend: "3 urgent",
                     trendKind: .danger
                 )

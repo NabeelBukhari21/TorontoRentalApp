@@ -33,18 +33,18 @@ struct OrgNameStep: View {
                         .overlay(
                             Text(viewModel.monogram)
                                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(DS.Colors.onFixedColor)
                         )
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(viewModel.orgName.isEmpty ? "Your Workspace" : viewModel.orgName)
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textPrimary)
                             .lineLimit(1)
 
                         Text("rentos.app/\(slug)")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.45))
+                            .foregroundStyle(DS.Colors.textSecondary)
                             .lineLimit(1)
                     }
 
@@ -53,7 +53,7 @@ struct OrgNameStep: View {
                     DSBadge(text: "Preview", kind: .info)
                 }
                 .padding(DS.Spacing.md)
-                .background(.white.opacity(0.05), in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+                .background(DS.Colors.surface, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
                 .animation(DS.Motion.gentle, value: viewModel.orgName)
             }
         }
@@ -95,11 +95,11 @@ struct OrgLogoStep: View {
                     } else {
                         Text(viewModel.monogram)
                             .font(.system(size: 38, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.onFixedColor)
                     }
                 }
                 .overlay(
-                    Circle().strokeBorder(.white.opacity(0.35), lineWidth: 1.5)
+                    Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1.5)
                 )
                 .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.4))
                 .dsFloating(amplitude: 4, duration: 3.6)
@@ -125,7 +125,7 @@ struct OrgLogoStep: View {
                                     .frame(width: 34, height: 34)
                                     .overlay(
                                         Circle().strokeBorder(
-                                            .white.opacity(viewModel.logoGradientIndex == index ? 0.9 : 0.15),
+                                            viewModel.logoGradientIndex == index ? DS.Colors.textPrimary : DS.Colors.outline,
                                             lineWidth: 2
                                         )
                                     )
@@ -146,13 +146,13 @@ struct OrgLogoStep: View {
                             Text(viewModel.logoImage == nil ? "Upload Logo" : "Choose a Different Photo")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.brandInk)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+                        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                                .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                                .strokeBorder(DS.Colors.outline, lineWidth: 1)
                         )
                     }
                     .buttonStyle(DSPressStyle())
@@ -166,7 +166,7 @@ struct OrgLogoStep: View {
                         } label: {
                             Text("Remove photo")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(DS.Colors.accentCoral)
+                                .foregroundStyle(DS.Colors.accentCoralInk)
                         }
                         .buttonStyle(DSPressStyle(scale: 0.95))
                         .transition(.opacity)
@@ -233,21 +233,20 @@ struct OrgSizeStep: View {
                             .foregroundStyle(
                                 viewModel.portfolioSize == option
                                     ? AnyShapeStyle(DS.Gradients.ai)
-                                    : AnyShapeStyle(Color.white.opacity(0.5))
+                                    : AnyShapeStyle(DS.Colors.textSecondary)
                             )
 
                         Text(option.title)
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textPrimary)
 
                         Text(option.subtitle)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.55))
+                            .foregroundStyle(DS.Colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DS.Spacing.xl)
-                    .background(
-                        .ultraThinMaterial,
+                    .background(DS.Colors.surfaceRaised,
                         in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     )
                     .overlay(
@@ -256,12 +255,12 @@ struct OrgSizeStep: View {
                                 viewModel.portfolioSize == option
                                     ? AnyShapeStyle(
                                         LinearGradient(
-                                            colors: [DS.Colors.brandCyan.opacity(0.9), DS.Colors.brandViolet.opacity(0.7)],
+                                            colors: [DS.Colors.accentSkyInk.opacity(0.9), DS.Colors.accentSunnyInk.opacity(0.7)],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
                                       )
-                                    : AnyShapeStyle(Color.white.opacity(0.14)),
+                                    : AnyShapeStyle(DS.Colors.outline),
                                 lineWidth: viewModel.portfolioSize == option ? 1.5 : 1
                             )
                     )
@@ -306,11 +305,11 @@ struct OrgInviteStep: View {
                     VStack(spacing: DS.Spacing.sm) {
                         Image(systemName: DS.Icons.tenants)
                             .font(.system(size: 26, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.3))
+                            .foregroundStyle(DS.Colors.textTertiary)
 
                         Text("Invites appear here — teammates get\nProperty Manager access to start.")
                             .font(.system(size: 12.5, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.45))
+                            .foregroundStyle(DS.Colors.textSecondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.vertical, DS.Spacing.lg)

@@ -80,7 +80,7 @@ struct DSConnectionBanner: View {
                 }
                 .padding(.horizontal, DS.Spacing.md + 2)
                 .padding(.vertical, DS.Spacing.sm + 2)
-                .background(.ultraThinMaterial, in: Capsule())
+                .background(DS.Colors.surfaceRaised, in: Capsule())
                 .overlay(Capsule().strokeBorder(tint.opacity(0.35), lineWidth: 1))
                 .dsShadow(DS.Shadows.soft)
                 .padding(.horizontal, DS.Spacing.lg)

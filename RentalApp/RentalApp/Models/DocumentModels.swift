@@ -28,14 +28,18 @@ enum DocFileType: String, CaseIterable, Identifiable {
         }
     }
 
-    var tint: Color {
+    var accent: DSAccent {
         switch self {
-        case .pdf: DS.Colors.accentCoral
-        case .image: DS.Colors.brandCyan
-        case .spreadsheet: DS.Colors.success
-        case .contract: DS.Colors.brand
+        case .pdf:         .coral
+        case .image:       .sky
+        case .spreadsheet: .mint
+        case .contract:    .violet
         }
     }
+
+    /// AA-safe foreground. Use `accent.fill` for solid chips, with
+    /// `accent.onFill` text on top.
+    var tint: Color { accent.ink }
 }
 
 // MARK: - Models

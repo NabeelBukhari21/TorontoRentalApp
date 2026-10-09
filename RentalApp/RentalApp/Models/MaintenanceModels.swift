@@ -33,14 +33,19 @@ enum TicketPriority: Int, Codable, CaseIterable, Identifiable, Comparable {
         }
     }
 
-    var color: Color {
+    /// Each priority's colour. Coral → sunny → sky → mint reads as a heat
+    /// scale from "now" to "whenever", without leaning on red alone.
+    var accent: DSAccent {
         switch self {
-        case .urgent: DS.Colors.danger
-        case .high: DS.Colors.brandViolet   // saffron
-        case .medium: DS.Colors.brand       // champagne gold
-        case .low: DS.Colors.brandCyan      // platinum
+        case .urgent: .coral
+        case .high:   .sunny
+        case .medium: .sky
+        case .low:    .mint
         }
     }
+
+    /// AA-safe foreground for this priority (text, icons, stripes).
+    var color: Color { accent.ink }
 
     var kind: DSStatusKind {
         switch self {
@@ -107,6 +112,18 @@ enum TicketCategory: String, CaseIterable {
     case hvac = "HVAC"
     case appliance = "Appliance"
     case general = "General"
+
+    /// Each trade gets its own colour, so a list of requests can be scanned
+    /// by kind at a glance.
+    var accent: DSAccent {
+        switch self {
+        case .plumbing:   .sky
+        case .electrical: .sunny
+        case .hvac:       .mint
+        case .appliance:  .coral
+        case .general:    .violet
+        }
+    }
 
     var icon: String {
         switch self {

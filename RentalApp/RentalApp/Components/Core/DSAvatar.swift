@@ -43,7 +43,7 @@ struct DSAvatar: View {
                 .frame(width: size.diameter, height: size.diameter)
                 .clipShape(Circle())
                 .overlay(
-                    Circle().strokeBorder(.white.opacity(0.35), lineWidth: 1)
+                    Circle().strokeBorder(DS.Colors.surfaceRaised, lineWidth: 1)
                 )
                 .dsShadow(DS.Shadows.soft)
 
@@ -69,7 +69,7 @@ struct DSAvatar: View {
                 gradient
                 Text(initials)
                     .font(size.font)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.onFixedColor)
             }
         }
     }
@@ -82,22 +82,21 @@ struct DSAvatar: View {
     }
 
     /// Deterministic gradient derived from the name, so each person
-    /// keeps a stable color everywhere in the app.
+    /// keeps a stable colour everywhere in the app.
+    ///
+    /// Uses the fixed monogram pairs rather than adaptive DS colours: a
+    /// person's colour shouldn't change with dark mode, and every stop in
+    /// those pairs carries the white initials at AA (4.86–6.14). The old
+    /// palette was built from adaptive inks, which turn pastel in dark
+    /// mode — white initials on them would have dropped well under 3:1.
     private var gradient: LinearGradient {
-        let palette: [(Color, Color)] = [
-            (DS.Colors.brand, DS.Colors.brandViolet),
-            (DS.Colors.brandCyan, DS.Colors.brand),
-            (DS.Colors.accentCoral, DS.Colors.brandViolet),
-            (DS.Colors.success, DS.Colors.brandCyan),
-            (DS.Colors.accentAmber, DS.Colors.accentCoral)
-        ]
+        let palette = DS.Gradients.monogramStops
         var hash = 0
         for scalar in name.unicodeScalars {
             hash = (hash &* 31 &+ Int(scalar.value)) & 0xFFFF
         }
-        let pair = palette[hash % palette.count]
         return LinearGradient(
-            colors: [pair.0, pair.1],
+            colors: palette[hash % palette.count],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

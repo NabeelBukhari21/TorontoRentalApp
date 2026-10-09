@@ -74,8 +74,7 @@ struct TenantRow: View {
                     .foregroundStyle(DS.Colors.textTertiary)
             }
             .padding(DS.Spacing.lg)
-            .background(
-                .ultraThinMaterial,
+            .background(DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
@@ -89,7 +88,7 @@ struct TenantRow: View {
                                     endPoint: .bottomTrailing
                                 )
                               )
-                            : AnyShapeStyle(DS.Gradients.glassHighlight),
+                            : AnyShapeStyle(DS.Gradients.cardHairline),
                         lineWidth: 1
                     )
             )
@@ -113,7 +112,7 @@ struct TenantLeaseCard: View {
                 Text("LEASE")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .kerning(1.2)
-                    .foregroundStyle(Color(hex: 0xD4AF37))
+                    .foregroundStyle(DS.Colors.textOnBrand)
 
                 Spacer()
 
@@ -124,11 +123,11 @@ struct TenantLeaseCard: View {
                         Text("Premium")
                             .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                     }
-                    .foregroundStyle(DS.Colors.onGold)
+                    .foregroundStyle(DS.Colors.onHighlight)
                     .padding(.horizontal, DS.Spacing.sm)
                     .padding(.vertical, 3)
                     .background(
-                        DS.Gradients.champagne,
+                        DS.Gradients.highlight,
                         in: Capsule()
                     )
                 }
@@ -138,22 +137,22 @@ struct TenantLeaseCard: View {
                 Text("$\(tenant.rent)")
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textOnBrand)
 
                 Text("/month")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(DS.Colors.textOnBrand)
             }
 
             // Term progress.
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 GeometryReader { proxy in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(.white.opacity(0.14))
+                        Capsule().fill(DS.Colors.textOnBrand.opacity(0.25))
 
                         Capsule()
                             .fill(
-                                DS.Gradients.goldSweep
+                                DS.Gradients.warm
                             )
                             .frame(width: proxy.size.width * (barVisible ? tenant.leaseProgress : 0))
                     }
@@ -165,7 +164,7 @@ struct TenantLeaseCard: View {
                     Spacer()
                     Text("\(Int(tenant.leaseProgress * 100))% elapsed")
                         .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(hex: 0xD4AF37))
+                        .foregroundStyle(DS.Colors.textOnBrand)
                     Spacer()
                     termLabel(tenant.leaseEnd, alignment: .trailing)
                 }
@@ -180,7 +179,7 @@ struct TenantLeaseCard: View {
             }
         }
         .padding(DS.Spacing.xl)
-        .dsObsidianSurface()
+        .dsHeroSurface()
         .onAppear {
             withAnimation(DS.Motion.entrance.delay(0.3)) {
                 barVisible = true
@@ -192,7 +191,7 @@ struct TenantLeaseCard: View {
         VStack(alignment: alignment, spacing: 1) {
             Text(text)
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(DS.Colors.textOnBrand)
         }
     }
 
@@ -200,11 +199,11 @@ struct TenantLeaseCard: View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label)
                 .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .foregroundStyle(DS.Colors.textOnBrand)
             Text(value)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(.white)
+                .foregroundStyle(DS.Colors.textOnBrand)
         }
     }
 }
@@ -273,7 +272,7 @@ struct TenantTimelineRow: View {
                 TenantRow(tenant: TenantMockData.tenants[0]) {}
                 TenantLeaseCard(tenant: TenantMockData.tenants[0])
 
-                DSCard(style: .glass) {
+                DSCard(style: .raised) {
                     VStack(spacing: 0) {
                         let events = TenantMockData.timeline(for: TenantMockData.tenants[0])
                         ForEach(Array(events.enumerated()), id: \.element.id) { index, event in

@@ -14,7 +14,9 @@ struct SplashCascadeText: View {
     let text: String
     var isVisible: Bool = false
     var font: Font = DS.Typography.callout
-    var color: Color = .white.opacity(0.75)
+    /// `textSecondary`: 4.90 on white. Was translucent white for the dark
+    /// splash, which would be invisible on the bright one.
+    var color: Color = DS.Colors.textSecondary
     var characterDelay: Double = 0.022
     var startDelay: Double = 0
 

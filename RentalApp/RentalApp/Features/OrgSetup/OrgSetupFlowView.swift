@@ -42,7 +42,6 @@ struct OrgSetupFlowView: View {
                     .transition(.opacity)
             }
         }
-        .environment(\.colorScheme, .dark)
     }
 
     // MARK: Wizard

@@ -25,9 +25,9 @@ struct DSTabBar: View {
             }
         }
         .padding(DS.Spacing.sm)
-        .background(.ultraThinMaterial, in: Capsule())
+        .background(DS.Colors.surfaceRaised, in: Capsule())
         .overlay(
-            Capsule().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+            Capsule().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
         )
         .dsShadow(DS.Shadows.floating)
         .padding(.horizontal, DS.Spacing.xl)
@@ -58,7 +58,7 @@ struct DSTabBar: View {
 
                 Text(tab.title)
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .foregroundStyle(isSelected ? DS.Colors.brand : DS.Colors.textTertiary)
+                    .foregroundStyle(isSelected ? DS.Colors.brandInk : DS.Colors.textTertiary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)

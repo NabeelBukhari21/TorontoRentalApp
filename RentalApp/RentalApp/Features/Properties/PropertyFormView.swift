@@ -239,7 +239,7 @@ struct PropertyFormView: View {
                         kindPicker
                             .dsEntrance(index: 0)
 
-                        DSCard(style: .glass) {
+                        DSCard(style: .raised) {
                             VStack(spacing: DS.Spacing.lg) {
                                 DSFormField(title: "Name", field: viewModel.name,
                                             placeholder: "Queen West Lofts")
@@ -254,7 +254,7 @@ struct PropertyFormView: View {
                         }
                         .dsEntrance(index: 1)
 
-                        DSCard(style: .glass) {
+                        DSCard(style: .raised) {
                             VStack(spacing: DS.Spacing.lg) {
                                 DSFormField(title: "Neighbourhood", field: viewModel.neighborhood,
                                             placeholder: "Queen West", isOptional: true)

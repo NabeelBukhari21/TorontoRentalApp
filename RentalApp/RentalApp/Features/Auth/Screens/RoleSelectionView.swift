@@ -58,8 +58,8 @@ struct RoleSelectionView: View {
 
 // MARK: - Option Card
 
-/// Glass row that fills with champagne when selected. Uses the same
-/// press, radius, and hairline vocabulary as every other selectable
+/// White card that fills with the role's own colour when selected. Uses the
+/// same press, radius, and hairline vocabulary as every other selectable
 /// card in the app (org setup, filters) so it reads as one system.
 private struct RoleOptionCard: View {
 
@@ -71,23 +71,17 @@ private struct RoleOptionCard: View {
     /// different styles isn't one — they have to be erased to a single
     /// type first.
     private var tileFill: AnyShapeStyle {
-        isSelected
-            ? AnyShapeStyle(
-                LinearGradient(
-                    colors: [RentOSBrand.gold, RentOSBrand.goldDeep],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-              )
-            : AnyShapeStyle(Color.white.opacity(0.06))
+        isSelected ? AnyShapeStyle(accent.fill) : AnyShapeStyle(accent.tint)
     }
+
+    private var accent: DSAccent { role.accent }
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: DS.Spacing.md) {
                 Image(systemName: role.icon)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(isSelected ? RentOSBrand.obsidian : DS.Colors.brand)
+                    .foregroundStyle(isSelected ? accent.onFill : accent.ink)
                     .frame(width: 44, height: 44)
                     .background(
                         tileFill,
@@ -97,11 +91,11 @@ private struct RoleOptionCard: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(role.title)
                         .font(.system(size: 15.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(DS.Colors.textPrimary)
 
                     Text(role.subtitle)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(DS.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)
                 }
@@ -110,16 +104,19 @@ private struct RoleOptionCard: View {
 
                 ZStack {
                     Circle()
-                        .strokeBorder(
-                            isSelected ? RentOSBrand.gold : Color.white.opacity(0.22),
-                            lineWidth: 1.5
+                        .fill(isSelected ? accent.fill : Color.clear)
+                        .overlay(
+                            Circle().strokeBorder(
+                                isSelected ? Color.clear : DS.Colors.outline,
+                                lineWidth: 1.5
+                            )
                         )
                         .frame(width: 22, height: 22)
 
                     if isSelected {
                         Image(systemName: "checkmark")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(RentOSBrand.gold)
+                            .foregroundStyle(accent.onFill)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -127,21 +124,21 @@ private struct RoleOptionCard: View {
             .padding(DS.Spacing.md + 2)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                .ultraThinMaterial,
+                DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     .strokeBorder(
                         isSelected
-                            ? AnyShapeStyle(RentOSBrand.gold.opacity(0.55))
-                            : AnyShapeStyle(DS.Gradients.glassHighlight),
+                            ? AnyShapeStyle(accent.fill)
+                            : AnyShapeStyle(DS.Gradients.cardHairline),
                         lineWidth: 1
                     )
             )
             .dsShadow(
                 isSelected
-                    ? DS.Shadows.glow(DS.Colors.brand, intensity: 0.28)
+                    ? DS.Shadows.glow(accent.fill, intensity: 0.30)
                     : DS.Shadows.soft
             )
             .contentShape(Rectangle())
@@ -154,4 +151,21 @@ private struct RoleOptionCard: View {
 
 #Preview("Role Selection") {
     AuthFlowView(container: .preview, onAuthenticated: { _ in })
+}
+
+// MARK: - Role Colour
+
+private extension AppRole {
+
+    /// Each role gets its own colour in the picker. Visual only — this is
+    /// deliberately a private extension in the view file, not on the model,
+    /// because the role's meaning has nothing to do with its colour.
+    var accent: DSAccent {
+        switch self {
+        case .owner:           .violet
+        case .propertyManager: .sky
+        case .tenant:          .mint
+        case .vendor:          .coral
+        }
+    }
 }

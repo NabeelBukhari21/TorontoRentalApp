@@ -180,7 +180,7 @@ struct PendingChangesView: View {
             Text(title).dsOverline()
 
             ForEach(rows) { row in
-                DSCard(style: .glass) {
+                DSCard(style: .raised) {
                     HStack(spacing: DS.Spacing.md) {
                         Image(systemName: row.isFailure
                               ? DS.Icons.warning : "arrow.triangle.2.circlepath")
@@ -232,7 +232,7 @@ struct ConflictResolutionView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: DS.Spacing.lg) {
-                        DSCard(style: .glass) {
+                        DSCard(style: .raised) {
                             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                                 Text(conflict.title)
                                     .font(DS.Typography.title3)

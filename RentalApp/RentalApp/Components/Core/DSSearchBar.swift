@@ -41,7 +41,7 @@ struct DSSearchBar: View {
         .frame(height: 46)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(DS.Colors.surfaceRaised)
         )
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)

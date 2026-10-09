@@ -26,7 +26,7 @@ struct TenantListView: View {
                 VStack(spacing: DS.Spacing.lg) {
 
                     // Summary strip.
-                    DSCard(style: .glass, padding: DS.Spacing.lg) {
+                    DSCard(style: .raised, padding: DS.Spacing.lg) {
                         HStack(spacing: DS.Spacing.lg) {
                             summaryItem(value: "\(viewModel.totalCount)", label: "Tenants")
                             divider
@@ -65,7 +65,7 @@ struct TenantListView: View {
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(DS.Colors.brand)
                                 .frame(width: 46, height: 46)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+                                .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                                         .strokeBorder(DS.Colors.outline, lineWidth: 1)

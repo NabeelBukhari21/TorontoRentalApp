@@ -25,7 +25,7 @@ struct AIOrb: View {
         ZStack {
             // Halo.
             Circle()
-                .fill(RentOSBrand.gold.opacity(0.35))
+                .fill(DS.Colors.accentSunny.opacity(0.40))
                 .frame(width: size * 0.9, height: size * 0.9)
                 .blur(radius: size * 0.22)
                 .scaleEffect(breathe ? 1.25 : 0.9)
@@ -34,7 +34,7 @@ struct AIOrb: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [RentOSBrand.champagne, RentOSBrand.gold, RentOSBrand.goldDeep],
+                        colors: [DS.Colors.onFixedColor, DS.Colors.accentSunny, DS.Colors.accentCoral],
                         center: UnitPoint(x: 0.35, y: 0.3),
                         startRadius: 0,
                         endRadius: size * 0.4
@@ -42,7 +42,7 @@ struct AIOrb: View {
                 )
                 .frame(width: size * 0.52, height: size * 0.52)
                 .overlay(
-                    Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1)
+                    Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
                 )
                 .scaleEffect(breathe ? 1.05 : 0.96)
 
@@ -50,7 +50,7 @@ struct AIOrb: View {
             Ellipse()
                 .strokeBorder(
                     LinearGradient(
-                        colors: [.clear, RentOSBrand.gold.opacity(0.7), .clear],
+                        colors: [.clear, DS.Colors.accentSky.opacity(0.85), .clear],
                         startPoint: .leading,
                         endPoint: .trailing
                     ),
@@ -61,9 +61,9 @@ struct AIOrb: View {
 
             ZStack {
                 Circle()
-                    .fill(RentOSBrand.saffron)
+                    .fill(DS.Colors.accentMint)
                     .frame(width: size * 0.09, height: size * 0.09)
-                    .shadow(color: RentOSBrand.saffron.opacity(0.9), radius: size * 0.05)
+                    .shadow(color: DS.Colors.accentMint.opacity(0.9), radius: size * 0.05)
                     .offset(x: size * 0.48)
             }
             .rotationEffect(.degrees(orbit))
@@ -86,7 +86,7 @@ struct AIOrb: View {
 // MARK: - Obsidian Panel
 
 /// The copilot's signature surface: obsidian gradient + champagne hairline.
-struct AIObsidianPanel<Content: View>: View {
+struct AIHeroPanel<Content: View>: View {
 
     private let content: Content
 
@@ -97,7 +97,7 @@ struct AIObsidianPanel<Content: View>: View {
     var body: some View {
         content
             .padding(DS.Spacing.xl)
-        .dsObsidianSurface()
+        .dsHeroSurface()
     }
 }
 
@@ -165,11 +165,11 @@ struct AIActionCard: View {
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .lineLimit(1)
                 }
-                .foregroundStyle(DS.Colors.onGold)
+                .foregroundStyle(DS.Colors.onHighlight)
                 .padding(.horizontal, DS.Spacing.sm + 2)
                 .padding(.vertical, DS.Spacing.sm)
                 .background(
-                    DS.Gradients.champagne,
+                    DS.Gradients.highlight,
                     in: Capsule()
                 )
                 .transition(.scale(scale: 0.6).combined(with: .opacity))
@@ -188,7 +188,7 @@ struct AIActionCard: View {
                     Button(action: onAccept) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(DS.Colors.textOnBrand)
                             .frame(width: 32, height: 32)
                             .background(DS.Gradients.brand, in: Circle())
                             .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.35))
@@ -200,13 +200,13 @@ struct AIActionCard: View {
             }
         }
         .padding(DS.Spacing.md + 2)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                 .strokeBorder(
                     action.state == .accepted
                         ? AnyShapeStyle(DS.Colors.brand.opacity(0.5))
-                        : AnyShapeStyle(DS.Gradients.glassHighlight),
+                        : AnyShapeStyle(DS.Gradients.cardHairline),
                     lineWidth: 1
                 )
         )
@@ -224,7 +224,7 @@ struct AIInsightPanel: View {
     let rows: [AIInsightRow]
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack(spacing: DS.Spacing.sm) {
                     Image(systemName: icon)
@@ -267,32 +267,32 @@ struct AIHealthCard: View {
     @State private var revealed = false
 
     var body: some View {
-        AIObsidianPanel {
+        AIHeroPanel {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack {
                     Text("PORTFOLIO HEALTH")
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .kerning(1.2)
-                        .foregroundStyle(RentOSBrand.gold)
+                        .foregroundStyle(DS.Colors.textOnBrand)
 
                     Spacer()
 
                     Text("Updated just now")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.4))
+                        .foregroundStyle(DS.Colors.textOnBrand)
                 }
 
                 HStack(spacing: DS.Spacing.xl) {
                     // Score dial.
                     ZStack {
                         Circle()
-                            .stroke(.white.opacity(0.1), lineWidth: 9)
+                            .stroke(DS.Colors.textOnBrand.opacity(0.25), lineWidth: 9)
 
                         Circle()
                             .trim(from: 0, to: revealed ? Double(score) / 100 : 0)
                             .stroke(
                                 AngularGradient(
-                                    colors: [RentOSBrand.goldDeep, RentOSBrand.gold, RentOSBrand.champagne],
+                                    colors: [DS.Colors.accentMint, DS.Colors.accentSunny, DS.Colors.accentCoral, DS.Colors.accentMint],
                                     center: .center
                                 ),
                                 style: StrokeStyle(lineWidth: 9, lineCap: .round)
@@ -303,12 +303,12 @@ struct AIHealthCard: View {
                             Text("\(revealed ? score : 0)")
                                 .font(.system(size: 28, weight: .bold, design: .rounded))
                                 .monospacedDigit()
-                                .foregroundStyle(.white)
+                                .foregroundStyle(DS.Colors.textOnBrand)
                                 .contentTransition(.numericText())
 
                             Text("/ 100")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.45))
+                                .foregroundStyle(DS.Colors.textOnBrand)
                         }
                     }
                     .frame(width: 96, height: 96)
@@ -320,7 +320,7 @@ struct AIHealthCard: View {
                                 HStack {
                                     Text(factor.name)
                                         .font(.system(size: 11, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(.white.opacity(0.75))
+                                        .foregroundStyle(DS.Colors.textOnBrand)
 
                                     Spacer()
 
@@ -332,9 +332,9 @@ struct AIHealthCard: View {
 
                                 GeometryReader { proxy in
                                     ZStack(alignment: .leading) {
-                                        Capsule().fill(.white.opacity(0.1))
+                                        Capsule().fill(DS.Colors.textOnBrand.opacity(0.25))
                                         Capsule()
-                                            .fill(factor.kind.color)
+                                            .fill(factor.kind.fill)
                                             .frame(width: proxy.size.width * (revealed ? factor.score : 0))
                                             .animation(
                                                 DS.Motion.entrance.delay(0.3 + Double(index) * 0.1),

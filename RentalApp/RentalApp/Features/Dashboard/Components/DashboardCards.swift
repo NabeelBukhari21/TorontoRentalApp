@@ -17,7 +17,7 @@ struct DashboardOccupancyCard: View {
     let turnover: Int
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack {
                     Text("Occupancy").dsOverline()
@@ -72,7 +72,7 @@ struct DashboardMaintenanceCard: View {
     }
 
     var body: some View {
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack {
                     Text("Maintenance").dsOverline()
@@ -133,6 +133,9 @@ struct DashboardQuickAction: Identifiable {
     let icon: String
     let title: String
     let gradient: LinearGradient
+    /// Glyph colour on `gradient`. `textOnAccent` for `warm`/`success`,
+    /// where white fails (1.38 on sunny, 1.83 on mint).
+    var iconForeground: Color = DS.Colors.textOnBrand
     let action: () -> Void
 }
 
@@ -147,11 +150,11 @@ struct DashboardQuickActionsRow: View {
                     VStack(spacing: DS.Spacing.sm) {
                         Image(systemName: action.icon)
                             .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(action.iconForeground)
                             .frame(width: 52, height: 52)
                             .background(action.gradient)
                             .clipShape(Circle())
-                            .overlay(Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                            .overlay(Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1))
                             .dsShadow(DS.Shadows.card)
 
                         Text(action.title)

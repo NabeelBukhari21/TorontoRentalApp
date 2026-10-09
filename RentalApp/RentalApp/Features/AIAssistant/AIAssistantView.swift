@@ -65,7 +65,7 @@ struct AIAssistantView: View {
     // MARK: Briefing
 
     private var briefingPanel: some View {
-        AIObsidianPanel {
+        AIHeroPanel {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack(spacing: DS.Spacing.md) {
                     AIOrb(size: 52, isWorking: viewModel.isWorking)
@@ -74,11 +74,11 @@ struct AIAssistantView: View {
                         Text("DAILY BRIEFING")
                             .font(.system(size: 10, weight: .semibold, design: .rounded))
                             .kerning(1.2)
-                            .foregroundStyle(RentOSBrand.gold)
+                            .foregroundStyle(DS.Colors.textOnBrand)
 
                         Text("Thursday, July 23")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(DS.Colors.textOnBrand)
                     }
 
                     Spacer()
@@ -92,7 +92,7 @@ struct AIAssistantView: View {
                 HStack(alignment: .bottom, spacing: 1) {
                     Text(viewModel.typedBriefing)
                         .font(.system(size: 14.5, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.88))
+                        .foregroundStyle(DS.Colors.textOnBrand)
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -115,7 +115,7 @@ struct AIAssistantView: View {
             AISectionLabel(text: "Recommended actions")
 
             if viewModel.actions.isEmpty {
-                DSCard(style: .glass) {
+                DSCard(style: .raised) {
                     HStack(spacing: DS.Spacing.md) {
                         Image(systemName: "checkmark.seal.fill")
                             .foregroundStyle(DS.Colors.success)
@@ -157,7 +157,7 @@ struct AIAssistantView: View {
                             .foregroundStyle(DS.Colors.brand)
                             .padding(.horizontal, DS.Spacing.md + 2)
                             .padding(.vertical, DS.Spacing.sm + 2)
-                            .background(.ultraThinMaterial, in: Capsule())
+                            .background(DS.Colors.surfaceRaised, in: Capsule())
                             .overlay(
                                 Capsule().strokeBorder(DS.Colors.brand.opacity(0.35), lineWidth: 1)
                             )
@@ -204,7 +204,7 @@ struct AIAssistantView: View {
         .dsEntrance(index: 4)
 
         // Recent activity.
-        DSCard(style: .glass) {
+        DSCard(style: .raised) {
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HStack {
                     AISectionLabel(text: "Recent AI activity")
@@ -234,7 +234,7 @@ private struct BriefingCursor: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: 1)
-            .fill(RentOSBrand.gold)
+            .fill(DS.Colors.textOnBrand)
             .frame(width: 2.5, height: 16)
             .opacity(visible ? 1 : 0.15)
             .onAppear {

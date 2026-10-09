@@ -169,7 +169,8 @@ struct DashboardView: View {
             DashboardQuickAction(
                 icon: DS.Icons.maintenance,
                 title: "Request",
-                gradient: DS.Gradients.warm
+                gradient: DS.Gradients.warm,
+                iconForeground: DS.Colors.textOnAccent
             ) { router.present(.newMaintenanceRequest) },
 
             DashboardQuickAction(
@@ -181,7 +182,8 @@ struct DashboardView: View {
             DashboardQuickAction(
                 icon: DS.Icons.payment,
                 title: "Collect",
-                gradient: DS.Gradients.success
+                gradient: DS.Gradients.success,
+                iconForeground: DS.Colors.textOnAccent
             ) { router.present(.quickActions) }
         ]
     }

@@ -46,7 +46,10 @@ struct SplashParticleField: View {
                 twinkleFrequency: 0.4 + next() * 1.2,
                 phase: next() * .pi * 2,
                 size: 1.5 + next() * 3.5,
-                colorIndex: Int(next() * 3) % 3
+                // Derived from the palette, not a literal 3 — the palette
+                // grew to five and a hardcoded modulus would silently use
+                // only the first three.
+                colorIndex: Int(next() * Double(palette.count)) % palette.count
             )
         }
     }
@@ -55,10 +58,16 @@ struct SplashParticleField: View {
 
     /// Rebuilt every frame before — three `Color` allocations at up to 120Hz
     /// for values that never change. Hoisted to a constant.
+    ///
+    /// Confetti-bright. No white: on the white launch background a white
+    /// particle is invisible, which is exactly what two of the three old
+    /// colours (white and champagne) would have been.
     private static let palette: [Color] = [
-        .white,
-        Color(hex: 0xD4AF37),
-        Color(hex: 0xF5E7C1)
+        DS.Colors.brand,
+        DS.Colors.accentCoral,
+        DS.Colors.accentSunny,
+        DS.Colors.accentMint,
+        DS.Colors.accentSky
     ]
 
     /// Honouring this is not optional: a drifting, twinkling field is exactly

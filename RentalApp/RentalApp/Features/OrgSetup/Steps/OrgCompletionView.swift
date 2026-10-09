@@ -20,14 +20,14 @@ struct OrgCompletionView: View {
             VStack(spacing: DS.Spacing.xxl) {
                 Spacer()
 
-                AuthSuccessBadge(tint: DS.Colors.brandCyan)
+                AuthSuccessBadge(tint: DS.Colors.accentSkyInk)
 
                 VStack(spacing: DS.Spacing.sm) {
                     Text("You're all set!")
                         .font(.system(size: 30, weight: .heavy, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.white, RentOSBrand.champagne],
+                                colors: [DS.Colors.brand, DS.Colors.accentSkyDeep],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
@@ -35,7 +35,7 @@ struct OrgCompletionView: View {
 
                     Text("Your workspace is ready to go.")
                         .font(DS.Typography.callout)
-                        .foregroundStyle(.white.opacity(0.65))
+                        .foregroundStyle(DS.Colors.textSecondary)
                 }
                 .dsEntrance(index: 1)
 
@@ -55,21 +55,21 @@ struct OrgCompletionView: View {
                                 } else {
                                     Text(viewModel.monogram)
                                         .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(DS.Colors.onFixedColor)
                                 }
                             }
                             .frame(width: 54, height: 54)
-                            .overlay(Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                            .overlay(Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1))
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(viewModel.orgName)
                                     .font(.system(size: 17, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(DS.Colors.textPrimary)
                                     .lineLimit(1)
 
                                 Text(summaryLine)
                                     .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.55))
+                                    .foregroundStyle(DS.Colors.textSecondary)
                             }
 
                             Spacer(minLength: 0)
@@ -81,7 +81,7 @@ struct OrgCompletionView: View {
 
                                 Text("\(viewModel.inviteEmails.count) invite\(viewModel.inviteEmails.count == 1 ? "" : "s") on the way")
                                     .font(.system(size: 12.5, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.white.opacity(0.55))
+                                    .foregroundStyle(DS.Colors.textSecondary)
 
                                 Spacer()
                             }
@@ -151,7 +151,7 @@ struct OrgConfettiBurst: View {
                 swayFrequency: 1.2 + next() * 2.2,
                 spin: (next() - 0.5) * 10,
                 size: 5 + next() * 6,
-                colorIndex: Int(next() * 6) % 6,
+                colorIndex: Int(next() * Double(palette.count)) % palette.count,
                 isRect: next() > 0.4
             )
         }
@@ -177,13 +177,18 @@ struct OrgConfettiBurst: View {
     }
 
     /// Rebuilt every frame before; six `Color` lookups that never change.
+    ///
+    /// Bright fills, not inks: confetti is pure decoration, and the whole
+    /// point is that it's loud. No white — on the white completion screen a
+    /// white piece is invisible. Six entries so each accent appears, with
+    /// violet (the brand) weighted twice.
     private static let palette: [Color] = [
         DS.Colors.brand,
-        DS.Colors.brandViolet,
-        DS.Colors.brandCyan,
         DS.Colors.accentCoral,
-        DS.Colors.accentAmber,
-        .white
+        DS.Colors.accentSunny,
+        DS.Colors.accentMint,
+        DS.Colors.accentSky,
+        DS.Colors.brand
     ]
 
     /// Celebration is decoration, and this is a full-screen burst of motion.
@@ -264,7 +269,6 @@ struct OrgConfettiBurst: View {
                 SplashBackground()
                 OrgCompletionView(viewModel: vm, onFinished: {})
             }
-            .environment(\.colorScheme, .dark)
         }
     }
     return Demo()

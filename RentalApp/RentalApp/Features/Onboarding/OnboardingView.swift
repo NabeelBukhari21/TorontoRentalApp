@@ -36,7 +36,6 @@ struct OnboardingView: View {
                 bottomBar
             }
         }
-        .environment(\.colorScheme, .dark)
     }
 
     // MARK: Top Bar
@@ -50,12 +49,12 @@ struct OnboardingView: View {
             } label: {
                 Text("Skip")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .padding(.horizontal, DS.Spacing.lg)
                     .padding(.vertical, DS.Spacing.sm)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .background(DS.Colors.surfaceRaised, in: Capsule())
                     .overlay(
-                        Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1)
+                        Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1)
                     )
             }
             .buttonStyle(DSPressStyle(scale: 0.94))
@@ -119,7 +118,7 @@ private struct OnboardingPageView: View {
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.white, RentOSBrand.champagne],
+                            colors: [DS.Colors.textPrimary, DS.Colors.brandInk],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -131,7 +130,7 @@ private struct OnboardingPageView: View {
 
                 Text(page.subtitle)
                     .font(DS.Typography.callout)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .opacity(isActive ? 1 : 0)

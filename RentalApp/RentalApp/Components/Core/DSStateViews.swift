@@ -29,7 +29,7 @@ struct DSErrorView: View {
                     .blur(radius: 12)
 
                 Circle()
-                    .fill(.ultraThinMaterial)
+                    .fill(DS.Colors.surfaceRaised)
                     .frame(width: 76, height: 76)
                     .overlay(
                         Circle().strokeBorder(DS.Colors.danger.opacity(0.3), lineWidth: 1)

@@ -83,7 +83,7 @@ extension View {
                 .presentationDetents(detents)
                 .presentationCornerRadius(DS.Radius.xxl)
                 .presentationDragIndicator(.hidden)
-                .presentationBackground(.thinMaterial)
+                .presentationBackground(DS.Colors.surfaceRaised)
         }
     }
 }
@@ -114,7 +114,7 @@ struct DSSheetContainer: View {
         .presentationDetents(route.detents)
         .presentationCornerRadius(DS.Radius.xxl)
         .presentationDragIndicator(.hidden)
-        .presentationBackground(.thinMaterial)
+        .presentationBackground(DS.Colors.surfaceRaised)
     }
 
     private var placeholderCard: some View {
@@ -166,21 +166,21 @@ struct DSFullScreenContainer: View {
 
                 Image(systemName: icon)
                     .font(.system(size: 56, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(foreground)
                     .dsFloating()
 
                 Text(route.title)
                     .font(DS.Typography.title1)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(foreground)
 
                 Text("This immersive flow arrives in the next release.")
                     .font(DS.Typography.callout)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(foreground)
                     .multilineTextAlignment(.center)
 
                 Spacer()
 
-                DSButton(title: "Dismiss", variant: .glass, size: .large, isFullWidth: true) {
+                DSButton(title: "Dismiss", variant: .soft, size: .large, isFullWidth: true) {
                     dismiss()
                 }
                 .padding(.horizontal, DS.Spacing.xxl)
@@ -195,11 +195,21 @@ struct DSFullScreenContainer: View {
         }
     }
 
+    /// Text on this screen's background. The photo viewer is black in both
+    /// modes, so it needs fixed white; the others sit on the brand gradient,
+    /// where `textOnBrand` adapts with it.
+    private var foreground: Color {
+        switch route {
+        case .photoViewer: DS.Colors.onFixedColor
+        case .onboarding, .authentication: DS.Colors.textOnBrand
+        }
+    }
+
     @ViewBuilder
     private var background: some View {
         switch route {
         case .photoViewer:
-            Color.black.ignoresSafeArea()
+            DS.Colors.mediaBackground.ignoresSafeArea()
         case .onboarding, .authentication:
             ZStack {
                 DS.Gradients.brand.ignoresSafeArea()

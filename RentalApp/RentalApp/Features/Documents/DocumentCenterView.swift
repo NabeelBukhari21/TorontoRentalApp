@@ -153,7 +153,7 @@ struct DocumentCenterView: View {
                 .presentationDetents([.large])
                 .presentationCornerRadius(DS.Radius.xxl)
                 .presentationDragIndicator(.hidden)
-                .presentationBackground(.thinMaterial)
+                .presentationBackground(DS.Colors.surfaceRaised)
         }
     }
 
@@ -169,7 +169,7 @@ struct DocumentCenterView: View {
             }
         }
         .padding(3)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                 .strokeBorder(DS.Colors.outline, lineWidth: 1)
@@ -180,7 +180,7 @@ struct DocumentCenterView: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(active ? .white : DS.Colors.textSecondary)
+                .foregroundStyle(active ? DS.Colors.textOnBrand : DS.Colors.textSecondary)
                 .frame(width: 40, height: 38)
                 .background {
                     if active {

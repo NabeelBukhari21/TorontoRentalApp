@@ -88,7 +88,7 @@ struct SettingsHubView: View {
                             .foregroundStyle(DS.Colors.danger)
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+                            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                                     .strokeBorder(DS.Colors.danger.opacity(0.3), lineWidth: 1)
@@ -125,7 +125,7 @@ struct SettingsHubView: View {
     // MARK: Profile Card
 
     private var profileCard: some View {
-        DSCard(style: .glass, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
+        DSCard(style: .raised, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
             HStack(spacing: DS.Spacing.lg) {
                 DSAvatar(name: viewModel.fullName, size: .large, status: .success)
 

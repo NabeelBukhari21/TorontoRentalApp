@@ -25,7 +25,7 @@ struct DocFileThumbnail: View {
                 PropertyPalettes.gradient(file.paletteIndex)
                 Image(systemName: DS.Icons.camera)
                     .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.75))
+                    .foregroundStyle(DS.Colors.onFixedColor)
             case .spreadsheet:
                 sheetPreview
             }
@@ -37,10 +37,10 @@ struct DocFileThumbnail: View {
             // Type chip.
             Text(file.type.rawValue)
                 .font(.system(size: 8.5, weight: .heavy, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(file.type.accent.onFill)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2.5)
-                .background(file.type.tint, in: Capsule())
+                .background(file.type.accent.fill, in: Capsule())
                 .padding(6)
         }
     }
@@ -51,17 +51,17 @@ struct DocFileThumbnail: View {
             DS.Colors.surfaceSecondary
 
             RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(.white)
+                .fill(DS.Colors.surfaceRaised)
                 .frame(width: 66, height: 84)
                 .overlay(
                     VStack(alignment: .leading, spacing: 4) {
                         RoundedRectangle(cornerRadius: 1)
-                            .fill(file.type.tint.opacity(0.7))
+                            .fill(file.type.accent.fill)
                             .frame(width: 26, height: 5)
 
                         ForEach(0..<6, id: \.self) { index in
                             RoundedRectangle(cornerRadius: 1)
-                                .fill(Color(hex: 0x121212).opacity(0.15))
+                                .fill(DS.Colors.textPrimary.opacity(0.15))
                                 .frame(width: index == 5 ? 30 : 50, height: 3)
                         }
 
@@ -76,7 +76,7 @@ struct DocFileThumbnail: View {
                     }
                     .padding(8)
                 )
-                .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
+                .dsShadow(DS.Shadows.soft)
                 .rotationEffect(.degrees(-2))
         }
     }
@@ -161,12 +161,12 @@ struct DocFileGridCard: View {
                     }
                 }
                 .padding(DS.Spacing.md)
-                .background(.ultraThinMaterial)
+                .background(DS.Colors.surfaceRaised)
             }
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                    .strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
             )
             .dsShadow(DS.Shadows.soft)
         }
@@ -224,10 +224,10 @@ struct DocFileListRow: View {
                     .foregroundStyle(DS.Colors.textTertiary)
             }
             .padding(DS.Spacing.md)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1)
+                    .strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
             )
             .dsShadow(DS.Shadows.soft)
         }
@@ -263,13 +263,13 @@ struct DocTagChip: View {
                 .font(.system(size: compact ? 8.5 : 11, weight: .semibold, design: .rounded))
                 .lineLimit(1)
         }
-        .foregroundStyle(isSelected ? DS.Colors.onGold : DS.Colors.brand)
+        .foregroundStyle(isSelected ? DS.Colors.onHighlight : DS.Colors.brand)
         .padding(.horizontal, compact ? 5 : DS.Spacing.sm + 1)
         .padding(.vertical, compact ? 2 : 4)
         .background(
             isSelected
                 ? AnyShapeStyle(
-                    DS.Gradients.champagne
+                    DS.Gradients.highlight
                   )
                 : AnyShapeStyle(DS.Colors.brand.opacity(0.1)),
             in: Capsule()
@@ -294,7 +294,7 @@ struct DocFolderCard: View {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Image(systemName: folder.icon)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white : folder.tint)
+                    .foregroundStyle(isSelected ? DS.Colors.textOnBrand : folder.tint)
                     .frame(width: 36, height: 36)
                     .background(
                         isSelected ? AnyShapeStyle(DS.Gradients.brand) : AnyShapeStyle(folder.tint.opacity(0.13)),
@@ -313,13 +313,13 @@ struct DocFolderCard: View {
             }
             .padding(DS.Spacing.md)
             .frame(width: 118, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     .strokeBorder(
                         isSelected
                             ? AnyShapeStyle(DS.Colors.brand.opacity(0.55))
-                            : AnyShapeStyle(DS.Gradients.glassHighlight),
+                            : AnyShapeStyle(DS.Gradients.cardHairline),
                         lineWidth: isSelected ? 1.5 : 1
                     )
             )
@@ -359,7 +359,7 @@ struct DocDropZone: View {
             Button(action: onBrowse) {
                 Text("or browse")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DS.Colors.brand)
+                    .foregroundStyle(DS.Colors.brandInk)
             }
             .buttonStyle(DSPressStyle(scale: 0.95))
         }
@@ -367,7 +367,7 @@ struct DocDropZone: View {
         .padding(.vertical, DS.Spacing.xl)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .fill(isTargeted ? DS.Colors.brand.opacity(0.08) : .white.opacity(0.001))
+                .fill(isTargeted ? DS.Colors.brand.opacity(0.08) : DS.Colors.background.opacity(0.001))
         )
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
@@ -423,12 +423,12 @@ struct DocUploadRow: View {
             Text("\(Int(upload.progress * 100))%")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(DS.Colors.brand)
+                .foregroundStyle(DS.Colors.brandInk)
                 .contentTransition(.numericText())
                 .frame(width: 34, alignment: .trailing)
         }
         .padding(DS.Spacing.md)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                 .strokeBorder(DS.Colors.brand.opacity(0.25), lineWidth: 1)
@@ -452,17 +452,17 @@ struct DocPreviewSheet: View {
                 // Mock page.
                 ZStack {
                     RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                        .fill(.white)
-                        .shadow(color: .black.opacity(0.18), radius: 18, y: 8)
+                        .fill(DS.Colors.surfaceRaised)
+                        .dsShadow(DS.Shadows.floating)
 
                     VStack(alignment: .leading, spacing: 10) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(file.type.tint.opacity(0.75))
+                            .fill(file.type.accent.fill)
                             .frame(width: 90, height: 12)
 
                         ForEach(0..<12, id: \.self) { index in
                             RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color(hex: 0x121212).opacity(index % 4 == 3 ? 0.06 : 0.14))
+                                .fill(DS.Colors.textPrimary.opacity(index % 4 == 3 ? 0.06 : 0.14))
                                 .frame(width: index % 4 == 3 ? 120 : nil, height: 6)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }

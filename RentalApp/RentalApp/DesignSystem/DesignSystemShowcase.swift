@@ -58,10 +58,10 @@ struct DesignSystemShowcase: View {
             VStack(spacing: DS.Spacing.md) {
                 HStack(spacing: DS.Spacing.sm) {
                     swatch(DS.Colors.brand, "Brand")
-                    swatch(DS.Colors.brandViolet, "Violet")
-                    swatch(DS.Colors.brandCyan, "Cyan")
-                    swatch(DS.Colors.accentCoral, "Coral")
-                    swatch(DS.Colors.accentAmber, "Amber")
+                    swatch(DS.Colors.accentSunnyInk, "Violet")
+                    swatch(DS.Colors.accentSkyInk, "Cyan")
+                    swatch(DS.Colors.accentCoralInk, "Coral")
+                    swatch(DS.Colors.accentSunnyInk, "Amber")
                 }
                 HStack(spacing: DS.Spacing.sm) {
                     gradientSwatch(DS.Gradients.brand, "Brand")
@@ -80,7 +80,7 @@ struct DesignSystemShowcase: View {
                 HStack(spacing: DS.Spacing.md) {
                     DSButton(title: "Secondary", variant: .secondary) {}
                     DSButton(title: "Ghost", variant: .ghost) {}
-                    DSButton(title: "Glass", icon: DS.Icons.ai, variant: .glass) {}
+                    DSButton(title: "Glass", icon: DS.Icons.ai, variant: .soft) {}
                 }
                 HStack(spacing: DS.Spacing.md) {
                     DSIconButton(icon: DS.Icons.search) {}

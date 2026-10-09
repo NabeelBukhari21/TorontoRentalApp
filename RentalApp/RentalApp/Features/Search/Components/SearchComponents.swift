@@ -105,7 +105,7 @@ struct SearchSectionHeader: View {
         .padding(.vertical, DS.Spacing.xs)
         // Pinned headers scroll under content, so they need a backdrop or the
         // rows read through them.
-        .background(.ultraThinMaterial)
+        .background(DS.Colors.surfaceRaised)
     }
 }
 
@@ -172,8 +172,8 @@ struct SearchEntryButton: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(DS.Colors.textSecondary)
                 .frame(width: 38, height: 38)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(DS.Gradients.glassHighlight, lineWidth: 1))
+                .background(DS.Colors.surfaceRaised, in: Circle())
+                .overlay(Circle().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1))
         }
         .buttonStyle(DSPressStyle())
         // Hardware-keyboard shortcut. Free on iPad and the Mac catalyst

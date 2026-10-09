@@ -130,7 +130,7 @@ struct UnitFormView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: DS.Spacing.lg) {
-                        DSCard(style: .glass) {
+                        DSCard(style: .raised) {
                             VStack(spacing: DS.Spacing.lg) {
                                 DSFormField(title: "Label", field: viewModel.label,
                                             placeholder: "Suite 402")
@@ -145,7 +145,7 @@ struct UnitFormView: View {
                         }
                         .dsEntrance(index: 0)
 
-                        DSCard(style: .glass) {
+                        DSCard(style: .raised) {
                             VStack(spacing: DS.Spacing.lg) {
                                 DSFormField(title: "Monthly rent", field: viewModel.rent,
                                             placeholder: "2400", icon: DS.Icons.payment,

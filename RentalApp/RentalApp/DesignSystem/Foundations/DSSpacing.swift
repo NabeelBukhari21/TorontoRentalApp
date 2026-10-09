@@ -34,17 +34,21 @@ extension DS {
     }
 
     // MARK: - Corner Radius
+    //
+    // Rounder than the previous theme across the board. Large radii read as
+    // soft and approachable, which is the point of this palette; the old
+    // values were tuned for crisp, jewel-like glass panels.
 
     enum Radius {
-        /// 8pt — small controls, chips.
-        static let sm: CGFloat = 8
-        /// 12pt — text fields, buttons.
-        static let md: CGFloat = 12
-        /// 16pt — standard cards.
-        static let lg: CGFloat = 16
-        /// 22pt — large floating cards, sheets.
-        static let xl: CGFloat = 22
-        /// 28pt — hero panels.
-        static let xxl: CGFloat = 28
+        /// 10pt — small controls, chips. (was 8)
+        static let sm: CGFloat = 10
+        /// 14pt — text fields, buttons. (was 12)
+        static let md: CGFloat = 14
+        /// 20pt — standard cards. (was 16)
+        static let lg: CGFloat = 20
+        /// 26pt — large floating cards, sheets. (was 22)
+        static let xl: CGFloat = 26
+        /// 32pt — hero panels. (was 28)
+        static let xxl: CGFloat = 32
     }
 }

@@ -22,7 +22,7 @@ struct DashboardHeroCard: View {
     @State private var chartReveal: CGFloat = 0
 
     var body: some View {
-        DSCard(style: .glass, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
+        DSCard(style: .raised, cornerRadius: DS.Radius.xl, padding: DS.Spacing.xl) {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
 
                 // Top row.
@@ -92,7 +92,7 @@ struct DashboardHeroCard: View {
                 LinearGradient(
                     colors: [
                         DS.Colors.brand.opacity(0.35),
-                        DS.Colors.brandViolet.opacity(0.05)
+                        DS.Colors.accentSunnyInk.opacity(0.05)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -120,7 +120,7 @@ struct DashboardHeroCard: View {
                         Circle()
                             .fill(DS.Colors.brand)
                             .frame(width: 9, height: 9)
-                            .overlay(Circle().strokeBorder(.white, lineWidth: 2))
+                            .overlay(Circle().strokeBorder(DS.Colors.surfaceRaised, lineWidth: 2))
                     }
                 }
             }

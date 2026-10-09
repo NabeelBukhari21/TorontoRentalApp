@@ -87,11 +87,11 @@ struct ForgotPasswordView: View {
             VStack(spacing: DS.Spacing.sm) {
                 Text("Check your inbox")
                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(DS.Colors.textPrimary)
 
                 Text("We sent a reset link to\n\(viewModel.email)")
                     .font(DS.Typography.callout)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(DS.Colors.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
@@ -99,7 +99,7 @@ struct ForgotPasswordView: View {
                 VStack(spacing: DS.Spacing.md) {
                     DSButton(
                         title: "I have my code — set new password",
-                        variant: .glass,
+                        variant: .soft,
                         size: .large,
                         isFullWidth: true
                     ) {

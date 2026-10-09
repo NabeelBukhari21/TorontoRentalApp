@@ -72,7 +72,7 @@ struct TicketCard: View {
                                 .font(.system(size: 11, weight: .bold, design: .rounded))
                                 .monospacedDigit()
                         }
-                        .foregroundStyle(DS.Colors.brand)
+                        .foregroundStyle(DS.Colors.brandInk)
                         .padding(.horizontal, DS.Spacing.sm)
                         .padding(.vertical, 3)
                         .background(DS.Colors.brand.opacity(0.12), in: Capsule())
@@ -95,8 +95,7 @@ struct TicketCard: View {
                 }
                 .padding(DS.Spacing.lg)
             }
-            .background(
-                .ultraThinMaterial,
+            .background(DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             )
             .overlay(
@@ -104,7 +103,7 @@ struct TicketCard: View {
                     .strokeBorder(
                         ticket.priority == .urgent
                             ? AnyShapeStyle(ticket.priority.color.opacity(0.45))
-                            : AnyShapeStyle(DS.Gradients.glassHighlight),
+                            : AnyShapeStyle(DS.Gradients.cardHairline),
                         lineWidth: 1
                     )
             )
@@ -214,8 +213,7 @@ struct KanbanTicketCard: View {
                 }
             }
             .padding(DS.Spacing.md)
-            .background(
-                .ultraThinMaterial,
+            .background(DS.Colors.surfaceRaised,
                 in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
             )
             .overlay(
@@ -257,21 +255,21 @@ struct TicketPhotoThumb: View {
             PropertyPalettes.gradient(paletteIndex + index)
 
             LinearGradient(
-                colors: [.clear, .black.opacity(0.35)],
+                colors: [.clear, DS.Colors.mediaBackground.opacity(0.35)],
                 startPoint: .top,
                 endPoint: .bottom
             )
 
             Image(systemName: DS.Icons.camera)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(DS.Colors.onFixedColor)
 
             VStack {
                 Spacer()
                 HStack {
                     Text("IMG_0\(index + 1)")
                         .font(.system(size: 8.5, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white.opacity(0.75))
+                        .foregroundStyle(DS.Colors.onFixedColor)
                     Spacer()
                 }
                 .padding(6)
@@ -281,7 +279,7 @@ struct TicketPhotoThumb: View {
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                .strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
         )
     }
 }
@@ -347,7 +345,7 @@ struct TicketWorkflowView: View {
                     Image(systemName: isDone ? "checkmark" : status.icon)
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(
-                            isDone || isCurrent ? .white : DS.Colors.textTertiary
+                            isDone || isCurrent ? DS.Colors.textOnBrand : DS.Colors.textTertiary
                         )
                         .contentTransition(.symbolEffect(.replace))
                 }
@@ -391,7 +389,7 @@ struct TicketWorkflowView: View {
                 KanbanTicketCard(ticket: MaintenanceMockData.tickets[0], action: {})
                     .frame(width: 250)
 
-                DSCard(style: .glass) {
+                DSCard(style: .raised) {
                     TicketWorkflowView(currentStatus: .inProgress)
                 }
 

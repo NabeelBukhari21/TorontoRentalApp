@@ -65,12 +65,12 @@ struct DSToastView: View {
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .background(.ultraThinMaterial, in: Capsule())
+        .background(DS.Colors.surfaceRaised, in: Capsule())
         .overlay(
             Capsule().strokeBorder(
                 toast.style == .failure
                     ? AnyShapeStyle(DS.Colors.danger.opacity(0.35))
-                    : AnyShapeStyle(DS.Gradients.glassHighlight),
+                    : AnyShapeStyle(DS.Gradients.cardHairline),
                 lineWidth: 1
             )
         )
