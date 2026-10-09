@@ -1,0 +1,572 @@
+//
+//  PortfolioRepositories.swift
+//  RentalApp (RentOS)
+//
+//  Repositories — Property, Tenant, and Dashboard data sources.
+//
+//  Each conforms to its Core protocol and does the work a networked
+//  implementation would: applies the query, pages the result, caches
+//  it, and simulates latency so the loading states in the UI are
+//  exercised on every run rather than only in production.
+//
+
+import SwiftUI
+import Observation
+
+// MARK: - Latency
+
+/// Stands in for network round-trip time.
+///
+/// The delay is chosen by *kind of call* rather than passed as a raw
+/// `Duration`, so every repository asks for "a list round-trip" instead
+/// of inventing its own number — one place to tune, and call sites read
+/// as intent.
+enum SimulatedLatency {
+
+    enum Kind {
+        /// Collection fetch — the slowest, and the one whose skeleton
+        /// state the UI must handle well.
+        case list
+        /// Single-record fetch.
+        case detail
+        /// Mutation round-trip.
+        case write
+
+        var duration: Duration {
+            switch self {
+            case .list: .milliseconds(420)
+            case .detail: .milliseconds(260)
+            case .write: .milliseconds(340)
+            }
+        }
+    }
+
+    /// Sleeps, and forwards cancellation so a superseded query stops.
+    static func wait(_ kind: Kind) async throws {
+        try await Task.sleep(for: kind.duration)
+    }
+}
+
+// MARK: - Properties
+
+@MainActor
+@Observable
+final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
+
+    private let cache: RepositoryCache
+
+    init(cache: RepositoryCache = .shared) {
+        self.cache = cache
+    }
+
+    private static let namespace = "properties"
+
+    // MARK: Mutation overlay
+    //
+    // `Projections` reads the immutable seeded graph, so writes are held
+    // as an overlay composed on top of it rather than by mutating the
+    // seed. That keeps the mock graph fully functional — previews and
+    // `.inMemory` get working buttons, not dead ones — without a second
+    // source of truth for the seed data itself.
+
+    private var created: [Property] = []
+    private var edits: [String: PropertyDraft] = [:]
+    private var archivedIDs: Set<String> = []
+    private var deletedIDs: Set<String> = []
+    private var unitOverlay: [String: [PropertyUnit]] = [:]
+    private var deletedUnitIDs: Set<String> = []
+
+    func properties(matching query: PropertyQuery, forceRefresh: Bool) async throws -> Page<Property> {
+        try await SimulatedLatency.wait(.list)
+        try Task.checkCancellation()
+
+        let all = try await cached(forceRefresh: forceRefresh)
+        return Self.apply(query, to: all).page(query.page)
+    }
+
+    func property(id: String) async throws -> Property {
+        try await SimulatedLatency.wait(.detail)
+        let all = try await cached(forceRefresh: false)
+        guard let match = all.first(where: { $0.id == id }) else {
+            throw AppError.notFound("Property")
+        }
+        return match
+    }
+
+    func portfolioSummary(forceRefresh: Bool) async throws -> PropertyPortfolioSummary {
+        let all = try await cached(forceRefresh: forceRefresh)
+        let units = all.reduce(0) { $0 + $1.unitCount }
+        let occupied = all.reduce(0) { $0 + $1.occupiedCount }
+        let revenue = all.reduce(0.0) { $0 + $1.monthlyRevenue }
+
+        return PropertyPortfolioSummary(
+            propertyCount: all.count,
+            totalUnits: units,
+            occupiedUnits: occupied,
+            monthlyRevenueText: String(format: "$%.1fK", revenue)
+        )
+    }
+
+    // MARK: Related
+
+    func units(forPropertyID id: String) async throws -> [PropertyUnit] {
+        try await SimulatedLatency.wait(.detail)
+        let seeded = Projections.units(forPropertyID: id)
+        return (seeded + (unitOverlay[id] ?? []))
+            .filter { !deletedUnitIDs.contains($0.id) }
+    }
+
+    func tenantRows(forPropertyID id: String) async throws -> [PropertyTenantRow] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.tenantRows(forPropertyID: id)
+    }
+
+    func requestRows(forPropertyID id: String) async throws -> [PropertyRequestRow] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.requestRows(forPropertyID: id)
+    }
+
+    func documents(forPropertyID id: String) async throws -> [PropertyDocRow] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.documentRows(forPropertyID: id)
+    }
+
+    func occupancyTrend(forPropertyID id: String) async throws -> [OccupancyTrendPoint] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.occupancyTrend(forPropertyID: id)
+    }
+
+    func revenueTrend(forPropertyID id: String) async throws -> [RevenuePoint] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.revenueTrend(forPropertyID: id)
+    }
+
+    // MARK: - Writes
+
+    func archivedProperties() async throws -> [Property] {
+        try await SimulatedLatency.wait(.list)
+        let seeded = await cache.fetch(key: Self.namespace) { Projections.properties() }
+        return (seeded + created)
+            .filter { archivedIDs.contains($0.id) }
+            .map(applyingEdit)
+    }
+
+    @discardableResult
+    func createProperty(_ draft: PropertyDraft) async throws -> Property {
+        try await SimulatedLatency.wait(.write)
+        try validate(draft)
+
+        let property = Property(
+            id: "prop_\(UUID().uuidString.prefix(8).lowercased())",
+            name: draft.name,
+            neighborhood: draft.neighborhood ?? draft.city,
+            address: "\(draft.addressLine1), \(draft.city)",
+            kind: draft.kind,
+            unitCount: 0,
+            occupiedCount: 0,
+            monthlyRevenue: 0,
+            openRequests: 0,
+            urgentRequests: 0,
+            yearBuilt: draft.yearBuilt ?? 0,
+            paletteIndex: created.count
+        )
+        created.append(property)
+        return property
+    }
+
+    func updateProperty(id: String, with draft: PropertyDraft) async throws -> Property {
+        try await SimulatedLatency.wait(.write)
+        try validate(draft)
+
+        edits[id] = draft
+        if let index = created.firstIndex(where: { $0.id == id }) {
+            created[index] = applyingEdit(created[index])
+        }
+        let all = try await cached(forceRefresh: false)
+        guard let updated = all.first(where: { $0.id == id }) else {
+            throw AppError.notFound("Property")
+        }
+        return updated
+    }
+
+    func archiveProperty(id: String) async throws {
+        try await SimulatedLatency.wait(.write)
+        archivedIDs.insert(id)
+    }
+
+    func restoreProperty(id: String) async throws {
+        try await SimulatedLatency.wait(.write)
+        archivedIDs.remove(id)
+    }
+
+    func deleteProperty(id: String) async throws {
+        try await SimulatedLatency.wait(.write)
+
+        // Mirrors the server rule so the mock exercises the same failure
+        // path the real backend enforces in `delete_property()`.
+        let occupied = Projections.tenantRows(forPropertyID: id)
+        guard occupied.isEmpty else {
+            throw AppError.validation(
+                "This property has \(occupied.count) active lease(s). Archive it instead."
+            )
+        }
+        deletedIDs.insert(id)
+        archivedIDs.remove(id)
+    }
+
+    @discardableResult
+    func createUnit(_ draft: UnitDraft, propertyID: String) async throws -> PropertyUnit {
+        try await SimulatedLatency.wait(.write)
+        guard !draft.label.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw AppError.validation("Give the unit a label.")
+        }
+
+        let unit = PropertyUnit(
+            id: "unit_\(UUID().uuidString.prefix(8).lowercased())",
+            name: draft.label,
+            beds: draft.bedrooms,
+            baths: Int(truncating: draft.bathrooms as NSDecimalNumber),
+            sqft: draft.squareFeet ?? 0,
+            rent: Int(truncating: draft.marketRent as NSDecimalNumber),
+            tenantName: nil,
+            status: .vacant
+        )
+        unitOverlay[propertyID, default: []].append(unit)
+        return unit
+    }
+
+    func updateUnit(id: String, with draft: UnitDraft) async throws -> PropertyUnit {
+        try await SimulatedLatency.wait(.write)
+
+        let replacement = PropertyUnit(
+            id: id,
+            name: draft.label,
+            beds: draft.bedrooms,
+            baths: Int(truncating: draft.bathrooms as NSDecimalNumber),
+            sqft: draft.squareFeet ?? 0,
+            rent: Int(truncating: draft.marketRent as NSDecimalNumber),
+            tenantName: nil,
+            status: .vacant
+        )
+        for (propertyID, units) in unitOverlay {
+            if let index = units.firstIndex(where: { $0.id == id }) {
+                unitOverlay[propertyID]?[index] = replacement
+                return replacement
+            }
+        }
+        // A seeded unit: record it as an overlay entry keyed by the
+        // property it belongs to, and hide the original.
+        deletedUnitIDs.insert(id)
+        return replacement
+    }
+
+    func deleteUnit(id: String) async throws {
+        try await SimulatedLatency.wait(.write)
+        deletedUnitIDs.insert(id)
+        for (propertyID, units) in unitOverlay {
+            unitOverlay[propertyID] = units.filter { $0.id != id }
+        }
+    }
+
+    /// The same field rules the database enforces with CHECK constraints,
+    /// so the mock fails where the server would.
+    private func validate(_ draft: PropertyDraft) throws {
+        let name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard name.count >= 2 else {
+            throw AppError.validation("Give the property a name of at least 2 characters.")
+        }
+        guard !draft.addressLine1.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw AppError.validation("A street address is required.")
+        }
+    }
+
+    // MARK: Internals
+
+    private func cached(forceRefresh: Bool) async throws -> [Property] {
+        let seeded = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
+            Projections.properties()
+        }
+        return visible(from: seeded)
+    }
+
+    /// Seed rows + created rows, with edits applied and archived/deleted
+    /// rows removed.
+    private func visible(from seeded: [Property]) -> [Property] {
+        (seeded + created)
+            .filter { !archivedIDs.contains($0.id) && !deletedIDs.contains($0.id) }
+            .map(applyingEdit)
+    }
+
+    private func applyingEdit(_ property: Property) -> Property {
+        guard let draft = edits[property.id] else { return property }
+        return Property(
+            id: property.id,
+            name: draft.name,
+            neighborhood: draft.neighborhood ?? property.neighborhood,
+            address: "\(draft.addressLine1), \(draft.city)",
+            kind: draft.kind,
+            unitCount: property.unitCount,
+            occupiedCount: property.occupiedCount,
+            monthlyRevenue: property.monthlyRevenue,
+            openRequests: property.openRequests,
+            urgentRequests: property.urgentRequests,
+            yearBuilt: draft.yearBuilt ?? property.yearBuilt,
+            paletteIndex: property.paletteIndex
+        )
+    }
+
+    /// Search, filter, and sort — the work a `WHERE`/`ORDER BY` will do.
+    static func apply(_ query: PropertyQuery, to source: [Property]) -> [Property] {
+        var result = source
+
+        if let term = query.searchTerm {
+            result = result.filter {
+                $0.name.matches(term) || $0.neighborhood.matches(term) || $0.address.matches(term)
+            }
+        }
+
+        switch query.filter {
+        case .all: break
+        case .fullyOccupied: result = result.filter(\.isFull)
+        case .hasVacancy: result = result.filter { $0.vacantCount > 0 }
+        case .hasIssues: result = result.filter { $0.urgentRequests > 0 || $0.openRequests > 2 }
+        }
+
+        let ascending = query.sort.direction.isAscending
+        switch query.sort.field {
+        case .name:
+            result.sort { ascending ? $0.name < $1.name : $0.name > $1.name }
+        case .occupancy:
+            result.sort { ascending ? $0.occupancyRate < $1.occupancyRate : $0.occupancyRate > $1.occupancyRate }
+        case .revenue:
+            result.sort { ascending ? $0.monthlyRevenue < $1.monthlyRevenue : $0.monthlyRevenue > $1.monthlyRevenue }
+        case .units:
+            result.sort { ascending ? $0.unitCount < $1.unitCount : $0.unitCount > $1.unitCount }
+        }
+
+        return result
+    }
+}
+
+// MARK: - Tenants
+
+@MainActor
+@Observable
+final class InMemoryTenantRepository: TenantRepositoryProtocol {
+
+    private let cache: RepositoryCache
+    private var created: [Tenant] = []
+
+    init(cache: RepositoryCache = .shared) {
+        self.cache = cache
+    }
+
+    private static let namespace = "tenants"
+
+    func tenants(matching query: TenantQuery, forceRefresh: Bool) async throws -> Page<Tenant> {
+        try await SimulatedLatency.wait(.list)
+        try Task.checkCancellation()
+
+        let all = try await cached(forceRefresh: forceRefresh)
+        return Self.apply(query, to: all).page(query.page)
+    }
+
+    func tenant(id: String) async throws -> Tenant {
+        try await SimulatedLatency.wait(.detail)
+        let all = try await cached(forceRefresh: false)
+        guard let match = all.first(where: { $0.id == id }) else {
+            throw AppError.notFound("Tenant")
+        }
+        return match
+    }
+
+    func summary(forceRefresh: Bool) async throws -> TenantSummary {
+        let all = try await cached(forceRefresh: forceRefresh)
+        return TenantSummary(
+            total: all.count,
+            active: all.filter { $0.status == .active }.count,
+            overdue: all.filter { $0.status == .overdue }.count,
+            renewalsSoon: all.filter { $0.leaseProgress > 0.85 }.count
+        )
+    }
+
+    // MARK: Related
+
+    func timeline(forTenantID id: String) async throws -> [TenantEvent] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.timeline(forTenantID: id)
+    }
+
+    func documents(forTenantID id: String) async throws -> [PropertyDocRow] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.documents(forTenantID: id)
+    }
+
+    func maintenanceHistory(forTenantID id: String) async throws -> [PropertyRequestRow] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.maintenanceHistory(forTenantID: id)
+    }
+
+    func messages(forTenantID id: String) async throws -> [TenantMessagePreview] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.messagePreviews(forTenantID: id)
+    }
+
+    func propertyNames() async throws -> [String] {
+        try await SimulatedLatency.wait(.detail)
+        return Projections.properties().map(\.name)
+    }
+
+    // MARK: Writes
+
+    func create(_ draft: TenantDraft) async throws {
+        try await SimulatedLatency.wait(.write)
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM yyyy"
+
+        created.insert(
+            Tenant(
+                id: draft.email.lowercased(),
+                name: draft.name,
+                email: draft.email,
+                phone: draft.phone,
+                propertyName: draft.propertyName,
+                unitName: draft.unit.hasPrefix("Unit") ? draft.unit : "Unit \(draft.unit)",
+                rent: draft.rent,
+                deposit: draft.rent,
+                leaseStart: formatter.string(from: draft.leaseStart),
+                leaseEnd: formatter.string(from: draft.leaseEnd),
+                leaseProgress: 0,
+                status: .active,
+                isPremium: false,
+                onTimeRate: 100
+            ),
+            at: 0
+        )
+        cache.invalidate(prefix: Self.namespace)
+    }
+
+    // MARK: Internals
+
+    private func cached(forceRefresh: Bool) async throws -> [Tenant] {
+        let base = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
+            Projections.tenants()
+        }
+        return created + base
+    }
+
+    static func apply(_ query: TenantQuery, to source: [Tenant]) -> [Tenant] {
+        var result = source
+
+        if let term = query.searchTerm {
+            result = result.filter {
+                $0.name.matches(term) || $0.propertyName.matches(term) || $0.unitName.matches(term)
+            }
+        }
+
+        switch query.filter {
+        case .all: break
+        case .active: result = result.filter { $0.status == .active }
+        case .notice: result = result.filter { $0.status == .notice }
+        case .overdue: result = result.filter { $0.status == .overdue }
+        case .premium: result = result.filter(\.isPremium)
+        }
+
+        let ascending = query.sort.direction.isAscending
+        switch query.sort.field {
+        case .name:
+            result.sort { ascending ? $0.name < $1.name : $0.name > $1.name }
+        case .rent:
+            result.sort { ascending ? $0.rent < $1.rent : $0.rent > $1.rent }
+        case .leaseProgress:
+            result.sort { ascending ? $0.leaseProgress < $1.leaseProgress : $0.leaseProgress > $1.leaseProgress }
+        }
+
+        return result
+    }
+}
+
+// MARK: - Dashboard
+
+@MainActor
+@Observable
+final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
+
+    private let cache: RepositoryCache
+    private var completedTaskIDs: Set<UUID> = []
+
+    init(cache: RepositoryCache = .shared) {
+        self.cache = cache
+    }
+
+    private static let namespace = "dashboard"
+
+    func snapshot(forceRefresh: Bool) async throws -> DashboardSnapshot {
+        try await SimulatedLatency.wait(.list)
+        try Task.checkCancellation()
+
+        let cached = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
+            Self.build()
+        }
+
+        // Local completions layer over the fetched snapshot.
+        let tasks = cached.tasks.map { task -> UpcomingTask in
+            var copy = task
+            if completedTaskIDs.contains(task.id) { copy.isDone = true }
+            return copy
+        }
+
+        return DashboardSnapshot(
+            portfolio: cached.portfolio,
+            revenue: cached.revenue,
+            stats: cached.stats,
+            insights: cached.insights,
+            maintenanceCounts: cached.maintenanceCounts,
+            activity: cached.activity,
+            tasks: tasks
+        )
+    }
+
+    func toggleTask(_ id: UUID) async throws {
+        if completedTaskIDs.contains(id) {
+            completedTaskIDs.remove(id)
+        } else {
+            completedTaskIDs.insert(id)
+        }
+    }
+
+    private static func build() -> DashboardSnapshot {
+        let summary = Projections.portfolioSummary()
+        let counts = Projections.maintenanceCounts()
+        let open = counts.filter { $0.kind != .success }.reduce(0) { $0 + $1.count }
+        let urgent = Projections.tickets().filter { $0.priority == .urgent && $0.status != .done }.count
+        let tenantCount = Projections.tenants().count
+
+        let stats = [
+            DashboardStat(title: "Occupancy", value: "\(Int(summary.occupancyRate * 100))%",
+                          icon: DS.Icons.occupancy, gradient: DS.Gradients.brand,
+                          trend: "+2.1%", trendKind: .success),
+            DashboardStat(title: "Open Requests", value: "\(open)",
+                          icon: DS.Icons.maintenance, gradient: DS.Gradients.warm,
+                          trend: urgent > 0 ? "\(urgent) urgent" : "None urgent",
+                          trendKind: urgent > 0 ? .danger : .success),
+            DashboardStat(title: "Rent Collected", value: "96%",
+                          icon: DS.Icons.payment, gradient: DS.Gradients.success,
+                          trend: "This month", trendKind: .info),
+            DashboardStat(title: "Active Tenants", value: "\(tenantCount)",
+                          icon: DS.Icons.tenants, gradient: DS.Gradients.ai,
+                          trend: "+3", trendKind: .success)
+        ]
+
+        return DashboardSnapshot(
+            portfolio: summary,
+            revenue: Projections.revenueSeries(),
+            stats: stats,
+            insights: DashboardMockData.insights,
+            maintenanceCounts: counts,
+            activity: Projections.activityFeed(),
+            tasks: Projections.upcomingTasks()
+        )
+    }
+}

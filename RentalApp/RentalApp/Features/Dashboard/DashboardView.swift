@@ -1,0 +1,194 @@
+//
+//  DashboardView.swift
+//  RentalApp
+//
+//  Dashboard — The AI-powered command center. Composes the hero chart,
+//  stat grid, quick actions, AI insights, occupancy & maintenance
+//  overviews, tasks, and live activity — all entering with a cascade.
+//
+
+import SwiftUI
+
+struct DashboardView: View {
+
+    @Environment(AppRouter.self) private var router
+    @Environment(\.container) private var container
+    @State private var viewModel: DashboardViewModel
+
+    init(container: AppContainer = .shared) {
+        _viewModel = State(initialValue: DashboardViewModel(
+            dashboard: container.dashboard,
+            notifications: container.notifications
+        ))
+    }
+
+    private let statColumns = [
+        GridItem(.flexible(), spacing: DS.Spacing.md),
+        GridItem(.flexible(), spacing: DS.Spacing.md)
+    ]
+
+    var body: some View {
+        ZStack {
+            DSAmbientBackground()
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: DS.Spacing.lg) {
+
+                    // Hero analytics.
+                    DashboardHeroCard(
+                        portfolioValue: viewModel.portfolioValue,
+                        monthlyRevenue: viewModel.monthlyRevenue,
+                        revenueTrend: viewModel.revenueTrend,
+                        propertyCount: viewModel.propertyCount,
+                        unitCount: viewModel.unitCount,
+                        revenue: viewModel.revenue
+                    )
+                    .dsEntrance(index: 0)
+
+                    // Stats grid.
+                    LazyVGrid(columns: statColumns, spacing: DS.Spacing.md) {
+                        ForEach(Array(viewModel.stats.enumerated()), id: \.element.id) { index, stat in
+                            DSStatCard(
+                                title: stat.title,
+                                value: stat.value,
+                                icon: stat.icon,
+                                iconGradient: stat.gradient,
+                                trend: stat.trend,
+                                trendKind: stat.trendKind
+                            )
+                            .dsEntrance(index: 1 + index)
+                        }
+                    }
+
+                    // Quick actions.
+                    DashboardQuickActionsRow(actions: quickActions)
+                        .padding(.vertical, DS.Spacing.sm)
+                        .dsEntrance(index: 5)
+
+                    // AI insights.
+                    DashboardAIInsightsCard(insights: viewModel.insights) { _ in
+                        router.select(.aiAssistant)
+                    }
+                    .dsEntrance(index: 6)
+
+                    // Occupancy.
+                    DashboardOccupancyCard(
+                        rate: viewModel.occupancyRate,
+                        occupied: viewModel.occupiedUnits,
+                        vacant: viewModel.vacantUnits,
+                        turnover: viewModel.turnoverUnits
+                    )
+                    .dsEntrance(index: 7)
+
+                    // Maintenance.
+                    DashboardMaintenanceCard(counts: viewModel.maintenanceCounts) {
+                        router.select(.maintenance)
+                    }
+                    .dsEntrance(index: 8)
+
+                    // Upcoming tasks.
+                    DashboardTasksCard(tasks: viewModel.tasks) { task in
+                        Task { await viewModel.toggleTask(task) }
+                    }
+                    .dsEntrance(index: 9)
+
+                    // Live activity.
+                    DashboardActivityCard(items: viewModel.activity) {
+                        router.push(.notifications)
+                    }
+                    .dsEntrance(index: 10)
+
+                    if let error = viewModel.error {
+                        DSErrorView(error: error) { await viewModel.retry() }
+                    }
+                }
+                .padding(DS.Spacing.lg)
+                .padding(.bottom, DSTabBar.overlayClearance)
+            }
+            .refreshable { await viewModel.refresh() }
+
+            if viewModel.isLoading {
+                DSCardSkeleton(cards: 3)
+                    .padding(DS.Spacing.lg)
+                    .background(DSAmbientBackground())
+            }
+        }
+        .task { await viewModel.load() }
+        .liveUpdates(container.sync) {
+            LiveList.reloadSubscription(topic: .properties) {
+                await viewModel.refresh()
+            }
+        }
+        .liveUpdates(container.sync) {
+            LiveList.reloadSubscription(topic: .maintenanceRequests) {
+                await viewModel.refresh()
+            }
+        }
+        .dsHeader(
+            title: "Home",
+            subtitle: viewModel.greeting,
+            trailingActions: [
+                DSHeaderAction(icon: DS.Icons.search) {
+                    router.present(.globalSearch)
+                },
+                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
+                    router.push(.notifications)
+                },
+                DSHeaderAction(icon: DS.Icons.tenant) {
+                    router.push(.profile)
+                }
+            ]
+        )
+        .overlay(alignment: .bottomTrailing) {
+            DSFloatingActionButton(actions: [
+                DSFABAction(icon: DS.Icons.properties, title: "New Property") {
+                    router.present(.newProperty)
+                },
+                DSFABAction(icon: DS.Icons.maintenance, title: "New Request") {
+                    router.present(.newMaintenanceRequest)
+                },
+                DSFABAction(icon: DS.Icons.messages, title: "New Message") {
+                    router.select(.messages)
+                }
+            ])
+            .padding(.trailing, DS.Spacing.xl)
+            .padding(.bottom, DSTabBar.overlayClearance)
+        }
+    }
+
+    // MARK: Quick Actions
+
+    private var quickActions: [DashboardQuickAction] {
+        [
+            DashboardQuickAction(
+                icon: DS.Icons.add,
+                title: "Property",
+                gradient: DS.Gradients.brand
+            ) { router.present(.newProperty) },
+
+            DashboardQuickAction(
+                icon: DS.Icons.maintenance,
+                title: "Request",
+                gradient: DS.Gradients.warm
+            ) { router.present(.newMaintenanceRequest) },
+
+            DashboardQuickAction(
+                icon: DS.Icons.messages,
+                title: "Message",
+                gradient: DS.Gradients.ai
+            ) { router.select(.messages) },
+
+            DashboardQuickAction(
+                icon: DS.Icons.payment,
+                title: "Collect",
+                gradient: DS.Gradients.success
+            ) { router.present(.quickActions) }
+        ]
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Dashboard") {
+    RootNavigationView()
+}

@@ -1,0 +1,21 @@
+// Supabase.example.xcconfig
+//
+// Template for local backend credentials. This file IS committed;
+// the real one is not.
+//
+//   1. Copy this file to RentalApp/RentalApp/Supabase.xcconfig
+//   2. Fill in your project's values from Supabase → Project Settings → API
+//   3. In Xcode: Project → Info → Configurations, set it as the
+//      configuration file for Debug and Release
+//
+// Use the ANON key only. Never the service_role key — anything in an app
+// binary should be treated as public.
+//
+// Without this file the app still runs, on the built-in mock backend.
+
+// The `/$()/` stops xcconfig treating `//` as the start of a comment.
+SUPABASE_URL = https:/$()/your-project-ref.supabase.co
+SUPABASE_ANON_KEY = your-anon-key
+
+// development | staging | production
+APP_ENVIRONMENT = development

@@ -1,0 +1,43 @@
+# ─── Secrets — never commit ──────────────────────────────────────────
+# Supabase URL + anon key. Copy Supabase.example.xcconfig and fill it in.
+RentalApp/RentalApp/Supabase.xcconfig
+*.xcconfig
+!*.example.xcconfig
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.temp/
+supabase/.branches/
+
+# ─── Xcode: per-user state ───────────────────────────────────────────
+# Window layouts, breakpoints, the last file you had open. Personal to
+# your machine, changes on every launch, and only creates noisy diffs.
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# ─── Xcode: build output ─────────────────────────────────────────────
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager — Package.resolved IS committed (it pins versions),
+# but the checkout cache is not.
+.build/
+.swiftpm/
+**/xcshareddata/swiftpm/configuration/
+
+# ─── macOS ───────────────────────────────────────────────────────────
+.DS_Store
+._*
+
+# ─── Local leftovers ─────────────────────────────────────────────────
+*.backup*
+*.orig
+
+# Xcode's original auto-created repo (blank template only). Safe to delete.
+.xcode-template-git-backup/
