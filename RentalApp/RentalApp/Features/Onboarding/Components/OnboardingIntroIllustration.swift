@@ -16,19 +16,16 @@ struct OnboardingIntroIllustration: View {
         ZStack {
             // Central glow.
             Circle()
-                .fill(DS.Colors.accentSunnyInk.opacity(0.5))
+                .fill(DS.Colors.accentSunny.opacity(0.45))
                 .frame(width: 180, height: 180)
                 .blur(radius: 50)
                 .opacity(isActive ? 1 : 0)
                 .animation(DS.Motion.gentle, value: isActive)
 
-            // RentOS logo tile.
-            RentOSLogoTile(size: 88)
-                .scaleEffect(isActive ? 1 : 0.6)
-                .opacity(isActive ? 1 : 0)
-                .animation(DS.Motion.bouncy.delay(0.1), value: isActive)
-                .dsFloating(amplitude: 6, duration: 3.4)
-                .offset(y: -30)
+            // The neighbourhood builds itself as the page appears. No cat
+            // here — the mascot is on screen below, introducing it.
+            RentOSLogoMark(size: 170, isBuilt: isActive, showsCat: false)
+                .offset(y: -20)
 
             // Orbiting feature chips.
             OnboardingFloatingChip(

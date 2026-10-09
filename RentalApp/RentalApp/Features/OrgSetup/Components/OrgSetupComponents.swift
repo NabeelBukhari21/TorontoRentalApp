@@ -53,30 +53,33 @@ struct OrgSetupProgressBar: View {
 
 // MARK: - Step Header
 
+/// The mascot asks each step's question, Duolingo-style.
+///
+/// It waits (idle, or thinking for the multiple-choice steps) until the
+/// answer is valid, then turns happy and hops — a small reward for every
+/// step completed. A new header is created per step, so the cat also hops
+/// hello each time the step changes.
 struct OrgSetupStepHeader: View {
 
     let step: OrgSetupStep
+    /// Whether the current answer is valid (`OrgSetupViewModel.canContinue`).
+    var isReady: Bool = false
+
+    private var mood: MascotMood {
+        if isReady { return .happy }
+        switch step {
+        case .propertyType, .portfolioSize: return .thinking
+        case .name, .logo, .inviteTeam:     return .idle
+        }
+    }
 
     var body: some View {
-        VStack(spacing: DS.Spacing.sm) {
-            Text(step.title)
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [DS.Colors.textPrimary, DS.Colors.brandInk],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .multilineTextAlignment(.center)
-
-            Text(step.subtitle)
-                .font(DS.Typography.callout)
-                .foregroundStyle(DS.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.horizontal, DS.Spacing.lg)
+        MascotGuide(
+            mood: mood,
+            title: step.title,
+            message: step.subtitle,
+            mascotSize: 100
+        )
     }
 }
 

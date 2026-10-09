@@ -2,8 +2,8 @@
 //  OrgCompletionView.swift
 //  RentalApp
 //
-//  Org Setup — Completion celebration: confetti burst, success ring,
-//  and a summary card of the new workspace.
+//  Org Setup — Completion celebration: the mascot cheering inside a
+//  confetti burst, and a summary card of the new workspace.
 //
 
 import SwiftUI
@@ -20,7 +20,9 @@ struct OrgCompletionView: View {
             VStack(spacing: DS.Spacing.xxl) {
                 Spacer()
 
-                AuthSuccessBadge(tint: DS.Colors.accentSkyInk)
+                // The cat, arms up. Replaces the success ring: a celebration
+                // reads better as a character's reaction than as a checkmark.
+                MascotView(mood: .cheer, size: 170)
 
                 VStack(spacing: DS.Spacing.sm) {
                     Text("You're all set!")

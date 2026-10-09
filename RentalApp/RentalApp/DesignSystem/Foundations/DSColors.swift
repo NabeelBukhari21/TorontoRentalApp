@@ -222,6 +222,14 @@ extension DS {
         /// Dimming scrim behind media overlays and modal content.
         static let scrim = Color(hex: 0x1B1B2F, opacity: 0.45)
 
+        /// The soft contact shadow under the mascot (and anything else that
+        /// "stands" on the page). Ink-tinted on white; deeper in dark mode,
+        /// where a light shadow would read as a glow.
+        static let groundShadow = Color(
+            light: Color(hex: 0x1B1B2F, opacity: 0.13),
+            dark: Color(hex: 0x000000, opacity: 0.45)
+        )
+
         /// Behind full-screen photos and video. Black in both modes —
         /// media viewers are dark everywhere, so photos aren't framed by
         /// glare. Pair with `onFixedColor`.

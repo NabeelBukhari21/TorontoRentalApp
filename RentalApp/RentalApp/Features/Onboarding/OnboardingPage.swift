@@ -25,16 +25,28 @@ enum OnboardingPage: Int, CaseIterable, Identifiable {
         }
     }
 
-    var subtitle: String {
+    /// What the mascot says on this page — first person, friendly, short
+    /// enough to type out in about a second.
+    var mascotLine: String {
         switch self {
         case .intro:
-            "Properties, tenants, maintenance, and messages — beautifully organized in one place."
+            "Hi! I'm here to help you run your rentals — homes, tenants and repairs, all in one place."
         case .maintenance:
-            "AI reads every request, sets urgency, picks the right vendor, and drafts the tenant reply."
+            "When something breaks, I'll sort the urgency, find the right vendor and draft the reply."
         case .portfolio:
-            "Track units, occupancy, and leases across your whole portfolio in real time."
+            "Every unit, lease and vacancy — I keep an eye on all of it, live."
         case .insights:
-            "Live analytics and AI recommendations keep your portfolio healthy and profitable."
+            "And I'll spot trends before you ask. Ready? Let's go!"
+        }
+    }
+
+    /// How the mascot feels on this page.
+    var mascotMood: MascotMood {
+        switch self {
+        case .intro:       .happy
+        case .maintenance: .thinking
+        case .portfolio:   .happy
+        case .insights:    .cheer
         }
     }
 

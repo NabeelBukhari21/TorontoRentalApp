@@ -2,9 +2,12 @@
 //  OnboardingView.swift
 //  RentalApp
 //
-//  Onboarding — Four-page swipeable experience. Shares the splash
-//  background so the launch flow reads as one continuous space.
-//  Each page's illustration and copy re-animate as it becomes active.
+//  Onboarding — Four-page swipeable experience, guided by the mascot.
+//
+//  The cat sits OUTSIDE the paged content, Duolingo-style: the pages slide
+//  behind it while it stays put, reacts to each swipe with a change of
+//  mood, and "says" each page's message in its speech bubble. Shares the
+//  splash background so the launch flow reads as one continuous space.
 //
 
 import SwiftUI
@@ -32,6 +35,16 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(DS.Motion.smooth, value: selection)
+
+                // The guide. One instance for every page, so it reacts to
+                // page changes instead of being rebuilt with each page.
+                MascotGuide(
+                    mood: selection.mascotMood,
+                    message: selection.mascotLine,
+                    mascotSize: 112
+                )
+                .padding(.horizontal, DS.Spacing.xl)
+                .padding(.bottom, DS.Spacing.sm)
 
                 bottomBar
             }
@@ -108,9 +121,9 @@ private struct OnboardingPageView: View {
     let isActive: Bool
 
     var body: some View {
-        VStack(spacing: DS.Spacing.xl) {
+        VStack(spacing: DS.Spacing.lg) {
             illustration
-                .frame(height: 340)
+                .frame(height: 290)
                 .frame(maxWidth: .infinity)
 
             VStack(spacing: DS.Spacing.md) {
@@ -127,15 +140,8 @@ private struct OnboardingPageView: View {
                     .opacity(isActive ? 1 : 0)
                     .offset(y: isActive ? 0 : 16)
                     .animation(DS.Motion.entrance.delay(0.2), value: isActive)
-
-                Text(page.subtitle)
-                    .font(DS.Typography.callout)
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .opacity(isActive ? 1 : 0)
-                    .offset(y: isActive ? 0 : 12)
-                    .animation(DS.Motion.entrance.delay(0.32), value: isActive)
+                // The page's explanation is spoken by the mascot below
+                // (`OnboardingPage.mascotLine`) rather than repeated here.
             }
             .padding(.horizontal, DS.Spacing.xxl)
 

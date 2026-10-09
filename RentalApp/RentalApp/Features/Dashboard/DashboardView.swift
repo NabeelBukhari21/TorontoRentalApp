@@ -34,6 +34,18 @@ struct DashboardView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DS.Spacing.lg) {
 
+                    // The mascot's brief: the one thing that matters most
+                    // right now, in a sentence.
+                    if !viewModel.isLoading {
+                        DashboardMascotBrief(
+                            urgentTasks: viewModel.tasks.filter { $0.isUrgent && !$0.isDone }.count,
+                            openRequests: viewModel.openRequestCount,
+                            openTasks: viewModel.tasks.filter { !$0.isDone }.count,
+                            occupancyRate: viewModel.occupancyRate
+                        )
+                        .dsEntrance(index: 0)
+                    }
+
                     // Hero analytics.
                     DashboardHeroCard(
                         portfolioValue: viewModel.portfolioValue,

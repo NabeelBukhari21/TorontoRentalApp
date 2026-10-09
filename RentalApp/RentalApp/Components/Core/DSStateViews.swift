@@ -22,24 +22,9 @@ struct DSErrorView: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
-            ZStack {
-                Circle()
-                    .fill(DS.Colors.danger.opacity(0.15))
-                    .frame(width: 84, height: 84)
-                    .blur(radius: 12)
-
-                Circle()
-                    .fill(DS.Colors.surfaceRaised)
-                    .frame(width: 76, height: 76)
-                    .overlay(
-                        Circle().strokeBorder(DS.Colors.danger.opacity(0.3), lineWidth: 1)
-                    )
-
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(DS.Colors.danger)
-            }
-            .dsFloating(amplitude: 4, duration: 3.6)
+            // The cat, concerned — friendlier than a warning triangle, and
+            // the alert badge it wears still says "something's wrong".
+            MascotView(mood: .concerned, size: 128)
 
             VStack(spacing: DS.Spacing.sm) {
                 Text("Something went wrong")

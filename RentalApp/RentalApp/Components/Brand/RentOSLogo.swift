@@ -2,19 +2,20 @@
 //  RentOSLogo.swift
 //  RentalApp (RentOS)
 //
-//  Brand — The RentOS logo system, bright edition.
+//  Brand — The RentOS logo: the cat in front of its neighbourhood.
 //
-//  Same "Orbit Monolith" shape as before, recoloured for the playful
-//  white-first theme: an electric-violet tower with twinkling white
-//  windows, a sunny beacon on top, and a multi-colour orbit with a coral
-//  satellite circling it.
+//  The mascot sits on a little street of homes — a sunny house with a coral
+//  roof, a violet condo and a sky tower behind it (a nod to Toronto's
+//  skyline), and a pale-sky house with a mint roof — on a rainbow ground
+//  line. Friendly first, but it still says "property" at a glance.
 //
-//  INTERIM. A new logo is planned; this recolour keeps the app visually
-//  consistent until it lands. When it does, everything outside this file
-//  only references `RentOSLogoMark`, `RentOSLogoTile` and `RentOSWordmark`,
-//  so it can be swapped here without touching any screen.
+//  It can BUILD ITSELF: the ground line draws, the homes pop up one after
+//  another with springy overshoot, windows light up, and the cat hops in.
+//  The splash uses that; everywhere else shows the finished logo.
 //
-//  Ships in three forms: the mark, the tile, and the wordmark.
+//  Ships in three forms: the mark, the tile (app-icon style), and the
+//  wordmark. Everything outside this file only uses those three names, so
+//  the art can evolve here without touching any screen.
 //
 
 import SwiftUI
@@ -24,11 +25,8 @@ import SwiftUI
 /// The logo's own palette.
 ///
 /// Fixed values rather than adaptive DS tokens on purpose: a logo should
-/// look identical in light and dark mode. These mirror the DS light-mode
-/// hues exactly, so the mark and the app always agree.
-///
-/// Logo-only. Screens must use `DS.Colors` — that is what lets the theme
-/// reach them.
+/// look identical in light and dark mode. Logo-only — screens use
+/// `DS.Colors`.
 enum RentOSBrand {
     static let violet      = Color(hex: 0x6C5CE7)
     static let violetLight = Color(hex: 0x8F83F0)
@@ -39,205 +37,341 @@ enum RentOSBrand {
     static let mint        = Color(hex: 0x2ED8A3)
     static let sky         = Color(hex: 0x4DA8FF)
     static let skyDeep     = Color(hex: 0x2A6BD4)
+    static let skyLight    = Color(hex: 0x8CC6FF)
     static let ink         = Color(hex: 0x1B1B2F)
     static let white       = Color(hex: 0xFFFFFF)
 
-    /// The orbit's colour sweep, in order around the ring.
-    static let orbitSweep: [Color] = [coral, sunny, mint, sky, violetLight, coral]
+    // House walls — pastel versions of the accents, so the saturated roofs
+    // and the cat stay the most colourful things in the logo.
+    static let wallSunny  = Color(hex: 0xFFE9A6)
+    static let wallMint   = Color(hex: 0xC4F2E3)
+    static let wallSky    = Color(hex: 0xD9ECFF)
+    static let wallViolet = Color(hex: 0xD9D4FB)
+}
+
+// MARK: - Geometry
+
+/// Where everything sits, as fractions of the mark's side. Shared with the
+/// app-icon renderer, so the icon and the in-app logo match.
+enum RentOSLogoGeometry {
+    /// Raised from the bottom so the whole scene — tower tops to the cat's
+    /// shadow — sits optically centred in a square (tile and app icon).
+    static let groundY: CGFloat = 0.85
+    static let catSize: CGFloat = 0.72
+
+    struct House {
+        let centerX: CGFloat
+        let width: CGFloat
+        let bodyHeight: CGFloat
+        let roofHeight: CGFloat
+    }
+
+    static let leftHouse  = House(centerX: 0.165, width: 0.28, bodyHeight: 0.23, roofHeight: 0.15)
+    static let rightHouse = House(centerX: 0.835, width: 0.26, bodyHeight: 0.21, roofHeight: 0.14)
+
+    /// Violet condo, behind the cat's left ear.
+    static let condoCenterX: CGFloat = 0.31
+    static let condoWidth: CGFloat = 0.19
+    static let condoHeight: CGFloat = 0.62
+
+    /// Shorter sky tower behind the right shoulder — balances the skyline.
+    static let towerCenterX: CGFloat = 0.69
+    static let towerWidth: CGFloat = 0.16
+    static let towerHeight: CGFloat = 0.47
 }
 
 // MARK: - Logo Mark
 
-/// The RentOS orbit-monolith mark. Pure vector — scales to any size.
+/// The cat in front of its neighbourhood. Pure vector homes + the mascot.
 struct RentOSLogoMark: View {
 
-    /// Overall side length of the mark's square canvas.
-    var size: CGFloat = 64
-    /// Enables orbit, twinkle, and beacon pulse. Disable for tiny/static uses.
+    /// Side of the mark's square canvas.
+    var size: CGFloat = 120
+    /// Ambient life: twinkling windows, a breathing cat. Off for tiny uses.
     var animates: Bool = true
+    /// When false the scene is empty; flipping it to true plays the build:
+    /// ground → homes → windows → cat. Leave true to show it finished.
+    var isBuilt: Bool = true
+    /// Overrides the cat's mood once built — the splash uses `.cheer` for
+    /// its finale. Defaults to happy.
+    var celebrates: Bool = false
+    /// The skyline alone — for places where the mascot is already on screen
+    /// in its own right (onboarding), so there aren't two cats.
+    var showsCat: Bool = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var beaconPulses = false
-    @State private var orbitAngle: Double = 200
 
-    /// Animation is a decoration; Reduce Motion turns it off entirely.
-    private var isAnimating: Bool { animates && !reduceMotion }
+    private typealias G = RentOSLogoGeometry
+    private var catMood: MascotMood {
+        guard isBuilt else { return .idle }
+        return celebrates ? .cheer : .happy
+    }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Orbit ring (behind the tower).
-            orbitRing
-                .offset(y: -size * 0.34)
+        ZStack(alignment: .topLeading) {
+            ground
 
-            // The monolith.
-            monolith
-                .padding(.bottom, size * 0.1)
+            tower(centerX: G.condoCenterX, width: G.condoWidth, height: G.condoHeight,
+                  top: RentOSBrand.violetLight, bottom: RentOSBrand.violet,
+                  cap: RentOSBrand.violetDeep, rows: 5, order: 0)
 
-            // Crown beacon.
-            beacon
-                .offset(y: -size * 0.87)
+            tower(centerX: G.towerCenterX, width: G.towerWidth, height: G.towerHeight,
+                  top: RentOSBrand.skyLight, bottom: RentOSBrand.sky,
+                  cap: RentOSBrand.skyDeep, rows: 4, order: 1)
 
-            // Orbiting satellite (in front).
-            satellite
-                .offset(y: -size * 0.34)
+            house(G.leftHouse, wall: RentOSBrand.wallSunny, roof: RentOSBrand.coral,
+                  door: RentOSBrand.violet, order: 2)
 
-            // Rainbow hover light under the tower.
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [RentOSBrand.coral, RentOSBrand.sunny, RentOSBrand.mint, RentOSBrand.sky],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(width: size * 0.62, height: size * 0.04)
-                .blur(radius: size * 0.008)
+            // Mint roof, not sky: the sky tower stands right behind it.
+            house(G.rightHouse, wall: RentOSBrand.wallSky, roof: RentOSBrand.mint,
+                  door: RentOSBrand.coral, order: 3)
 
-            Capsule()
-                .fill(RentOSBrand.violet.opacity(0.35))
-                .frame(width: size * 0.44, height: size * 0.05)
-                .blur(radius: size * 0.08)
-                .offset(y: size * 0.02)
-        }
-        .frame(width: size, height: size, alignment: .bottom)
-        .onAppear {
-            guard isAnimating else { return }
-            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                beaconPulses = true
-            }
-            withAnimation(.linear(duration: 7).repeatForever(autoreverses: false)) {
-                orbitAngle += 360
+            if showsCat {
+                cat
             }
         }
+        .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("RentOS")
     }
 
-    // MARK: Monolith
+    // MARK: Pieces
 
-    private var monolith: some View {
-        RoundedRectangle(cornerRadius: size * 0.075, style: .continuous)
-            .fill(
+    private var ground: some View {
+        RentOSGroundLine()
+            .trim(from: 0, to: isBuilt ? 1 : 0)
+            .stroke(
                 LinearGradient(
-                    colors: [RentOSBrand.violetLight, RentOSBrand.violet, RentOSBrand.violetDeep],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                    colors: [RentOSBrand.coral, RentOSBrand.sunny, RentOSBrand.mint, RentOSBrand.sky, RentOSBrand.violet],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ),
+                style: StrokeStyle(lineWidth: max(size * 0.028, 1.5), lineCap: .round)
             )
-            .overlay(
-                // Glossy white edge light.
-                RoundedRectangle(cornerRadius: size * 0.075, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                RentOSBrand.white.opacity(0.85),
-                                RentOSBrand.white.opacity(0.30),
-                                RentOSBrand.white.opacity(0.05)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: max(size * 0.014, 1)
-                    )
-            )
-            .overlay(
-                // Twinkling windows.
-                VStack(spacing: size * 0.052) {
-                    ForEach(0..<6, id: \.self) { row in
-                        HStack(spacing: size * 0.05) {
-                            windowDot(index: Double(row) * 2)
-                            windowDot(index: Double(row) * 2 + 1)
-                        }
-                    }
-                }
-                .padding(.top, size * 0.1),
-                alignment: .top
-            )
-            .frame(width: size * 0.34, height: size * 0.78)
-            .shadow(color: RentOSBrand.violet.opacity(0.40), radius: size * 0.08, y: 2)
+            .frame(width: size * 0.92, height: 1)
+            .position(x: size * 0.5, y: size * G.groundY)
+            .animation(entrance(order: -1, duration: 0.55), value: isBuilt)
     }
 
-    private func windowDot(index: Double) -> some View {
-        RentOSWindow(
-            size: size * 0.055,
-            animates: isAnimating,
-            duration: 1.3 + index.truncatingRemainder(dividingBy: 3) * 0.5,
-            delay: index.truncatingRemainder(dividingBy: 5) * 0.4
+    private func house(_ h: G.House, wall: Color, roof: Color, door: Color, order: Int) -> some View {
+        RentOSToyHouse(
+            width: size * h.width,
+            bodyHeight: size * h.bodyHeight,
+            roofHeight: size * h.roofHeight,
+            wall: wall, roof: roof, door: door,
+            windowsLit: isBuilt,
+            animates: animates && !reduceMotion
+        )
+        .scaleEffect(x: 1, y: isBuilt ? 1 : 0.01, anchor: .bottom)
+        .opacity(isBuilt ? 1 : 0)
+        .animation(entrance(order: order), value: isBuilt)
+        .position(
+            x: size * h.centerX,
+            // Matches the house's real frame (`bodyHeight + roofHeight * 0.92`),
+            // so the walls sit exactly on the ground line.
+            y: size * G.groundY - size * (h.bodyHeight + h.roofHeight * 0.92) / 2
         )
     }
 
-    // MARK: Beacon
-
-    private var beacon: some View {
-        Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [RentOSBrand.sunnyLight, RentOSBrand.sunny],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .frame(width: size * 0.07, height: size * 0.07)
-            .rotationEffect(.degrees(45))
-            .shadow(
-                color: RentOSBrand.sunny.opacity(beaconPulses ? 0.95 : 0.40),
-                radius: beaconPulses ? size * 0.07 : size * 0.02
-            )
-            .scaleEffect(beaconPulses ? 1.2 : 0.85)
+    private func tower(
+        centerX: CGFloat, width: CGFloat, height: CGFloat,
+        top: Color, bottom: Color, cap: Color, rows: Int, order: Int
+    ) -> some View {
+        RentOSCondo(
+            width: size * width,
+            height: size * height,
+            top: top, bottom: bottom, cap: cap, rows: rows,
+            animates: animates && !reduceMotion,
+            isLit: isBuilt
+        )
+        .scaleEffect(x: 1, y: isBuilt ? 1 : 0.01, anchor: .bottom)
+        .opacity(isBuilt ? 1 : 0)
+        .animation(entrance(order: order), value: isBuilt)
+        .position(x: size * centerX, y: size * G.groundY - size * height / 2)
     }
 
-    // MARK: Orbit
-
-    private var orbitRing: some View {
-        Ellipse()
-            .strokeBorder(
-                AngularGradient(colors: RentOSBrand.orbitSweep, center: .center),
-                lineWidth: max(size * 0.016, 1)
-            )
-            .frame(width: size * 0.96, height: size * 0.30)
-            .rotationEffect(.degrees(-12))
-            .opacity(0.9)
+    private var cat: some View {
+        let catSide = size * G.catSize
+        // Align the cat's floor line with the ground line.
+        let top = size * G.groundY - catSide * MascotPose.floorY
+        return MascotView(
+            mood: catMood,
+            size: catSide,
+            isInteractive: false,
+            isAnimated: animates,
+            greetsOnAppear: false
+        )
+        .offset(y: isBuilt ? 0 : size * 0.35)
+        .opacity(isBuilt ? 1 : 0)
+        .animation(entrance(order: 4, duration: 0.6), value: isBuilt)
+        .position(x: size * 0.5, y: top + catSide / 2)
     }
 
-    private var satellite: some View {
-        Circle()
-            .fill(RentOSBrand.coral)
-            .frame(width: size * 0.06, height: size * 0.06)
-            .overlay(Circle().strokeBorder(RentOSBrand.white, lineWidth: max(size * 0.008, 0.5)))
-            .shadow(color: RentOSBrand.coral.opacity(0.8), radius: size * 0.03)
-            .offset(x: size * 0.46)
-            .rotationEffect(.degrees(orbitAngle))
-            .scaleEffect(y: 0.31)
-            .rotationEffect(.degrees(-12))
-            .frame(width: size, height: size * 0.3)
+    /// Staggered springy entrances; a plain fade under Reduce Motion.
+    private func entrance(order: Int, duration: Double = 0.5) -> Animation {
+        if reduceMotion { return .easeOut(duration: 0.3) }
+        let delay = order < 0 ? 0 : 0.18 + Double(order) * 0.13
+        return .spring(response: duration, dampingFraction: 0.62).delay(delay)
     }
 }
 
-/// A single twinkling window — white, with a sunny glow when lit.
+// MARK: - Toy House
+
+/// A rounded, toy-like house: gable roof with overhang, a door, a window.
+private struct RentOSToyHouse: View {
+
+    let width: CGFloat
+    let bodyHeight: CGFloat
+    let roofHeight: CGFloat
+    let wall: Color
+    let roof: Color
+    let door: Color
+    var windowsLit: Bool
+    var animates: Bool
+
+    var body: some View {
+        VStack(spacing: -roofHeight * 0.08) {
+            RentOSGableRoof()
+                .fill(LinearGradient(colors: [roof.opacity(0.82), roof], startPoint: .top, endPoint: .bottom))
+                .frame(width: width * 1.14, height: roofHeight)
+                .zIndex(1)
+
+            ZStack(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: width * 0.07, style: .continuous)
+                    .fill(wall)
+                    // A whisper of shade toward the ground, so the flat homes
+                    // sit closer to the soft, rendered look of the cat.
+                    .overlay(
+                        LinearGradient(
+                            colors: [.clear, RentOSBrand.ink.opacity(0.07)],
+                            startPoint: .center,
+                            endPoint: .bottom
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: width * 0.07, style: .continuous))
+                    )
+
+                HStack(alignment: .bottom, spacing: width * 0.12) {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: width * 0.12,
+                        topTrailingRadius: width * 0.12,
+                        style: .continuous
+                    )
+                    .fill(door)
+                    .frame(width: width * 0.24, height: bodyHeight * 0.52)
+
+                    RentOSWindow(
+                        size: width * 0.24,
+                        lit: windowsLit,
+                        animates: animates,
+                        duration: 1.9,
+                        delay: Double(width.truncatingRemainder(dividingBy: 7)) * 0.1
+                    )
+                    .padding(.bottom, bodyHeight * 0.34)
+                }
+            }
+            .frame(width: width, height: bodyHeight)
+        }
+        .frame(width: width * 1.14, height: bodyHeight + roofHeight * 0.92)
+    }
+}
+
+/// A straight line, left to right, so `trim` draws it in that direction.
+/// (A `Capsule` would trace its whole outline and appear to run back.)
+private struct RentOSGroundLine: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.midY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        return p
+    }
+}
+
+/// A gable roof with a softened ridge.
+private struct RentOSGableRoof: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let ridge = CGPoint(x: rect.midX, y: rect.minY)
+        let soft = rect.width * 0.05
+        p.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: ridge.x - soft, y: ridge.y + soft * 0.9))
+        p.addQuadCurve(to: CGPoint(x: ridge.x + soft, y: ridge.y + soft * 0.9), control: ridge)
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.closeSubpath()
+        return p
+    }
+}
+
+// MARK: - Condo
+
+/// A slim tower with a grid of twinkling windows.
+private struct RentOSCondo: View {
+
+    let width: CGFloat
+    let height: CGFloat
+    var top: Color
+    var bottom: Color
+    var cap: Color
+    var rows: Int
+    var animates: Bool
+    var isLit: Bool
+
+    private let columns = 2
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            RoundedRectangle(cornerRadius: width * 0.14, style: .continuous)
+                .fill(LinearGradient(colors: [top, bottom], startPoint: .top, endPoint: .bottom))
+
+            // Roof cap.
+            Capsule()
+                .fill(cap)
+                .frame(width: width * 0.5, height: width * 0.12)
+                .offset(y: -width * 0.06)
+
+            VStack(spacing: width * 0.14) {
+                ForEach(0..<rows, id: \.self) { row in
+                    HStack(spacing: width * 0.18) {
+                        ForEach(0..<columns, id: \.self) { column in
+                            RentOSWindow(
+                                size: width * 0.22,
+                                lit: isLit,
+                                animates: animates,
+                                duration: 1.3 + Double((row + column) % 3) * 0.5,
+                                delay: Double((row * 3 + column * 5) % 7) * 0.25
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(.top, width * 0.28)
+        }
+        .frame(width: width, height: height)
+    }
+}
+
+/// A single window: white by day, warm sunny light when lit, with a slow
+/// twinkle when animated.
 private struct RentOSWindow: View {
 
     let size: CGFloat
-    let animates: Bool
-    let duration: Double
-    let delay: Double
+    var lit: Bool
+    var animates: Bool
+    var duration: Double
+    var delay: Double
 
-    @State private var isLit = false
+    @State private var glow = false
 
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
-            .fill(isLit ? RentOSBrand.sunnyLight : RentOSBrand.white)
+        RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+            .fill(lit ? RentOSBrand.sunnyLight : RentOSBrand.white)
             .frame(width: size, height: size)
-            .opacity(isLit ? 1.0 : 0.45)
-            .shadow(color: RentOSBrand.sunny.opacity(isLit ? 0.7 : 0), radius: size * 0.4)
+            .shadow(color: RentOSBrand.sunny.opacity(lit && glow ? 0.8 : 0), radius: size * 0.5)
+            .opacity(lit ? (glow ? 1 : 0.82) : 0.9)
             .onAppear {
-                guard animates else {
-                    isLit = true
-                    return
-                }
-                withAnimation(
-                    .easeInOut(duration: duration)
-                    .repeatForever(autoreverses: true)
-                    .delay(delay)
-                ) {
-                    isLit = true
+                guard animates else { return }
+                withAnimation(.easeInOut(duration: duration).repeatForever(autoreverses: true).delay(delay)) {
+                    glow = true
                 }
             }
     }
@@ -245,52 +379,30 @@ private struct RentOSWindow: View {
 
 // MARK: - Logo Tile
 
-/// The mark on a white app-icon-style tile with a soft rainbow glow.
-///
-/// White rather than coloured: the tower is violet, so a violet or
-/// gradient tile would swallow it. White makes the tower the colour.
+/// The mark on a white app-icon-style tile with a soft pastel sky.
 struct RentOSLogoTile: View {
 
     var size: CGFloat = 96
     var animates: Bool = true
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var shimmerOffset: CGFloat = -1.2
-
     private var cornerRadius: CGFloat { size * 0.27 }
-    private var isAnimating: Bool { animates && !reduceMotion }
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(RentOSBrand.white)
 
-            // Pastel glow pooling under the tower.
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(
-                    RadialGradient(
-                        colors: [RentOSBrand.sunny.opacity(0.28), RentOSBrand.sky.opacity(0.10), .clear],
-                        center: UnitPoint(x: 0.5, y: 0.66),
-                        startRadius: 0,
-                        endRadius: size * 0.62
+                    LinearGradient(
+                        colors: [RentOSBrand.wallViolet.opacity(0.75), RentOSBrand.white],
+                        startPoint: .top,
+                        endPoint: .center
                     )
                 )
 
-            RentOSLogoMark(size: size * 0.64, animates: isAnimating)
-                .offset(y: size * 0.06)
-
-            // Glossy shimmer sweep.
-            if isAnimating {
-                LinearGradient(
-                    colors: [.clear, RentOSBrand.white.opacity(0.55), .clear],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .frame(width: size * 0.5)
-                .rotationEffect(.degrees(18))
-                .offset(x: shimmerOffset * size)
-                .allowsHitTesting(false)
-            }
+            RentOSLogoMark(size: size * 0.92, animates: animates)
+                .offset(y: size * 0.02)
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
@@ -298,17 +410,9 @@ struct RentOSLogoTile: View {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .strokeBorder(RentOSBrand.violet.opacity(0.12), lineWidth: 1)
         )
-        .dsShadow(DS.Shadows.glow(RentOSBrand.violet, intensity: 0.25))
-        .onAppear {
-            guard isAnimating else { return }
-            withAnimation(
-                .easeInOut(duration: 2.8)
-                .repeatForever(autoreverses: false)
-                .delay(0.6)
-            ) {
-                shimmerOffset = 1.2
-            }
-        }
+        .dsShadow(DS.Shadows.glow(RentOSBrand.violet, intensity: 0.22))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("RentOS")
     }
 }
 
@@ -318,8 +422,7 @@ struct RentOSLogoTile: View {
 struct RentOSWordmark: View {
 
     var fontSize: CGFloat = 38
-    /// Light "Rent" for use on a coloured or dark background. The launch
-    /// screens are white now, so the default is the adaptive ink.
+    /// Light "Rent" for use on a coloured or dark background.
     var onDark: Bool = false
 
     var body: some View {
@@ -327,8 +430,7 @@ struct RentOSWordmark: View {
             Text("Rent")
                 .foregroundStyle(onDark ? AnyShapeStyle(RentOSBrand.white) : AnyShapeStyle(DS.Colors.textPrimary))
 
-            // Violet 4.86 → deep sky 5.06 on white. Both ends pass AA even
-            // as body text, so the wordmark holds at any size.
+            // Violet 4.86 → deep sky 5.06 on white: passes AA at any size.
             Text("OS")
                 .foregroundStyle(
                     LinearGradient(
@@ -346,15 +448,30 @@ struct RentOSWordmark: View {
 
 // MARK: - Previews
 
-#Preview("RentOS Brand") {
-    ZStack {
-        SplashBackground()
-
-        VStack(spacing: DS.Spacing.huge) {
+#Preview("Logo") {
+    VStack(spacing: DS.Spacing.xxl) {
+        RentOSLogoMark(size: 220)
+        HStack(spacing: DS.Spacing.xl) {
             RentOSLogoTile(size: 120)
-            RentOSLogoMark(size: 80)
-            RentOSWordmark()
-            RentOSWordmark(fontSize: 22)
+            RentOSLogoTile(size: 64)
+        }
+        RentOSWordmark()
+    }
+    .padding()
+    .background(DS.Colors.background)
+}
+
+#Preview("Logo builds") {
+    struct Demo: View {
+        @State private var built = false
+        var body: some View {
+            VStack(spacing: DS.Spacing.xl) {
+                RentOSLogoMark(size: 240, isBuilt: built)
+                DSButton(title: built ? "Reset" : "Build", variant: .primary) { built.toggle() }
+            }
+            .padding()
+            .background(DS.Colors.background)
         }
     }
+    return Demo()
 }

@@ -2,7 +2,9 @@
 //  DSEmptyState.swift
 //  RentalApp
 //
-//  Design System — Empty states with a floating gradient icon and optional action.
+//  Design System — Empty states: the mascot keeps you company, with the
+//  screen's own icon as a badge so the context ("no documents", "no
+//  tenants") is still clear at a glance.
 //
 
 import SwiftUI
@@ -17,25 +19,19 @@ struct DSEmptyState: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
-            ZStack {
-                Circle()
-                    .fill(DS.Gradients.brand)
-                    .frame(width: 84, height: 84)
-                    .opacity(0.15)
-                    .blur(radius: 12)
-
-                Circle()
-                    .fill(DS.Colors.surfaceRaised)
-                    .frame(width: 76, height: 76)
-                    .overlay(
-                        Circle().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1)
-                    )
+            ZStack(alignment: .bottomTrailing) {
+                MascotView(mood: .idle, size: 132, greetsOnAppear: true)
 
                 Image(systemName: icon)
-                    .font(.system(size: 30, weight: .medium))
-                    .foregroundStyle(DS.Gradients.brand)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(DS.Colors.textOnBrand)
+                    .frame(width: 38, height: 38)
+                    .background(DS.Gradients.brand, in: Circle())
+                    .overlay(Circle().strokeBorder(DS.Colors.surfaceRaised, lineWidth: 3))
+                    .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.3))
+                    .offset(x: -8, y: -10)
+                    .accessibilityHidden(true)
             }
-            .dsFloating(amplitude: 5, duration: 3.4)
 
             VStack(spacing: DS.Spacing.sm) {
                 Text(title)

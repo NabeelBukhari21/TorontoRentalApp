@@ -60,7 +60,7 @@ struct OrgSetupFlowView: View {
             // Step content.
             ScrollView(showsIndicators: false) {
                 VStack(spacing: DS.Spacing.xxl) {
-                    OrgSetupStepHeader(step: viewModel.step)
+                    OrgSetupStepHeader(step: viewModel.step, isReady: viewModel.canContinue)
                         .id("header-\(viewModel.step.rawValue)")
                         .transition(.opacity.combined(with: .move(edge: .top)))
 
