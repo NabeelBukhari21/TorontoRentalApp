@@ -265,6 +265,7 @@
 				DEVELOPMENT_TEAM = 547Y88F9Z9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RentalApp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RentOS;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -298,6 +299,7 @@
 				DEVELOPMENT_TEAM = 547Y88F9Z9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RentalApp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RentOS;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

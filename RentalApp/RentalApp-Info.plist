@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  RentalApp-Info.plist
+
+  Keys that can't be expressed as INFOPLIST_KEY_ build settings (they are
+  arrays/dictionaries). Xcode MERGES this file with the Info.plist it
+  generates from build settings — GENERATE_INFOPLIST_FILE stays YES, and
+  everything else (display name, orientations…) still lives in build
+  settings.
+
+  This file deliberately sits OUTSIDE the synchronized RentalApp/ source
+  folder. Inside it, Xcode would also copy it into the bundle as a
+  resource and the build fails with "Multiple commands produce Info.plist".
+-->
+<plist version="1.0">
+<dict>
+	<!--
+	  Background task identifiers. MUST match BackgroundRefreshCoordinator
+	  .taskIdentifier and .drainTaskIdentifier exactly. iOS only lets an app
+	  register background tasks it has declared here; registering one that
+	  isn't listed is rejected on a real device.
+	-->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>ca.rentos.sync.refresh</string>
+		<string>ca.rentos.sync.drain</string>
+	</array>
+
+	<!--
+	  fetch      → BGAppRefreshTask (catch up on data while backgrounded)
+	  processing → BGProcessingTask (drain writes queued while offline)
+	  Info.plist only — not a signing capability, so a free Apple ID can
+	  still install the app.
+	-->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+
+	<!-- rentos:// deep links and the auth callback (AppRouter.open(_:)). -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>ca.rentos.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>rentos</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
