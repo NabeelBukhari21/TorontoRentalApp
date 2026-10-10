@@ -120,9 +120,18 @@ struct DashboardView: View {
             .refreshable { await viewModel.refresh() }
 
             if viewModel.isLoading {
-                DSCardSkeleton(cards: 3)
-                    .padding(DS.Spacing.lg)
-                    .background(DSAmbientBackground())
+                VStack(spacing: DS.Spacing.lg) {
+                    // The cat at its laptop while the portfolio loads.
+                    MascotGuide(
+                        mood: .working,
+                        message: "Fetching your portfolio…",
+                        mascotSize: 100
+                    )
+                    DSCardSkeleton(cards: 3)
+                }
+                .padding(DS.Spacing.lg)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .background(DSAmbientBackground())
             }
         }
         .task { await viewModel.load() }

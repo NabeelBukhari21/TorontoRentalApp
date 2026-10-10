@@ -10,7 +10,7 @@
 //    urgent tasks      → concerned   ("needs you today")
 //    requests open     → thinking    ("keeping an eye on them")
 //    tasks lined up    → happy       ("you've got this")
-//    nothing pending   → cheer       ("running smoothly")
+//    nothing pending   → cool        ("running smoothly")
 //
 //  Tap the cat for a tip. Tips only describe features that exist today —
 //  a mascot that recommends things the app can't do burns trust fast.
@@ -57,7 +57,7 @@ struct DashboardMascotBrief: View {
             return (.happy, "You've got \(openTasks) \(plural("task", openTasks)) lined up today. You've got this!")
         }
         let percent = occupancyRate > 1 ? occupancyRate : occupancyRate * 100
-        return (.cheer, "Everything's running smoothly — occupancy is at \(Int(percent.rounded()))%. Nice work!")
+        return (.cool, "Everything's running smoothly — occupancy is at \(Int(percent.rounded()))%. Nice work!")
     }
 
     private func plural(_ word: String, _ count: Int) -> String {

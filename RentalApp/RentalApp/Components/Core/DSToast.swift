@@ -23,9 +23,8 @@ struct DSToastView: View {
 
     var body: some View {
         HStack(spacing: DS.Spacing.md) {
-            Image(systemName: toast.style.icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(toast.style.kind.color)
+            // The cat reacts to the outcome; the text carries the meaning.
+            MascotFaceView(face: toast.style.mascotFace, size: 30)
 
             Text(toast.message)
                 .font(.system(size: 13.5, weight: .medium))
@@ -211,6 +210,19 @@ extension View {
                 toast: Toast(message: "3 properties archived", style: .info),
                 isUndoing: false, onUndo: {}, onRetry: {}, onDismiss: {}
             )
+        }
+    }
+}
+
+// MARK: - Mascot
+
+private extension Toast.Style {
+    /// The cat's reaction to each outcome.
+    var mascotFace: MascotFace {
+        switch self {
+        case .success: .happy
+        case .failure: .sad
+        case .info:    .curious
         }
     }
 }

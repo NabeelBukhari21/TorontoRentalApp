@@ -46,7 +46,7 @@ enum OnboardingPage: Int, CaseIterable, Identifiable {
         case .intro:       .happy
         case .maintenance: .thinking
         case .portfolio:   .happy
-        case .insights:    .cheer
+        case .insights:    .excited
         }
     }
 

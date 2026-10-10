@@ -46,28 +46,80 @@ import SwiftUI
 
 // MARK: - Pose
 
-/// An illustrated pose. All poses share one canvas geometry.
+/// An illustrated pose. All poses share one canvas geometry: the floor
+/// line at 94% and the cat sized so heads match across poses.
 enum MascotPose: String, CaseIterable, Sendable {
     case sit
     case cheer
+    /// Sunglasses — calm confidence, "all clear".
+    case cool
+    /// At the laptop — busy, loading, syncing.
+    case work
+    /// Curled up asleep — quiet hours, nothing happening.
+    case sleep
+    /// Mid-leap — "let's go!". Airborne: its paws sit above the floor line,
+    /// so the ground shadow reads as being below it.
+    case leap
 
     var assetName: String {
         switch self {
         case .sit:   "MascotSit"
         case .cheer: "MascotCheer"
+        case .cool:  "MascotCool"
+        case .work:  "MascotWork"
+        case .sleep: "MascotSleep"
+        case .leap:  "MascotLeap"
         }
     }
 
     /// Floor line (where the paws meet the ground), as a fraction of the
-    /// canvas height. Identical for every pose by construction.
+    /// canvas height. Identical for every grounded pose by construction.
     static let floorY: CGFloat = 0.94
 
+    /// Pixel side of the pose's canvas. The extra poses were cut from the
+    /// character sheets at their native size — never upscaled — so they
+    /// are smaller than the two hero poses. See `renderable(atPoints:scale:)`.
+    var nativePixels: CGFloat {
+        switch self {
+        case .sit, .cheer: 1024
+        case .cool:  299
+        case .work:  287
+        case .sleep: 336
+        case .leap:  477
+        }
+    }
+
+    /// The high-resolution pose to show instead when this one would be
+    /// visibly upscaled.
+    var hiResFallback: MascotPose {
+        switch self {
+        case .sit, .cheer:  self
+        case .cool, .work, .sleep: .sit
+        case .leap: .cheer
+        }
+    }
+
+    /// The pose actually drawn at a given size: this one if its pixels hold
+    /// up (allowing a mild 1.3× stretch, invisible on a soft illustration),
+    /// otherwise the hi-res fallback. When high-resolution exports of the
+    /// newer poses arrive, raising `nativePixels` is all it takes.
+    func renderable(atPoints points: CGFloat, scale: CGFloat) -> MascotPose {
+        points * scale <= nativePixels * 1.3 ? self : hiResFallback
+    }
+
+    /// Whether the paws touch the floor.
+    var isGrounded: Bool { self != .leap }
+
     /// Vertical centre of the eyes, as a fraction of the canvas — where
-    /// sparkles and badges are placed around the head.
+    /// sparkles and badges are placed around the head. Measured from the art.
     var eyeY: CGFloat {
         switch self {
         case .sit:   0.351
         case .cheer: 0.315
+        case .cool:  0.278
+        case .work:  0.456
+        case .sleep: 0.646
+        case .leap:  0.428
         }
     }
 
@@ -76,6 +128,10 @@ enum MascotPose: String, CaseIterable, Sendable {
         switch self {
         case .sit:   0.058
         case .cheer: 0.040
+        case .cool:  0.100
+        case .work:  0.101
+        case .sleep: 0.360
+        case .leap:  0.080
         }
     }
 }
@@ -94,10 +150,22 @@ enum MascotMood: Hashable, Sendable {
     case thinking
     /// Something needs attention: a wiggle and an alert badge.
     case concerned
+    /// All clear: sunglasses on, the occasional glint.
+    case cool
+    /// Busy at the laptop: loading, syncing, the AI at work.
+    case working
+    /// Asleep: slow breathing and drifting Zs. Nothing needs you.
+    case sleeping
+    /// Mid-leap: bobbing in the air. "Let's go!"
+    case excited
 
     var pose: MascotPose {
         switch self {
-        case .cheer: .cheer
+        case .cheer:    .cheer
+        case .cool:     .cool
+        case .working:  .work
+        case .sleeping: .sleep
+        case .excited:  .leap
         case .idle, .happy, .thinking, .concerned: .sit
         }
     }
@@ -110,6 +178,18 @@ enum MascotMood: Hashable, Sendable {
         case .cheer:     2.2...3.6
         case .thinking:  7...11
         case .concerned: 4...6
+        case .cool:      4.5...7.5
+        case .working:   2.5...4
+        case .sleeping:  60...90      // practically never — it's asleep
+        case .excited:   2.4...3.6
+        }
+    }
+
+    /// Whether the cat sways side to side. Not while typing or asleep.
+    fileprivate var sways: Bool {
+        switch self {
+        case .working, .sleeping, .excited: false
+        default: true
         }
     }
 }
@@ -160,6 +240,7 @@ struct MascotView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.displayScale) private var displayScale
 
     @State private var reaction = MascotReaction.hop
     @State private var reactionTrigger = 0
@@ -169,6 +250,12 @@ struct MascotView: View {
     @State private var sway = false
 
     private var moves: Bool { isAnimated && !reduceMotion }
+
+    /// The pose actually drawn — the mood's pose, unless it would look soft
+    /// at this size (see `MascotPose.renderable`).
+    private var pose: MascotPose {
+        mood.pose.renderable(atPoints: size, scale: displayScale)
+    }
     private var floorAnchor: UnitPoint { UnitPoint(x: 0.5, y: MascotPose.floorY) }
 
     var body: some View {
@@ -177,21 +264,23 @@ struct MascotView: View {
                 groundShadow(lift: motion.lift)
 
                 ZStack {
-                    Image(mood.pose.assetName)
+                    Image(pose.assetName)
                         .resizable()
                         .interpolation(.high)
                         .scaledToFit()
-                        .id(mood.pose)
+                        .id(pose)
                         .transition(
                             reduceMotion
                                 ? .opacity
                                 : .scale(scale: 0.92, anchor: floorAnchor).combined(with: .opacity)
                         )
                 }
-                .animation(.spring(response: 0.35, dampingFraction: 0.6), value: mood.pose)
+                .animation(.spring(response: 0.35, dampingFraction: 0.6), value: pose)
                 // Breath and sway: always-on, deliberately out of phase.
                 .scaleEffect(x: 1, y: breathe ? 1.022 : 1, anchor: floorAnchor)
                 .rotationEffect(.degrees(swayAngle), anchor: floorAnchor)
+                // Airborne poses bob instead of sway.
+                .offset(y: airBob)
                 // The reaction on top.
                 .scaleEffect(
                     x: 1 / max(motion.stretch, 0.5),
@@ -202,7 +291,7 @@ struct MascotView: View {
                 .offset(y: -motion.lift)
                 .overlay { moodAccessory.offset(y: -motion.lift) }
                 .overlay {
-                    MascotSparkles(trigger: sparkleTrigger, center: UnitPoint(x: 0.5, y: mood.pose.eyeY))
+                    MascotSparkles(trigger: sparkleTrigger, center: UnitPoint(x: 0.5, y: pose.eyeY))
                         .offset(y: -motion.lift)
                 }
             }
@@ -245,16 +334,23 @@ struct MascotView: View {
     // MARK: Pieces
 
     private var swayAngle: Double {
-        guard moves else { return 0 }
+        guard moves, mood.sways else { return 0 }
         let amplitude = mood == .thinking ? 4.5 : 1.8
         return sway ? amplitude : -amplitude
+    }
+
+    private var airBob: CGFloat {
+        guard moves, !pose.isGrounded else { return 0 }
+        return breathe ? -size * 0.035 : size * 0.01
     }
 
     /// The contact shadow. It belongs to the floor, so it stays put while
     /// the cat hops — shrinking and fading as the cat gets further away.
     private func groundShadow(lift: CGFloat) -> some View {
         let height = max(size * 0.18, 1)
-        let away = min(lift / height, 1)
+        // An airborne pose starts "away" from the floor already.
+        let base: CGFloat = pose.isGrounded ? 0 : 0.6
+        let away = min(base + lift / height, 1)
         return Ellipse()
             .fill(DS.Colors.groundShadow)
             .frame(width: size * 0.52 * (1 - away * 0.35), height: size * 0.065 * (1 - away * 0.3))
@@ -268,11 +364,14 @@ struct MascotView: View {
         switch mood {
         case .thinking:
             MascotThoughtDots(size: size * 0.20, animates: moves)
-                .position(x: size * 0.80, y: size * max(mood.pose.headTopY + 0.05, 0.08))
+                .position(x: size * 0.80, y: size * max(pose.headTopY + 0.05, 0.08))
         case .concerned:
             MascotAlertBadge(size: size * 0.17, animates: moves)
-                .position(x: size * 0.79, y: size * (mood.pose.headTopY + 0.08))
-        case .idle, .happy, .cheer:
+                .position(x: size * 0.79, y: size * (pose.headTopY + 0.08))
+        case .sleeping:
+            MascotSleepZs(size: size * 0.24, animates: moves)
+                .position(x: size * 0.72, y: size * max(pose.headTopY - 0.02, 0.12))
+        case .idle, .happy, .cheer, .cool, .working, .excited:
             EmptyView()
         }
     }
@@ -299,6 +398,10 @@ struct MascotView: View {
         case .concerned: play(.wiggle)
         case .thinking:  play(.nudge)
         case .idle:      play(.littleHop)
+        case .cool:      play(.littleHop, sparkles: true)
+        case .working:   play(.nudge)
+        case .sleeping:  break                      // don't wake it
+        case .excited:   play(.hop, sparkles: true)
         }
     }
 
@@ -330,6 +433,10 @@ struct MascotView: View {
             case .concerned: play(.wiggle)
             case .thinking:  play(.nudge)
             case .idle:      play(Bool.random() ? .littleHop : .nudge)
+            case .cool:      play(.nudge, sparkles: true)    // a glint off the shades
+            case .working:   play(.nudge)                     // typing bob
+            case .sleeping:  break
+            case .excited:   play(.littleHop, sparkles: Bool.random())
             }
         }
     }
@@ -423,6 +530,32 @@ private struct MascotThoughtDots: View {
     }
 }
 
+/// Drifting "z z z" for `.sleeping`.
+private struct MascotSleepZs: View {
+
+    let size: CGFloat
+    let animates: Bool
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            ForEach(0..<3, id: \.self) { index in
+                Text("z")
+                    .font(.system(size: size * (0.32 + 0.12 * CGFloat(index)), weight: .heavy, design: .rounded))
+                    .foregroundStyle(DS.Colors.brandInk)
+                    .phaseAnimator(animates ? [CGFloat(0), 1] : [CGFloat(0.5)]) { z, phase in
+                        z.offset(x: size * (0.18 * CGFloat(index) + 0.10 * phase),
+                                 y: -size * (0.28 * CGFloat(index) + 0.22 * phase))
+                            .opacity(animates ? Double(1 - 0.7 * phase) : 1)
+                    } animation: { _ in
+                        .easeInOut(duration: 1.6).delay(Double(index) * 0.35)
+                    }
+            }
+        }
+        .frame(width: size, height: size, alignment: .bottomLeading)
+        .allowsHitTesting(false)
+    }
+}
+
 /// "!" badge for `.concerned`.
 private struct MascotAlertBadge: View {
 
@@ -459,6 +592,13 @@ private struct MascotAlertBadge: View {
                     Text("Cheer").tag(MascotMood.cheer)
                     Text("Think").tag(MascotMood.thinking)
                     Text("Alert").tag(MascotMood.concerned)
+                }
+                .pickerStyle(.segmented)
+                Picker("More", selection: $mood) {
+                    Text("Cool").tag(MascotMood.cool)
+                    Text("Work").tag(MascotMood.working)
+                    Text("Sleep").tag(MascotMood.sleeping)
+                    Text("Leap").tag(MascotMood.excited)
                 }
                 .pickerStyle(.segmented)
                 .padding()
