@@ -1,0 +1,48 @@
+//
+//  DebugLaunchOverride.swift
+//  RentalApp (RentOS)
+//
+//  Diagnostics — Start the app at a specific flow while developing it.
+//
+//  A restored session sends every launch straight to Home, which makes
+//  iterating on onboarding or sign-in painful. Pass a launch argument and
+//  the session coordinator starts there instead:
+//
+//      -RentOSStartAt onboarding     the onboarding pager
+//      -RentOSStartAt login          the sign-in screen
+//
+//  The override is non-destructive: the stored session and onboarding flag
+//  are left untouched, so removing the argument returns to normal launch.
+//  It exists in DEBUG builds only — release builds can't be steered.
+//
+//  Set it in Xcode via the "RentalApp (Onboarding)" scheme, or
+//  Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Arguments.
+//
+
+import Foundation
+
+enum DebugLaunchOverride: String, CaseIterable, Sendable {
+    case onboarding
+    case login
+
+    /// Launch arguments of the form `-Key value` land in the
+    /// `UserDefaults` argument domain, so no parsing is needed.
+    static let argumentKey = "RentOSStartAt"
+
+    /// The override for this launch, if any. Always `nil` outside DEBUG.
+    static var current: DebugLaunchOverride? {
+        #if DEBUG
+        UserDefaults.standard.string(forKey: argumentKey).flatMap(DebugLaunchOverride.init(rawValue:))
+        #else
+        nil
+        #endif
+    }
+
+    /// The auth state the app should open in.
+    var initialState: AuthState {
+        switch self {
+        case .onboarding: .onboarding
+        case .login:      .unauthenticated
+        }
+    }
+}

@@ -70,6 +70,13 @@ final class SessionViewModel {
     /// Runs behind the splash animation. The only entry point that can
     /// leave `.checking`.
     func bootstrap() async {
+        // DEBUG-only: start at a specific flow while developing it,
+        // without touching the stored session. See `DebugLaunchOverride`.
+        if let override = DebugLaunchOverride.current {
+            transition(to: override.initialState)
+            return
+        }
+
         let restored = await auth.restoreSession()
         canUnlockWithBiometrics = restored?.biometricEnabled ?? false
 
