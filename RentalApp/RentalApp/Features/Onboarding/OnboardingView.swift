@@ -41,7 +41,10 @@ struct OnboardingView: View {
                 MascotGuide(
                     mood: selection.mascotMood,
                     message: selection.mascotLine,
-                    mascotSize: 112
+                    mascotSize: 112,
+                    // On the intro page Purr is already on stage in the
+                    // hello clip; the bubble points up at it instead.
+                    showsMascot: selection != .intro
                 )
                 .padding(.horizontal, DS.Spacing.xl)
                 .padding(.bottom, DS.Spacing.sm)

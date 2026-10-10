@@ -25,6 +25,8 @@ struct MascotSpeechBubble: View {
         case leading
         /// Points down, at a cat below.
         case bottom
+        /// Points up, at a cat (or clip) above.
+        case top
     }
 
     /// Optional bold first line — a question or a headline.
@@ -60,7 +62,7 @@ struct MascotSpeechBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
-        .padding(tail == .leading ? .leading : .bottom, tail == .leading ? Self.tailWidth : Self.tailHeight * 0.7)
+        .padding(tailEdge, tail == .leading ? Self.tailWidth : Self.tailHeight * 0.7)
         .background {
             MascotBubbleShape(tail: tail, tailWidth: Self.tailWidth, tailHeight: Self.tailHeight)
                 .fill(DS.Colors.surfaceRaised)
@@ -73,6 +75,15 @@ struct MascotSpeechBubble: View {
         .task(id: message) { await typeOut() }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel([title, message].compactMap { $0 }.joined(separator: ". "))
+    }
+
+    /// The side the tail occupies, reserved so text never sits under it.
+    private var tailEdge: Edge.Set {
+        switch tail {
+        case .leading: .leading
+        case .bottom:  .bottom
+        case .top:     .top
+        }
     }
 
     private func typeOut() async {
@@ -108,11 +119,19 @@ struct MascotBubbleShape: Shape {
         switch tail {
         case .leading: body.origin.x += tailWidth; body.size.width -= tailWidth
         case .bottom:  body.size.height -= tailHeight * 0.7
+        case .top:     body.origin.y += tailHeight * 0.7; body.size.height -= tailHeight * 0.7
         }
         let r = min(cornerRadius, body.height / 2, body.width / 2)
         var p = Path()
 
         p.move(to: CGPoint(x: body.minX + r, y: body.minY))
+        if tail == .top {
+            // Tail centred, pointing up at whatever sits above the bubble.
+            let tx = body.midX
+            p.addLine(to: CGPoint(x: tx - tailWidth * 0.7, y: body.minY))
+            p.addLine(to: CGPoint(x: tx, y: rect.minY))
+            p.addLine(to: CGPoint(x: tx + tailWidth * 0.7, y: body.minY))
+        }
         p.addLine(to: CGPoint(x: body.maxX - r, y: body.minY))
         p.addArc(tangent1End: CGPoint(x: body.maxX, y: body.minY),
                  tangent2End: CGPoint(x: body.maxX, y: body.minY + r), radius: r)
@@ -160,18 +179,28 @@ struct MascotGuide: View {
     var title: String? = nil
     let message: String
     var mascotSize: CGFloat = 104
+    /// When false the cat steps out and the bubble points up instead — for
+    /// screens where Purr is already on stage above (e.g. an animated clip).
+    var showsMascot: Bool = true
     var onTapMascot: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .bottom, spacing: DS.Spacing.xs) {
-            MascotView(mood: mood, size: mascotSize, onTap: onTapMascot)
-                // The canvas has headroom for raised arms; pull the bubble
-                // in so it sits beside the cat, not beside empty space.
-                .padding(.trailing, -mascotSize * 0.08)
+            if showsMascot {
+                MascotView(mood: mood, size: mascotSize, onTap: onTapMascot)
+                    // The canvas has headroom for raised arms; pull the bubble
+                    // in so it sits beside the cat, not beside empty space.
+                    .padding(.trailing, -mascotSize * 0.08)
+                    .transition(.scale(scale: 0.4, anchor: .bottom).combined(with: .opacity))
+            }
 
-            MascotSpeechBubble(title: title, message: message, tail: .leading)
-                .padding(.bottom, mascotSize * 0.22)
+            MascotSpeechBubble(title: title, message: message, tail: showsMascot ? .leading : .top)
+                .padding(.bottom, showsMascot ? mascotSize * 0.22 : 0)
         }
+        // Keep the guide's height steady while the cat comes and goes, so
+        // the layout above and below doesn't jump.
+        .frame(minHeight: mascotSize * 0.9, alignment: .bottom)
+        .animation(.spring(response: 0.45, dampingFraction: 0.7), value: showsMascot)
     }
 }
 

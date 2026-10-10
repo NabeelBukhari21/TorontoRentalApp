@@ -2,7 +2,7 @@
 //  OnboardingIntroIllustration.swift
 //  RentalApp
 //
-//  Onboarding page 1 — The platform. A glowing logo tile with feature
+//  Onboarding page 1 — Meet Purr. The animated hello clip, with feature
 //  chips floating in orbit and a live-looking property card beneath.
 //
 
@@ -22,10 +22,13 @@ struct OnboardingIntroIllustration: View {
                 .opacity(isActive ? 1 : 0)
                 .animation(DS.Motion.gentle, value: isActive)
 
-            // The neighbourhood builds itself as the page appears. No cat
-            // here — the mascot is on screen below, introducing it.
-            PurrpertyLogoMark(size: 170, isBuilt: isActive, showsCat: false)
-                .offset(y: -20)
+            // Purr says hi: the hand-animated clip plays as the page
+            // appears and again whenever it's tapped.
+            MascotClipView(clip: .hello, size: 196, isActive: isActive)
+                .offset(y: -22)
+                .scaleEffect(isActive ? 1 : 0.85)
+                .opacity(isActive ? 1 : 0)
+                .animation(DS.Motion.entrance, value: isActive)
 
             // Orbiting feature chips.
             OnboardingFloatingChip(
