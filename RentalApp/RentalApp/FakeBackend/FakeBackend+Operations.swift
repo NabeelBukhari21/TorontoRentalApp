@@ -1,6 +1,6 @@
 //
 //  FakeBackend+Operations.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Maintenance, conversations, documents, inspections,
 //  tasks, activity, and notifications.

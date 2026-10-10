@@ -24,7 +24,7 @@ struct OnboardingIntroIllustration: View {
 
             // The neighbourhood builds itself as the page appears. No cat
             // here — the mascot is on screen below, introducing it.
-            RentOSLogoMark(size: 170, isBuilt: isActive, showsCat: false)
+            PurrpertyLogoMark(size: 170, isBuilt: isActive, showsCat: false)
                 .offset(y: -20)
 
             // Orbiting feature chips.

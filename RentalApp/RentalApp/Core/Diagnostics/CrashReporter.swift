@@ -1,6 +1,6 @@
 //
 //  CrashReporter.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Diagnostics — Catching the crash, and surviving it.
 //

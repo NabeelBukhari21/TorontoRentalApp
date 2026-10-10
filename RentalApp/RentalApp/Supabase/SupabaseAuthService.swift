@@ -1,6 +1,6 @@
 //
 //  SupabaseAuthService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Authentication, backed by GoTrue.
 //
@@ -294,7 +294,7 @@ final class SupabaseAuthService: AuthServiceProtocol {
         do {
             let ok = try await context.evaluatePolicy(
                 .deviceOwnerAuthenticationWithBiometrics,
-                localizedReason: "Unlock RentOS"
+                localizedReason: "Unlock Purrperty"
             )
             guard ok else { throw AppError.unauthorized }
         } catch {

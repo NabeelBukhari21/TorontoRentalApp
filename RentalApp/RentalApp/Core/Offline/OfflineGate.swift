@@ -1,6 +1,6 @@
 //
 //  OfflineGate.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Offline — Where "offline" stops being a state and becomes behaviour.
 //

@@ -1,6 +1,6 @@
 //
 //  ConflictCenter.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Offline — Surfacing a conflict to a human.
 //

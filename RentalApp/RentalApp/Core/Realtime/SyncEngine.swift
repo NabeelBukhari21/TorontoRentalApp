@@ -1,6 +1,6 @@
 //
 //  SyncEngine.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — The coordinator.
 //

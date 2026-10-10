@@ -1,5 +1,5 @@
 // ============================================================================
-//  RentOS — Edge Function: ai-complete
+//  Purrperty — Edge Function: ai-complete
 // ============================================================================
 //  The only thing in the system that holds a provider API key.
 //

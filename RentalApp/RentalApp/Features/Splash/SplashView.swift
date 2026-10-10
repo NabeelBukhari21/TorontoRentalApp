@@ -41,7 +41,7 @@ struct SplashView: View {
                     .dsFloating(amplitude: 4, duration: 3.6)
 
                 VStack(spacing: DS.Spacing.md) {
-                    RentOSWordmark(fontSize: 40)
+                    PurrpertyWordmark(fontSize: 40)
                         .kerning(wordmarkVisible ? 0.5 : 6)
                         .opacity(wordmarkVisible ? 1 : 0)
                         .blur(radius: wordmarkVisible ? 0 : 8)

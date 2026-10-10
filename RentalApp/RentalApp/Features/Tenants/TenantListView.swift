@@ -1,6 +1,6 @@
 //
 //  TenantListView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Directory: summary strip, animated search, status
 //  filters, sort, and tenant rows that animate through changes.

@@ -1,6 +1,6 @@
 //
 //  NavigationModules.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — Domain navigation modules.
 //  Each module owns its slice of the route space: which pushed routes

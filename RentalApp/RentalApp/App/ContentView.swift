@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  App entry — hosts the root navigation coordinator.
 //

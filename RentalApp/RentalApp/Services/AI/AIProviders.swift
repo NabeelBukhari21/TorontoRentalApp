@@ -1,6 +1,6 @@
 //
 //  AIProviders.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Services/AI — The concrete providers.
 //

@@ -6,7 +6,7 @@ H=lambda h:tuple(int(h[i:i+2],16) for i in (0,2,4))
 C=dict(violet=H('6C5CE7'),violetLight=H('8F83F0'),violetDeep=H('4B3BC9'),coral=H('FF6B6B'),sunny=H('FFD93D'),
        sunnyLight=H('FFF0A8'),mint=H('2ED8A3'),sky=H('4DA8FF'),white=(255,255,255),
        skyLight=H('8CC6FF'),skyDeep=H('2A6BD4'),wallSunny=H('FFE9A6'),wallMint=H('C4F2E3'),wallSky=H('D9ECFF'),wallViolet=H('D9D4FB'))
-# --- shared geometry (mirrors RentOSLogoGeometry) ---
+# --- shared geometry (mirrors PurrpertyLogoGeometry) ---
 GROUND=0.85; CAT=0.72
 LEFT=dict(cx=0.165,w=0.28,body=0.23,roof=0.15); RIGHT=dict(cx=0.835,w=0.26,body=0.21,roof=0.14)
 CONDO=dict(cx=0.31,w=0.19,h=0.62,rows=5,top='violetLight',bot='violet',cap='violetDeep')

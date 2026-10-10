@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 06 · Write path: archive, restore, guarded delete
+--  Purrperty — 06 · Write path: archive, restore, guarded delete
 -- ============================================================================
 --  Archive vs delete is a real distinction, not a UI nicety:
 --

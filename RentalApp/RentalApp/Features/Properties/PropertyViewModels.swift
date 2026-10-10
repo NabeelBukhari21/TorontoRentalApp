@@ -1,6 +1,6 @@
 //
 //  PropertyViewModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — List and detail view models.
 //

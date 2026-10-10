@@ -1,6 +1,6 @@
 //
 //  BufferedAnalyticsSink.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Analytics — Batching, backpressure, and the network sink.
 //

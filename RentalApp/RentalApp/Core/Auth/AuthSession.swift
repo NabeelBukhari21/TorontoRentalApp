@@ -1,6 +1,6 @@
 //
 //  AuthSession.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Authentication vocabulary.
 //

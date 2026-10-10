@@ -1,6 +1,6 @@
 //
 //  TorontoSeeds.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Source vocabulary for generated data.
 //

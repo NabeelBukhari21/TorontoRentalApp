@@ -1,6 +1,6 @@
 //
 //  MutationOutbox.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — Offline writes.
 //

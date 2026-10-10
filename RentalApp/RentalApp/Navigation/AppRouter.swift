@@ -1,6 +1,6 @@
 //
 //  AppRouter.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — Observable router owning all navigation state:
 //  selected tab, one navigation path per tab, and presentation state

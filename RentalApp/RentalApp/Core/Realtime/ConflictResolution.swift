@@ -1,6 +1,6 @@
 //
 //  ConflictResolution.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — When two people edit the same row.
 //

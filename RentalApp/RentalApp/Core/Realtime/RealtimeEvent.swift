@@ -1,6 +1,6 @@
 //
 //  RealtimeEvent.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — The event vocabulary.
 //

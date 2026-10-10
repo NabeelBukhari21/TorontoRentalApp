@@ -1,6 +1,6 @@
 //
 //  FeatureFlag.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/FeatureFlags — What is switched on, and who decides.
 //

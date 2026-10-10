@@ -1,6 +1,6 @@
 //
 //  PlatformServices.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Services — Persistence and analytics adapters.
 //

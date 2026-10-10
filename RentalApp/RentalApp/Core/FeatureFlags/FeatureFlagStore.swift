@@ -1,6 +1,6 @@
 //
 //  FeatureFlagStore.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/FeatureFlags — Resolution, refresh, and the SwiftUI seam.
 //

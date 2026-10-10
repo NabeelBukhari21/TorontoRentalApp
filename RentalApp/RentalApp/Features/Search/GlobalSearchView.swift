@@ -1,6 +1,6 @@
 //
 //  GlobalSearchView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Search — The global search sheet.
 //

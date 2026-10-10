@@ -1,10 +1,10 @@
 //
 //  LoadState.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — The single vocabulary for asynchronous screen state.
 //
-//  Every screen in RentOS is in exactly one of four states: it hasn't
+//  Every screen in Purrperty is in exactly one of four states: it hasn't
 //  asked yet, it's asking, it has data, or it failed. Modelling that
 //  as an enum instead of three loose booleans (`isLoading`,
 //  `hasError`, `items.isEmpty`) makes impossible combinations

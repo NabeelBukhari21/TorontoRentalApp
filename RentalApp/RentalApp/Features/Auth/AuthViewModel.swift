@@ -1,6 +1,6 @@
 //
 //  AuthViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Auth — View model for the credential screens.
 //

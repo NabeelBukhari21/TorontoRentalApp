@@ -1,4 +1,4 @@
-# RentOS — Supabase backend
+# Purrperty — Supabase backend
 
 Everything the app talks to, and how to stand it up.
 

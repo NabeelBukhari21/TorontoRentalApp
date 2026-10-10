@@ -1,6 +1,6 @@
 //
 //  RentalAppApp.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  App — Composition root. Builds the dependency graph once and
 //  injects it into the view hierarchy.

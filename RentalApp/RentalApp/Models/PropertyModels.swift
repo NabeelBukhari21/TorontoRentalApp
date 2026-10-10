@@ -1,6 +1,6 @@
 //
 //  PropertyModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Presentation models + Toronto mock data.
 //  A PropertyService will replace `PropertyMockData` later.

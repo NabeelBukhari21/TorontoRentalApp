@@ -1,6 +1,6 @@
 //
 //  Organization.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Tenancy root and people.
 //

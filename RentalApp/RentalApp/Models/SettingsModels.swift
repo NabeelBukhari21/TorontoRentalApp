@@ -1,6 +1,6 @@
 //
 //  SettingsModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — Sections, store, and mock account data.
 //  The Appearance theme here drives the whole app's color scheme.

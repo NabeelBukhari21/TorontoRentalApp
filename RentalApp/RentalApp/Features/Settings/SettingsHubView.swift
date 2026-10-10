@@ -1,6 +1,6 @@
 //
 //  SettingsHubView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — Hub: profile header card and grouped section navigation.
 //
@@ -46,7 +46,7 @@ struct SettingsHubView: View {
 
                     // Workspace.
                     SettingsSectionCard(title: "Workspace") {
-                        sectionRow(.billing, badge: viewModel.planName == "RentOS Premium" ? "Premium" : nil)
+                        sectionRow(.billing, badge: viewModel.planName == "Purrperty Premium" ? "Premium" : nil)
                         SettingsRowDivider()
                         sectionRow(.notifications)
                         SettingsRowDivider()
@@ -69,7 +69,7 @@ struct SettingsHubView: View {
                             SettingsToggleRow(
                                 icon: session.biometricKind.icon,
                                 title: "Unlock with \(session.biometricKind.title)",
-                                subtitle: "Skip the password when you reopen RentOS",
+                                subtitle: "Skip the password when you reopen Purrperty",
                                 isOn: $biometricEnabled
                             )
                         }
@@ -98,7 +98,7 @@ struct SettingsHubView: View {
                     .disabled(session.isSigningOut)
                     .dsEntrance(index: 5)
 
-                    Text("RentOS 1.0 · Made in Toronto")
+                    Text("Purrperty 1.0 · Made in Toronto")
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(DS.Colors.textTertiary)
                         .frame(maxWidth: .infinity)
@@ -111,7 +111,7 @@ struct SettingsHubView: View {
         .dsHeader(title: "Settings", showsBack: true)
         .onAppear { biometricEnabled = session.session?.biometricEnabled ?? false }
         .confirmationDialog(
-            "Sign out of RentOS?",
+            "Sign out of Purrperty?",
             isPresented: $showSignOutDialog,
             titleVisibility: .visible
         ) {

@@ -1,6 +1,6 @@
 //
 //  DSStateViews.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Components — Shared renderings for the asynchronous states every
 //  screen can be in. One error view means one retry affordance, one

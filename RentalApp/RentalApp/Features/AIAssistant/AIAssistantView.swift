@@ -1,6 +1,6 @@
 //
 //  AIAssistantView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  AI Assistant — The operations copilot. Analyzing state, a briefing
 //  that types itself, recommended actions, insights, portfolio health,

@@ -1,6 +1,6 @@
 //
 //  DomainPrimitives.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Shared primitives for the entire domain layer.
 //

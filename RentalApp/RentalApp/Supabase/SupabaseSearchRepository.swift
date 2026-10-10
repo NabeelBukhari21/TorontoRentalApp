@@ -1,6 +1,6 @@
 //
 //  SupabaseSearchRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Global search over `global_search()`.
 //

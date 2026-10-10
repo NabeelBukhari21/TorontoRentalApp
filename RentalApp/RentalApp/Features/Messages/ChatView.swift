@@ -1,6 +1,6 @@
 //
 //  ChatView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Messages — The thread. Glass chat header with live status,
 //  animated bubbles, typing indicator, and a floating composer.

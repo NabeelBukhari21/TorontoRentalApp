@@ -1,6 +1,6 @@
 //
 //  SupabaseRealtimeClient.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Realtime transport over `postgres_changes`.
 //

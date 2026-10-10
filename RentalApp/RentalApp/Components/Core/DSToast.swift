@@ -1,6 +1,6 @@
 //
 //  DSToast.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Components — Transient feedback, and the confirmation modifier.
 //

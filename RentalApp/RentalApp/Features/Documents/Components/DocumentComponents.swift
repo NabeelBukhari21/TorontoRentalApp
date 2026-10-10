@@ -1,6 +1,6 @@
 //
 //  DocumentComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Documents — File cards (grid + list), folder cards, drop zone,
 //  upload rows, and the PDF preview placeholder.

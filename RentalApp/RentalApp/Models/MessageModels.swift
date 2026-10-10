@@ -1,6 +1,6 @@
 //
 //  MessagesModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Messages — Models, mock threads, and the shared observable store.
 //  The store simulates the live side of messaging (typing, replies,

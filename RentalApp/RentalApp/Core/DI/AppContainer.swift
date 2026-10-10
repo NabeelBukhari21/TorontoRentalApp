@@ -1,6 +1,6 @@
 //
 //  AppContainer.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Dependency injection container.
 //

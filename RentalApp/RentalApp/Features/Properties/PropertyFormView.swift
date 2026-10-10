@@ -1,6 +1,6 @@
 //
 //  PropertyFormView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Create and edit, one screen.
 //

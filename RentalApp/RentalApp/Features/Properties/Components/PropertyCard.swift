@@ -1,6 +1,6 @@
 //
 //  PropertyCard.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Property card with a gradient "photo" hero
 //  (procedural skyline placeholder), occupancy status, and stats.

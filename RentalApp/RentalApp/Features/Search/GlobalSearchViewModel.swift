@@ -1,6 +1,6 @@
 //
 //  GlobalSearchViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Search — Query state, debouncing, and keyboard selection.
 //

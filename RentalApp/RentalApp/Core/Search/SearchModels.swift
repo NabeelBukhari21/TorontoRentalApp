@@ -1,6 +1,6 @@
 //
 //  SearchModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Search — One result type for eight entities.
 //

@@ -1,6 +1,6 @@
 //
 //  LegalAcceptance.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Legal — Versioned terms, and proving they were accepted.
 //

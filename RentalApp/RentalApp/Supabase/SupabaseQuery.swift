@@ -1,6 +1,6 @@
 //
 //  SupabaseQuery.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Error mapping and query translation.
 //

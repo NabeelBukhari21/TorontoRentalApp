@@ -1,6 +1,6 @@
 //
 //  Portfolio.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — The physical hierarchy.
 //

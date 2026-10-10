@@ -1,6 +1,6 @@
 //
 //  FakeBackend+Signals.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Tasks, activity, and notifications.
 //

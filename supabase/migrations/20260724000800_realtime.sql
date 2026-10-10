@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 08 · Realtime, versioning, and origin tracking
+--  Purrperty — 08 · Realtime, versioning, and origin tracking
 -- ============================================================================
 --  Three things the client needs from the database to sync correctly:
 --

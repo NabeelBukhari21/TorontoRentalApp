@@ -1,6 +1,6 @@
 //
 //  PropertyDetailTabs.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — The six detail tab contents. Every row animates in
 //  with the shared entrance cascade.

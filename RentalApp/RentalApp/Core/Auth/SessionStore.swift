@@ -1,6 +1,6 @@
 //
 //  SessionStore.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Session persistence.
 //

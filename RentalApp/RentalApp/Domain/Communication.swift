@@ -1,6 +1,6 @@
 //
 //  Communication.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Threads, messages, and alerts.
 //

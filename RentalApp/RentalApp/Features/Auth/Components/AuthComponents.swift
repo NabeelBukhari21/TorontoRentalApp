@@ -37,7 +37,7 @@ struct AuthHeader: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.md) {
-            RentOSLogoTile(size: 64)
+            PurrpertyLogoTile(size: 64)
                 .dsFloating(amplitude: 4, duration: 3.6)
 
             VStack(spacing: DS.Spacing.xs) {

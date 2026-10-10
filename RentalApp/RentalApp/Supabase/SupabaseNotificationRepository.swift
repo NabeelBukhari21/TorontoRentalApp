@@ -1,6 +1,6 @@
 //
 //  SupabaseNotificationRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — The notification centre, backed by Postgres.
 //

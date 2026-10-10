@@ -1,6 +1,6 @@
 //
 //  DSOfflineIndicators.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Components — Telling the truth about what the user is looking at.
 //

@@ -43,7 +43,7 @@ struct SplashLogoView: View {
                 .offset(x: size * 0.16, y: size * (0.10 - 0.22 * ringProgress))
                 .opacity(Double(ringProgress) * 0.75)
 
-            RentOSLogoMark(size: size, isBuilt: isRevealed, celebrates: celebrates)
+            PurrpertyLogoMark(size: size, isBuilt: isRevealed, celebrates: celebrates)
         }
         .frame(width: size, height: size)
         .task(id: isRevealed) {

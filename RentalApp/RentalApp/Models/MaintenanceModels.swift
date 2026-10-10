@@ -1,6 +1,6 @@
 //
 //  MaintenanceModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Maintenance — Models, mock data, and the shared observable store.
 //  The store keeps inbox, kanban, and detail perfectly in sync;

@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 05 · Trend RPCs
+--  Purrperty — 05 · Trend RPCs
 -- ============================================================================
 --  The detail charts need twelve monthly buckets. Doing that client-side
 --  would mean downloading every lease and payment for the property just to

@@ -1,8 +1,8 @@
-# RentOS
+# Purrperty
 
 **Property management, reimagined.**
 
-RentOS is a native iOS app for landlords and property managers in Toronto and across Canada. It brings properties, tenants, maintenance, documents and messaging into one place, with AI assistance that always asks for human approval before it acts.
+Purrperty is a native iOS app for landlords and property managers in Toronto and across Canada. It brings properties, tenants, maintenance, documents and messaging into one place, with AI assistance that always asks for human approval before it acts.
 
 Built with **SwiftUI**, **Swift Concurrency** and **Supabase** (Postgres, Auth, Realtime, Storage, Edge Functions).
 

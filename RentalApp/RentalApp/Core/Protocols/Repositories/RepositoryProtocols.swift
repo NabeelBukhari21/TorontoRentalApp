@@ -1,6 +1,6 @@
 //
 //  RepositoryProtocols.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Repository interfaces.
 //

@@ -97,7 +97,7 @@ concatenated — each needs a format string with positional arguments.
 | 3 | `Features/Properties/PropertyFormView.swift` |
 | 3 | `Features/Settings/SettingsHubView.swift` |
 | 3 | `Features/Tenants/CreateTenantView.swift` |
-| 2 | `Components/Brand/RentOSLogo.swift` |
+| 2 | `Components/Brand/PurrpertyLogo.swift` |
 | 2 | `Components/Core/DSCard.swift` |
 | 2 | `Components/Core/DSProgress.swift` |
 | 2 | `Components/Core/DSStateViews.swift` |

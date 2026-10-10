@@ -30,7 +30,7 @@ enum OnboardingPage: Int, CaseIterable, Identifiable {
     var mascotLine: String {
         switch self {
         case .intro:
-            "Hi! I'm here to help you run your rentals — homes, tenants and repairs, all in one place."
+            "Hi, I'm Purr! I'll help you run your rentals — homes, tenants and repairs, all in one place."
         case .maintenance:
             "When something breaks, I'll sort the urgency, find the right vendor and draft the reply."
         case .portfolio:

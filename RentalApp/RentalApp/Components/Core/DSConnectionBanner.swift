@@ -1,6 +1,6 @@
 //
 //  DSConnectionBanner.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Components — Connection status, shown only when it matters.
 //

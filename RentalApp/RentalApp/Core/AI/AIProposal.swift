@@ -1,6 +1,6 @@
 //
 //  AIProposal.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — Human approval.
 //

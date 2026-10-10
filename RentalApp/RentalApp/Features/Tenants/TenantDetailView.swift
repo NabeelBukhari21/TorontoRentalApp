@@ -1,6 +1,6 @@
 //
 //  TenantDetailView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Profile: header with large avatar and quick actions,
 //  obsidian lease card, and animated tabs for Timeline, Maintenance,

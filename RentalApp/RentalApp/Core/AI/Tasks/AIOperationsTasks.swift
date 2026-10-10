@@ -1,6 +1,6 @@
 //
 //  AIOperationsTasks.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — Tasks that act on day-to-day operations:
 //  maintenance triage, suggested replies, risk detection, recommendations.
@@ -351,7 +351,7 @@ struct SmartRecommendationsTask: AITask {
                 \(AIPrompt.houseRules)
 
                 Recommend actions that improve this portfolio. Each must map to \
-                something the manager can actually do in RentOS today.
+                something the manager can actually do in Purrperty today.
 
                 - Quantify the impact where the data allows it; omit the number \
                 rather than inventing one.

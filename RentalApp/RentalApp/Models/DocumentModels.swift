@@ -1,6 +1,6 @@
 //
 //  DocumentsModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Documents — Models, mock library, and the shared store with a
 //  simulated upload pipeline. A DocumentService plugs in later.

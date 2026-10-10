@@ -1,6 +1,6 @@
 //
 //  AsyncListModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Shared machinery for every paginated list screen.
 //

@@ -1,6 +1,6 @@
 //
 //  CopilotRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Repositories — Copilot intelligence source. Today it returns
 //  authored analysis; a `RemoteCopilotRepository` calling a real model

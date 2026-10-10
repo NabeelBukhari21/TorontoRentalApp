@@ -41,7 +41,7 @@ struct DashboardMascotBrief: View {
             mascotSize: 100,
             onTapMascot: { tipIndex += 1 }
         )
-        .accessibilityHint("Tap the cat for a tip")
+        .accessibilityHint("Tap Purr for a tip")
     }
 
     // MARK: Brief

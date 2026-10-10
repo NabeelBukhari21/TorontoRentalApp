@@ -1,6 +1,6 @@
 //
 //  SeededRandom.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Deterministic randomness.
 //

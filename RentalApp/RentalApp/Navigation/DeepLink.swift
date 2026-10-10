@@ -1,6 +1,6 @@
 //
 //  DeepLink.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — Deep link builders and the URL scheme contract.
 //

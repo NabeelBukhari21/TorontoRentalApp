@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 10 · Notification generation, preferences, mutes, push tokens
+--  Purrperty — 10 · Notification generation, preferences, mutes, push tokens
 -- ============================================================================
 --  The `notifications` table has existed since migration 02, with RLS and no
 --  INSERT policy — correct, but it meant nothing ever created a row. This

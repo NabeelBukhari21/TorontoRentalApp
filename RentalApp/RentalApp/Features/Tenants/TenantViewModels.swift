@@ -1,6 +1,6 @@
 //
 //  TenantViewModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Directory, profile, and create-flow view models.
 //

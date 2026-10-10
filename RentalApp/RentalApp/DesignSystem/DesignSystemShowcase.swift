@@ -46,7 +46,7 @@ struct DesignSystemShowcase: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.xs) {
             Text("Design System").dsOverline()
-            Text("RentOS UI Kit")
+            Text("Purrperty UI Kit")
                 .font(DS.Typography.title1)
                 .foregroundStyle(DS.Colors.textPrimary)
         }

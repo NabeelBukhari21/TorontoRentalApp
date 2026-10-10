@@ -1,6 +1,6 @@
 //
 //  PropertyActionComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Selection, bulk actions, and the archive.
 //

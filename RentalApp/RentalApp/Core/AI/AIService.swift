@@ -1,6 +1,6 @@
 //
 //  AIService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — The one entry point features use.
 //

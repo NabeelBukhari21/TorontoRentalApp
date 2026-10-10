@@ -1,6 +1,6 @@
 //
 //  BackgroundRefresh.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — Staying current while suspended.
 //

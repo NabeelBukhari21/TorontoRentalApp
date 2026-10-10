@@ -1,6 +1,6 @@
 //
 //  DocumentCenterView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Documents — The document center: drop zone with live uploads,
 //  folders, search, type filters, tags, and animated grid ⇄ list

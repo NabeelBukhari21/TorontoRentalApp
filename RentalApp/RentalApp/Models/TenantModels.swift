@@ -1,6 +1,6 @@
 //
 //  TenantModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Presentation models + mock data.
 //  A TenantService will replace `TenantMockData` later.

@@ -1,6 +1,6 @@
 //
 //  RouteDestinationView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — Thin dispatchers. Tabs map to feature roots;
 //  pushed routes delegate to their domain navigation module.

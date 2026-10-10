@@ -1,6 +1,6 @@
 //
 //  RootNavigation.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — The application's root coordinator.
 //

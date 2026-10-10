@@ -1,6 +1,6 @@
 //
 //  ServiceProtocols.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Service interfaces. Services perform work (auth, uploads,
 //  persistence, analytics); repositories own data. Features depend

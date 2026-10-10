@@ -1,6 +1,6 @@
 //
 //  Projections.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Domain → presentation mapping.
 //

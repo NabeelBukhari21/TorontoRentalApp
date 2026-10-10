@@ -1,6 +1,6 @@
 //
 //  AppError.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Unified error type. Services throw these; ViewModels map
 //  them to user-facing copy. Never surface a raw system error in UI.

@@ -1,6 +1,6 @@
 //
 //  RootNavigationView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Navigation — MainTabNavigation: the main app shell. Adapts to the
 //  environment:

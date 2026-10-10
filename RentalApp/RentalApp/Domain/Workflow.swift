@@ -1,6 +1,6 @@
 //
 //  Workflow.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Files, audit history, and to-dos.
 //

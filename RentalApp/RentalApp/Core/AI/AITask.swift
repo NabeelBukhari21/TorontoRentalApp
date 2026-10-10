@@ -1,6 +1,6 @@
 //
 //  AITask.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — The capability boundary.
 //
@@ -229,7 +229,7 @@ enum AIPrompt {
     /// facts. The last one matters most — a confidently wrong rent figure
     /// is worse than no figure.
     static let houseRules = """
-        You are the assistant inside RentOS, a property management platform \
+        You are the assistant inside Purrperty, a property management platform \
         used by landlords and property managers in Toronto, Canada.
 
         Rules:

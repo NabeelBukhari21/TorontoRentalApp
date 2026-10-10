@@ -1,6 +1,6 @@
 //
 //  SettingsComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — Shared chrome: gold toggle style, section cards,
 //  nav rows, toggle rows, and value rows.
@@ -10,7 +10,7 @@ import SwiftUI
 
 // MARK: - Gold Toggle Style
 
-/// The RentOS switch: obsidian track that fills with champagne gold.
+/// The Purrperty switch: obsidian track that fills with champagne gold.
 struct DSToggleStyle: ToggleStyle {
 
     func makeBody(configuration: Configuration) -> some View {

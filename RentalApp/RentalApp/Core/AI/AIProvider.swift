@@ -1,6 +1,6 @@
 //
 //  AIProvider.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — The provider boundary.
 //

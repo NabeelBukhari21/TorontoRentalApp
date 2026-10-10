@@ -1,6 +1,6 @@
 //
 //  SupabasePropertyRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Portfolio data source.
 //

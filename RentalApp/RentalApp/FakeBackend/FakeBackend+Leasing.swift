@@ -1,6 +1,6 @@
 //
 //  FakeBackend+Leasing.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Tenants, leases, and the payment ledger.
 //

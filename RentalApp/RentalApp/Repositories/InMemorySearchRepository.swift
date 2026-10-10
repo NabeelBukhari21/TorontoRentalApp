@@ -1,6 +1,6 @@
 //
 //  InMemorySearchRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Repositories — Search over the seeded graph.
 //

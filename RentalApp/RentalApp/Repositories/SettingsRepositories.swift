@@ -1,6 +1,6 @@
 //
 //  SettingsRepositories.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Repositories — The former `SettingsStore` God object, split into
 //  four single-responsibility data sources. Each settings page depends
@@ -104,7 +104,7 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
 @Observable
 final class InMemoryBillingRepository: BillingRepositoryProtocol {
 
-    let planName = "RentOS Premium"
+    let planName = "Purrperty Premium"
     let planPrice = "$49/mo"
     let unitQuota = 60
     let unitsUsed = 48

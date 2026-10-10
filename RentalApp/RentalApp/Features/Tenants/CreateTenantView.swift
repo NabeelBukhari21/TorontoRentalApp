@@ -1,6 +1,6 @@
 //
 //  CreateTenantView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Create flow, presented as a bottom sheet.
 //  Live avatar preview, validated fields, lease term pickers,

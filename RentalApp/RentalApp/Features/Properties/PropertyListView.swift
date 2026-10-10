@@ -1,6 +1,6 @@
 //
 //  PropertyListView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Portfolio list: animated search, filter chips,
 //  sort menu, and floating property cards.

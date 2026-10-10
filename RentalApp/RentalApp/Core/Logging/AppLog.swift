@@ -1,6 +1,6 @@
 //
 //  AppLog.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Logging — Structured logging with redaction by default.
 //

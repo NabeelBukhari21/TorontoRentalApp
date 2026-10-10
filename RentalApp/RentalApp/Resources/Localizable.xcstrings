@@ -1277,46 +1277,46 @@
         }
       }
     },
-    "RentOS" : {
+    "Purrperty" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RentOS"
+            "value" : "Purrperty"
           }
         }
       }
     },
-    "RentOS 1.0 · Made in Toronto" : {
+    "Purrperty 1.0 · Made in Toronto" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RentOS 1.0 · Made in Toronto"
+            "value" : "Purrperty 1.0 · Made in Toronto"
           }
         }
       }
     },
-    "RentOS Intelligence" : {
+    "Purrperty Intelligence" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RentOS Intelligence"
+            "value" : "Purrperty Intelligence"
           }
         }
       }
     },
-    "RentOS UI Kit" : {
+    "Purrperty UI Kit" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "RentOS UI Kit"
+            "value" : "Purrperty UI Kit"
           }
         }
       }
@@ -1438,13 +1438,13 @@
         }
       }
     },
-    "Sign out of RentOS?" : {
+    "Sign out of Purrperty?" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sign out of RentOS?"
+            "value" : "Sign out of Purrperty?"
           }
         }
       }

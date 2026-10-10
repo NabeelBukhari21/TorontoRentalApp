@@ -1,6 +1,6 @@
 //
 //  ConsentStore.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Privacy — What the user has agreed to be collected.
 //
@@ -26,7 +26,7 @@
 //  ─────────────────────────────────────────────────────────────────
 //  WHAT THIS IS NOT
 //  ─────────────────────────────────────────────────────────────────
-//  This is not App Tracking Transparency. RentOS does not track users
+//  This is not App Tracking Transparency. Purrperty does not track users
 //  across apps or websites owned by other companies, so it does not
 //  need ATT, and asking for it anyway is both a rejected-binary risk
 //  and a prompt the user has no reason to accept. Should the app ever
@@ -67,7 +67,7 @@ enum ConsentCategory: String, Sendable, CaseIterable, Codable {
     var explanation: String {
         switch self {
         case .diagnostics:
-            "Send a report when RentOS crashes, so the cause can be fixed. Includes the app version, the device model, and where in the code it stopped."
+            "Send a report when Purrperty crashes, so the cause can be fixed. Includes the app version, the device model, and where in the code it stopped."
         case .analytics:
             "Share which features are used, so the app can be improved. Includes screen names and counts. Never includes property addresses, tenant details, or message contents."
         case .personalization:

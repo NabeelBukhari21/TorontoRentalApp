@@ -1,6 +1,6 @@
 //
 //  Formatters.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Localization — Locale-correct rendering of the app's values.
 //

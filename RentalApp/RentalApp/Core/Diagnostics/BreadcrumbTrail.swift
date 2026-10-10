@@ -1,6 +1,6 @@
 //
 //  BreadcrumbTrail.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Diagnostics — What was happening just before it broke.
 //

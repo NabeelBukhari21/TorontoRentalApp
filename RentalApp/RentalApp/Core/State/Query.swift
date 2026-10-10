@@ -1,6 +1,6 @@
 //
 //  Query.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Search, filter, and sort expressed as data.
 //

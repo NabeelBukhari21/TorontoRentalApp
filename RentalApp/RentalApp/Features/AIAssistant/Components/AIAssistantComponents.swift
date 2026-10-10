@@ -1,6 +1,6 @@
 //
 //  AIAssistantComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  AI Assistant — The copilot's visual language: the orb, obsidian
 //  briefing panel, action cards, insight panels, health dial,
@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - AI Orb
 
 /// The copilot's presence — a golden core with an orbiting satellite,
-/// echoing the RentOS logo. Spins faster while "working".
+/// echoing the Purrperty logo. Spins faster while "working".
 struct AIOrb: View {
 
     var size: CGFloat = 64

@@ -1,6 +1,6 @@
 //
 //  MaintenanceViewModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Maintenance — Inbox and detail view models.
 //

@@ -39,7 +39,7 @@ struct DSSidebar: View {
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
         .background(DS.Colors.background)
-        .navigationTitle("RentOS")
+        .navigationTitle("Purrperty")
     }
 
     // MARK: Rows

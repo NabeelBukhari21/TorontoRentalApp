@@ -1,6 +1,6 @@
 //
 //  KeychainSessionStore.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Auth — Where the tokens actually live.
 //

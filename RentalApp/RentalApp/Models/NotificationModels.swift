@@ -1,6 +1,6 @@
 //
 //  NotificationsModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Notifications — Model, store, and mock feed.
 //

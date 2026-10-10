@@ -1,6 +1,6 @@
 //
 //  AIModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Models — Copilot domain types.
 //

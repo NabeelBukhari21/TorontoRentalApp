@@ -1,6 +1,6 @@
 //
 //  Intelligence.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Copilot output and dashboard composition.
 //
@@ -304,7 +304,7 @@ extension Domain {
             self.updatedAt = updatedAt
         }
 
-        /// The catalogue of things RentOS measures. Adding a metric is
+        /// The catalogue of things Purrperty measures. Adding a metric is
         /// a case here plus a server-side calculation — nothing else.
         enum Key: String, FallbackDecodable, CaseIterable {
             case occupancyRate = "occupancy_rate"

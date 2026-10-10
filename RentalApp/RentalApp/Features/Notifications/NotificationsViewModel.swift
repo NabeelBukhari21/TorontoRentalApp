@@ -1,6 +1,6 @@
 //
 //  NotificationsViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Notifications — Grouped feed view model.
 //

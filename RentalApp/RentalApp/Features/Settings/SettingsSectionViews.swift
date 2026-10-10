@@ -1,6 +1,6 @@
 //
 //  SettingsSectionViews.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — Section dispatcher + Profile, Organization, and Team pages.
 //
@@ -80,7 +80,7 @@ struct SettingsProfilePage: View {
             SettingsSectionCard(title: "Security") {
                 SettingsNavRow(icon: "lock.fill", title: "Change password", subtitle: "Last changed 3 months ago") {}
                 SettingsRowDivider()
-                SettingsNavRow(icon: "faceid", title: "Face ID", subtitle: "Unlock RentOS with Face ID") {}
+                SettingsNavRow(icon: "faceid", title: "Face ID", subtitle: "Unlock Purrperty with Face ID") {}
             }
             .dsEntrance(index: 2)
 

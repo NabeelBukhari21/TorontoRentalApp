@@ -1,6 +1,6 @@
 //
 //  NotificationCoordinator.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Notifications — Where push meets the rest of the app.
 //

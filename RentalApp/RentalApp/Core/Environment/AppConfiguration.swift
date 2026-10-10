@@ -1,6 +1,6 @@
 //
 //  AppConfiguration.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Environment — Every configured value, read once, typed.
 //

@@ -1,6 +1,6 @@
 //
 //  PushServiceBox.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Notifications — Breaking the push ↔ coordinator cycle.
 //

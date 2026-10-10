@@ -1,6 +1,6 @@
 //
 //  MessageComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Messages — Bubbles, typing indicator, attachments, receipts,
 //  conversation rows, and date separators.

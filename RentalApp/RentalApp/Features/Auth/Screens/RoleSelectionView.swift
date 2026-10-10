@@ -1,8 +1,8 @@
 //
 //  RoleSelectionView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
-//  Auth — "How will you use RentOS?" Asked before sign-up because the
+//  Auth — "How will you use Purrperty?" Asked before sign-up because the
 //  role decides everything downstream: whether an organization is
 //  required, which tabs exist, and what the copilot is allowed to do.
 //  Asking after account creation would mean rebuilding the session.
@@ -18,7 +18,7 @@ struct RoleSelectionView: View {
     var body: some View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
-                title: "How will you use RentOS?",
+                title: "How will you use Purrperty?",
                 subtitle: "This shapes your workspace. You can change it later."
             )
             .dsEntrance(index: 0)

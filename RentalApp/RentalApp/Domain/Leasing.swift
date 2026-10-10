@@ -1,6 +1,6 @@
 //
 //  Leasing.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Domain — Renters, agreements, and money in.
 //

@@ -1,6 +1,6 @@
 //
 //  SessionViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Auth — The session coordinator.
 //

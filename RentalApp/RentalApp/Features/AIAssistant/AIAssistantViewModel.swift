@@ -1,6 +1,6 @@
 //
 //  AIAssistantViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  AI Assistant — Copilot screen view model.
 //

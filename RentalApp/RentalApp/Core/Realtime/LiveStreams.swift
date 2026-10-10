@@ -1,6 +1,6 @@
 //
 //  LiveStreams.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — Turning a topic into a live view.
 //

@@ -1,6 +1,6 @@
 //
 //  PortfolioDTOs.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Wire types for the portfolio tables.
 //

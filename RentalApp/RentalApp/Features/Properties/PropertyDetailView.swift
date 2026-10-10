@@ -1,6 +1,6 @@
 //
 //  PropertyDetailView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Properties — Detail screen: hero header with parallax feel,
 //  animated segmented tabs (Overview / Units / Tenants / Maintenance /

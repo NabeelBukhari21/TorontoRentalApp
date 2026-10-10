@@ -1,6 +1,6 @@
 //
 //  SupabaseAIAuditLog.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Services/AI — The audit trail, persisted.
 //

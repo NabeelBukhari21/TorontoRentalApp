@@ -1,6 +1,6 @@
 //
 //  TenantComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Tenants — Shared components: list row, obsidian lease card,
 //  and timeline rows.

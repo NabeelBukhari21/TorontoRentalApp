@@ -1,6 +1,6 @@
 //
 //  SearchComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Search — Result rows, section headers, suggestions.
 //

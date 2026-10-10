@@ -41,5 +41,5 @@ set and a case to `MascotPose` (with the `eyeY` / `headTopY` values from
 
 ## App icon
 
-`logo_render.py` draws the same composition as `RentOSLogoMark`
-(`RentOSLogoGeometry` holds the shared numbers — change both together).
+`logo_render.py` draws the same composition as `PurrpertyLogoMark`
+(`PurrpertyLogoGeometry` holds the shared numbers — change both together).

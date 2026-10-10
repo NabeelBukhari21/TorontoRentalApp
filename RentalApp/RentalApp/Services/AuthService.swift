@@ -1,6 +1,6 @@
 //
 //  AuthService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Services — Authentication.
 //
@@ -316,7 +316,7 @@ final class MockAuthService: AuthServiceProtocol {
         // FUTURE: replace the sleep above with
         //   try await LAContext().evaluatePolicy(
         //       .deviceOwnerAuthenticationWithBiometrics,
-        //       localizedReason: "Unlock RentOS"
+        //       localizedReason: "Unlock Purrperty"
         //   )
         // Held back while mock auth is in place so the simulator, which
         // has no enrolled biometry, can't lock the user out.

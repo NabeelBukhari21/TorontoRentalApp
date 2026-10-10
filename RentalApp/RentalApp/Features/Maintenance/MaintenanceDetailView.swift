@@ -1,6 +1,6 @@
 //
 //  MaintenanceDetailView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Maintenance — Ticket detail: workflow visualization, AI analysis
 //  panel (obsidian), photos, vendor assignment, comments, timeline.

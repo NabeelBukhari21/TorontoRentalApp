@@ -1,6 +1,6 @@
 //
 //  DashboardViewModel.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Dashboard — Command-centre view model.
 //

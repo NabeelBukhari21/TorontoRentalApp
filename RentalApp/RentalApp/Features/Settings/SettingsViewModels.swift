@@ -1,6 +1,6 @@
 //
 //  SettingsViewModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — One small ViewModel per page, each depending on exactly
 //  the repository facet it needs. Replaces the former single

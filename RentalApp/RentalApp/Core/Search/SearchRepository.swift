@@ -1,6 +1,6 @@
 //
 //  SearchRepository.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Search — The contract.
 //

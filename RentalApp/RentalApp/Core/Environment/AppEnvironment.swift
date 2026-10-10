@@ -1,6 +1,6 @@
 //
 //  AppEnvironment.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Environment — Which deployment this build talks to.
 //

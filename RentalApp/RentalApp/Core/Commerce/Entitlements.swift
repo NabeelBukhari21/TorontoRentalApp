@@ -1,6 +1,6 @@
 //
 //  Entitlements.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Commerce — What the user is allowed to do.
 //

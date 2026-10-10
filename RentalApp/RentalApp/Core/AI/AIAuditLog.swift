@@ -1,6 +1,6 @@
 //
 //  AIAuditLog.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — Every AI action, recorded.
 //

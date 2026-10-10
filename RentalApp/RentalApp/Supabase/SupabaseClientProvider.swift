@@ -1,6 +1,6 @@
 //
 //  SupabaseClientProvider.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Configuration and the shared client.
 //

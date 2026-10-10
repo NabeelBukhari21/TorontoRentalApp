@@ -1,6 +1,6 @@
 //
 //  SupabaseOrganizationService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Organization creation and membership.
 //

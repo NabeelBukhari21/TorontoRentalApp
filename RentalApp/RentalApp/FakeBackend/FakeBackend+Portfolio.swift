@@ -1,6 +1,6 @@
 //
 //  FakeBackend+Portfolio.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Staff, vendors, and the physical portfolio.
 //

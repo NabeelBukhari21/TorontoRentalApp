@@ -1,6 +1,6 @@
 //
 //  SettingsPrefViews.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Settings — Billing, Notifications, Appearance, AI Preferences,
 //  and Integrations pages.
@@ -372,7 +372,7 @@ struct SettingsAIPage: View {
                     AIOrb(size: 52)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("RentOS Intelligence")
+                        Text("Purrperty Intelligence")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(DS.Colors.textOnBrand)
 

@@ -1,6 +1,6 @@
 //
 //  AIAgent.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — Agent scaffold.
 //

@@ -1,6 +1,6 @@
 //
 //  PortfolioRepositories.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Repositories — Property, Tenant, and Dashboard data sources.
 //

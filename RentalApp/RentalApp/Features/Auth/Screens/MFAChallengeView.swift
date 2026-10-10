@@ -1,6 +1,6 @@
 //
 //  MFAChallengeView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Auth — Second factor. Six segmented digit boxes backed by one
 //  hidden field, auto-submitting on the last digit.

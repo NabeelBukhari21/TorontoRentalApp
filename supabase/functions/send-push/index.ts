@@ -1,5 +1,5 @@
 // ============================================================================
-//  RentOS — Edge Function: send-push
+//  Purrperty — Edge Function: send-push
 // ============================================================================
 //  Drains the notification queue to APNs.
 //

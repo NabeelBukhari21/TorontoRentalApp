@@ -1,6 +1,6 @@
 //
 //  MaintenanceInboxView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Maintenance — The flagship inbox. Animated list ⇄ kanban modes,
 //  priority filters, and tickets that glide between columns.

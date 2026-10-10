@@ -1,6 +1,6 @@
 //
 //  AIAnalysisTasks.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/AI — Read-only tasks: summarisation, insight, health, copilot.
 //
@@ -26,7 +26,7 @@ struct LeaseSummarizationTask: AITask {
     struct Input: Sendable {
         let leaseID: String
         let documentText: String
-        /// What RentOS already believes, so the model can flag mismatches
+        /// What Purrperty already believes, so the model can flag mismatches
         /// between the record and the signed document.
         let recordedRentCAD: Double?
         let recordedTermStart: Date?
@@ -38,7 +38,7 @@ struct LeaseSummarizationTask: AITask {
         let keyTerms: [KeyTerm]
         let obligations: [String]
         let unusualClauses: [String]
-        /// Where the document disagrees with the RentOS record. The most
+        /// Where the document disagrees with the Purrperty record. The most
         /// valuable output here — silent drift between the two is how
         /// disputes start.
         let discrepancies: [Discrepancy]
@@ -102,7 +102,7 @@ struct LeaseSummarizationTask: AITask {
                 thirty seconds. Quote figures verbatim rather than paraphrasing \
                 them — a rounded rent is a wrong rent.
 
-                Compare the document against the RentOS record and report every \
+                Compare the document against the Purrperty record and report every \
                 genuine difference. Do not report a difference caused by \
                 formatting (\\$2,400.00 vs 2400) — only substantive ones.
 
@@ -113,7 +113,7 @@ struct LeaseSummarizationTask: AITask {
                 \(AIPrompt.jsonOnly)
                 """),
             .user("""
-                RentOS record:
+                Purrperty record:
                 \(recorded)
 
                 Lease document:

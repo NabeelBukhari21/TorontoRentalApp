@@ -1,6 +1,6 @@
 //
 //  Projections+Operations.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — Maintenance, messaging, documents, notifications,
 //  and dashboard projections.
@@ -166,7 +166,7 @@ extension Projections {
                    let vendor = backend.vendors.first(where: { $0.id.rawValue == participant.id }) {
                     return vendor.companyName
                 }
-                return "RentOS"
+                return "Purrperty"
             }()
 
             let thread = backend.messages(in: conversation.id)

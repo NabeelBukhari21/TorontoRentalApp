@@ -1,6 +1,6 @@
 //
 //  AuthFlowView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Auth — Flow container. Owns the AuthViewModel and switches between
 //  Login / Role Selection / Sign Up / Forgot Password / Reset Password

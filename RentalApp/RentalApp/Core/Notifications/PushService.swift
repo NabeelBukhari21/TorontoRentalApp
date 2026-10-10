@@ -1,6 +1,6 @@
 //
 //  PushService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Notifications — APNs registration, delivery, and routing.
 //
@@ -31,7 +31,7 @@ import UIKit
 
 // MARK: - Payload
 
-/// The APNs `aps` payload plus RentOS keys.
+/// The APNs `aps` payload plus Purrperty keys.
 ///
 /// Mirrored exactly by the `send-push` Edge Function. Changing a key here
 /// without changing it there breaks tapping, silently, in production.
@@ -52,7 +52,7 @@ struct PushPayload: Codable, Sendable {
         case groupKey = "group_key"
     }
 
-    /// Parses the RentOS keys out of a `userInfo` dictionary.
+    /// Parses the Purrperty keys out of a `userInfo` dictionary.
     init?(userInfo: [AnyHashable: Any]) {
         guard let id = userInfo["notification_id"] as? String else { return nil }
         self.notificationID = id

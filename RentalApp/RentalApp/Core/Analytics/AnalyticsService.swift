@@ -1,6 +1,6 @@
 //
 //  AnalyticsService.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Analytics — Delivery, consent enforcement, sampling.
 //

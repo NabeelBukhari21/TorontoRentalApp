@@ -1,6 +1,6 @@
 //
 //  NotificationsView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Notifications — Grouped center (Today / Yesterday / Earlier) with
 //  unread indicators, drag-to-dismiss, and mark-all-read.

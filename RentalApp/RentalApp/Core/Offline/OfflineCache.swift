@@ -1,6 +1,6 @@
 //
 //  OfflineCache.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Offline — The cache that survives launch.
 //

@@ -1,6 +1,6 @@
 //
 //  SupabaseSyncSupport.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Supabase — Gap resync and outbox replay.
 //

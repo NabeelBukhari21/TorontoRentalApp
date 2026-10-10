@@ -1,6 +1,6 @@
 //
 //  DebugLaunchOverride.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Diagnostics — Start the app at a specific flow while developing it.
 //
@@ -8,8 +8,8 @@
 //  iterating on onboarding or sign-in painful. Pass a launch argument and
 //  the session coordinator starts there instead:
 //
-//      -RentOSStartAt onboarding     the onboarding pager
-//      -RentOSStartAt login          the sign-in screen
+//      -PurrpertyStartAt onboarding     the onboarding pager
+//      -PurrpertyStartAt login          the sign-in screen
 //
 //  The override is non-destructive: the stored session and onboarding flag
 //  are left untouched, so removing the argument returns to normal launch.
@@ -27,7 +27,7 @@ enum DebugLaunchOverride: String, CaseIterable, Sendable {
 
     /// Launch arguments of the form `-Key value` land in the
     /// `UserDefaults` argument domain, so no parsing is needed.
-    static let argumentKey = "RentOSStartAt"
+    static let argumentKey = "PurrpertyStartAt"
 
     /// The override for this launch, if any. Always `nil` outside DEBUG.
     static var current: DebugLaunchOverride? {

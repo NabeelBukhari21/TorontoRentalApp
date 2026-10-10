@@ -1,6 +1,6 @@
 //
 //  RepositoryCache.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — Time-to-live cache shared by every repository.
 //

@@ -1,6 +1,6 @@
 //
 //  AnalyticsEvent.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Analytics — The closed set of things this app measures.
 //
@@ -95,7 +95,7 @@ enum AnalyticsValue: Sendable, Equatable {
 
 // MARK: - Events
 
-/// Every event RentOS emits.
+/// Every event Purrperty emits.
 ///
 /// Grouped by area. Adding a case is the *only* way to add an event,
 /// which makes "what do we collect?" answerable by reading one file —

@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 07 · AI invocations, budget, and audit
+--  Purrperty — 07 · AI invocations, budget, and audit
 -- ============================================================================
 --  One row per AI call. This table answers three different questions, which
 --  is why it carries columns that look redundant:

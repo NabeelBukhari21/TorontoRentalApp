@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 01 · Extensions, enums, and shared helpers
+--  Purrperty — 01 · Extensions, enums, and shared helpers
 -- ============================================================================
 --  Every value below is copied from the `rawValue` of the corresponding
 --  Swift enum in `Domain/`. They are a wire contract: change one here and

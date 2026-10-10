@@ -1,6 +1,6 @@
 //
 //  FakeBackend.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Fake Backend — The simulated database.
 //
@@ -46,7 +46,7 @@ final class FakeBackend {
 
     // MARK: Init
 
-    private init(seed: UInt64 = 0x52_65_6E_74_4F_53) { // "RentOS"
+    private init(seed: UInt64 = 0x52_65_6E_74_4F_53) { // "Purrperty"
         var rng = SeededRandom(seed: seed)
 
         let orgID = Domain.Identifier<Domain.Organization>(rng.uuid())

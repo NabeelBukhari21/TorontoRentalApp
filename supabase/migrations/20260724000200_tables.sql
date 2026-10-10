@@ -1,5 +1,5 @@
 -- ============================================================================
---  RentOS — 02 · Tables
+--  Purrperty — 02 · Tables
 -- ============================================================================
 --  Every column name matches the `CodingKeys` of its Swift `Domain` model,
 --  so PostgREST rows decode directly with no mapping layer.

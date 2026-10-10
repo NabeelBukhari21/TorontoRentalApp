@@ -1,8 +1,8 @@
 //
-//  RentOSLogo.swift
-//  RentalApp (RentOS)
+//  PurrpertyLogo.swift
+//  RentalApp (Purrperty)
 //
-//  Brand — The RentOS logo: the cat in front of its neighbourhood.
+//  Brand — The Purrperty logo: Purr the cat in front of its neighbourhood.
 //
 //  The mascot sits on a little street of homes — a sunny house with a coral
 //  roof, a violet condo and a sky tower behind it (a nod to Toronto's
@@ -27,7 +27,7 @@ import SwiftUI
 /// Fixed values rather than adaptive DS tokens on purpose: a logo should
 /// look identical in light and dark mode. Logo-only — screens use
 /// `DS.Colors`.
-enum RentOSBrand {
+enum PurrpertyBrand {
     static let violet      = Color(hex: 0x6C5CE7)
     static let violetLight = Color(hex: 0x8F83F0)
     static let violetDeep  = Color(hex: 0x4B3BC9)
@@ -53,7 +53,7 @@ enum RentOSBrand {
 
 /// Where everything sits, as fractions of the mark's side. Shared with the
 /// app-icon renderer, so the icon and the in-app logo match.
-enum RentOSLogoGeometry {
+enum PurrpertyLogoGeometry {
     /// Raised from the bottom so the whole scene — tower tops to the cat's
     /// shadow — sits optically centred in a square (tile and app icon).
     static let groundY: CGFloat = 0.85
@@ -83,7 +83,7 @@ enum RentOSLogoGeometry {
 // MARK: - Logo Mark
 
 /// The cat in front of its neighbourhood. Pure vector homes + the mascot.
-struct RentOSLogoMark: View {
+struct PurrpertyLogoMark: View {
 
     /// Side of the mark's square canvas.
     var size: CGFloat = 120
@@ -101,7 +101,7 @@ struct RentOSLogoMark: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private typealias G = RentOSLogoGeometry
+    private typealias G = PurrpertyLogoGeometry
     private var catMood: MascotMood {
         guard isBuilt else { return .idle }
         return celebrates ? .cheer : .happy
@@ -112,19 +112,19 @@ struct RentOSLogoMark: View {
             ground
 
             tower(centerX: G.condoCenterX, width: G.condoWidth, height: G.condoHeight,
-                  top: RentOSBrand.violetLight, bottom: RentOSBrand.violet,
-                  cap: RentOSBrand.violetDeep, rows: 5, order: 0)
+                  top: PurrpertyBrand.violetLight, bottom: PurrpertyBrand.violet,
+                  cap: PurrpertyBrand.violetDeep, rows: 5, order: 0)
 
             tower(centerX: G.towerCenterX, width: G.towerWidth, height: G.towerHeight,
-                  top: RentOSBrand.skyLight, bottom: RentOSBrand.sky,
-                  cap: RentOSBrand.skyDeep, rows: 4, order: 1)
+                  top: PurrpertyBrand.skyLight, bottom: PurrpertyBrand.sky,
+                  cap: PurrpertyBrand.skyDeep, rows: 4, order: 1)
 
-            house(G.leftHouse, wall: RentOSBrand.wallSunny, roof: RentOSBrand.coral,
-                  door: RentOSBrand.violet, order: 2)
+            house(G.leftHouse, wall: PurrpertyBrand.wallSunny, roof: PurrpertyBrand.coral,
+                  door: PurrpertyBrand.violet, order: 2)
 
             // Mint roof, not sky: the sky tower stands right behind it.
-            house(G.rightHouse, wall: RentOSBrand.wallSky, roof: RentOSBrand.mint,
-                  door: RentOSBrand.coral, order: 3)
+            house(G.rightHouse, wall: PurrpertyBrand.wallSky, roof: PurrpertyBrand.mint,
+                  door: PurrpertyBrand.coral, order: 3)
 
             if showsCat {
                 cat
@@ -132,17 +132,17 @@ struct RentOSLogoMark: View {
         }
         .frame(width: size, height: size)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("RentOS")
+        .accessibilityLabel("Purrperty")
     }
 
     // MARK: Pieces
 
     private var ground: some View {
-        RentOSGroundLine()
+        PurrpertyGroundLine()
             .trim(from: 0, to: isBuilt ? 1 : 0)
             .stroke(
                 LinearGradient(
-                    colors: [RentOSBrand.coral, RentOSBrand.sunny, RentOSBrand.mint, RentOSBrand.sky, RentOSBrand.violet],
+                    colors: [PurrpertyBrand.coral, PurrpertyBrand.sunny, PurrpertyBrand.mint, PurrpertyBrand.sky, PurrpertyBrand.violet],
                     startPoint: .leading,
                     endPoint: .trailing
                 ),
@@ -154,7 +154,7 @@ struct RentOSLogoMark: View {
     }
 
     private func house(_ h: G.House, wall: Color, roof: Color, door: Color, order: Int) -> some View {
-        RentOSToyHouse(
+        PurrpertyToyHouse(
             width: size * h.width,
             bodyHeight: size * h.bodyHeight,
             roofHeight: size * h.roofHeight,
@@ -177,7 +177,7 @@ struct RentOSLogoMark: View {
         centerX: CGFloat, width: CGFloat, height: CGFloat,
         top: Color, bottom: Color, cap: Color, rows: Int, order: Int
     ) -> some View {
-        RentOSCondo(
+        PurrpertyCondo(
             width: size * width,
             height: size * height,
             top: top, bottom: bottom, cap: cap, rows: rows,
@@ -218,7 +218,7 @@ struct RentOSLogoMark: View {
 // MARK: - Toy House
 
 /// A rounded, toy-like house: gable roof with overhang, a door, a window.
-private struct RentOSToyHouse: View {
+private struct PurrpertyToyHouse: View {
 
     let width: CGFloat
     let bodyHeight: CGFloat
@@ -231,7 +231,7 @@ private struct RentOSToyHouse: View {
 
     var body: some View {
         VStack(spacing: -roofHeight * 0.08) {
-            RentOSGableRoof()
+            PurrpertyGableRoof()
                 .fill(LinearGradient(colors: [roof.opacity(0.82), roof], startPoint: .top, endPoint: .bottom))
                 .frame(width: width * 1.14, height: roofHeight)
                 .zIndex(1)
@@ -243,7 +243,7 @@ private struct RentOSToyHouse: View {
                     // sit closer to the soft, rendered look of the cat.
                     .overlay(
                         LinearGradient(
-                            colors: [.clear, RentOSBrand.ink.opacity(0.07)],
+                            colors: [.clear, PurrpertyBrand.ink.opacity(0.07)],
                             startPoint: .center,
                             endPoint: .bottom
                         )
@@ -259,7 +259,7 @@ private struct RentOSToyHouse: View {
                     .fill(door)
                     .frame(width: width * 0.24, height: bodyHeight * 0.52)
 
-                    RentOSWindow(
+                    PurrpertyWindow(
                         size: width * 0.24,
                         lit: windowsLit,
                         animates: animates,
@@ -277,7 +277,7 @@ private struct RentOSToyHouse: View {
 
 /// A straight line, left to right, so `trim` draws it in that direction.
 /// (A `Capsule` would trace its whole outline and appear to run back.)
-private struct RentOSGroundLine: Shape {
+private struct PurrpertyGroundLine: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: rect.minX, y: rect.midY))
@@ -287,7 +287,7 @@ private struct RentOSGroundLine: Shape {
 }
 
 /// A gable roof with a softened ridge.
-private struct RentOSGableRoof: Shape {
+private struct PurrpertyGableRoof: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         let ridge = CGPoint(x: rect.midX, y: rect.minY)
@@ -305,7 +305,7 @@ private struct RentOSGableRoof: Shape {
 // MARK: - Condo
 
 /// A slim tower with a grid of twinkling windows.
-private struct RentOSCondo: View {
+private struct PurrpertyCondo: View {
 
     let width: CGFloat
     let height: CGFloat
@@ -333,7 +333,7 @@ private struct RentOSCondo: View {
                 ForEach(0..<rows, id: \.self) { row in
                     HStack(spacing: width * 0.18) {
                         ForEach(0..<columns, id: \.self) { column in
-                            RentOSWindow(
+                            PurrpertyWindow(
                                 size: width * 0.22,
                                 lit: isLit,
                                 animates: animates,
@@ -352,7 +352,7 @@ private struct RentOSCondo: View {
 
 /// A single window: white by day, warm sunny light when lit, with a slow
 /// twinkle when animated.
-private struct RentOSWindow: View {
+private struct PurrpertyWindow: View {
 
     let size: CGFloat
     var lit: Bool
@@ -364,9 +364,9 @@ private struct RentOSWindow: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-            .fill(lit ? RentOSBrand.sunnyLight : RentOSBrand.white)
+            .fill(lit ? PurrpertyBrand.sunnyLight : PurrpertyBrand.white)
             .frame(width: size, height: size)
-            .shadow(color: RentOSBrand.sunny.opacity(lit && glow ? 0.8 : 0), radius: size * 0.5)
+            .shadow(color: PurrpertyBrand.sunny.opacity(lit && glow ? 0.8 : 0), radius: size * 0.5)
             .opacity(lit ? (glow ? 1 : 0.82) : 0.9)
             .onAppear {
                 guard animates else { return }
@@ -380,7 +380,7 @@ private struct RentOSWindow: View {
 // MARK: - Logo Tile
 
 /// The mark on a white app-icon-style tile with a soft pastel sky.
-struct RentOSLogoTile: View {
+struct PurrpertyLogoTile: View {
 
     var size: CGFloat = 96
     var animates: Bool = true
@@ -390,59 +390,62 @@ struct RentOSLogoTile: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(RentOSBrand.white)
+                .fill(PurrpertyBrand.white)
 
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [RentOSBrand.wallViolet.opacity(0.75), RentOSBrand.white],
+                        colors: [PurrpertyBrand.wallViolet.opacity(0.75), PurrpertyBrand.white],
                         startPoint: .top,
                         endPoint: .center
                     )
                 )
 
-            RentOSLogoMark(size: size * 0.92, animates: animates)
+            PurrpertyLogoMark(size: size * 0.92, animates: animates)
                 .offset(y: size * 0.02)
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(RentOSBrand.violet.opacity(0.12), lineWidth: 1)
+                .strokeBorder(PurrpertyBrand.violet.opacity(0.12), lineWidth: 1)
         )
-        .dsShadow(DS.Shadows.glow(RentOSBrand.violet, intensity: 0.22))
+        .dsShadow(DS.Shadows.glow(PurrpertyBrand.violet, intensity: 0.22))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("RentOS")
+        .accessibilityLabel("Purrperty")
     }
 }
 
 // MARK: - Wordmark
 
-/// "RentOS" — "Rent" in ink, "OS" in a violet → sky gradient.
-struct RentOSWordmark: View {
+/// "Purrperty" — "Purr" (the mascot's name, the way Duo lives inside
+/// Duolingo) in a violet → sky gradient, "perty" in ink.
+struct PurrpertyWordmark: View {
 
     var fontSize: CGFloat = 38
-    /// Light "Rent" for use on a coloured or dark background.
+    /// Light "perty" for use on a coloured or dark background.
     var onDark: Bool = false
 
     var body: some View {
         HStack(spacing: 0) {
-            Text("Rent")
-                .foregroundStyle(onDark ? AnyShapeStyle(RentOSBrand.white) : AnyShapeStyle(DS.Colors.textPrimary))
-
             // Violet 4.86 → deep sky 5.06 on white: passes AA at any size.
-            Text("OS")
+            Text(verbatim: "Purr")
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [RentOSBrand.violet, RentOSBrand.skyDeep],
+                        colors: [PurrpertyBrand.violet, PurrpertyBrand.skyDeep],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
+
+            Text(verbatim: "perty")
+                .foregroundStyle(onDark ? AnyShapeStyle(PurrpertyBrand.white) : AnyShapeStyle(DS.Colors.textPrimary))
         }
         .font(.system(size: fontSize, weight: .heavy, design: .rounded))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("RentOS")
+        .accessibilityLabel(Text(verbatim: "Purrperty"))
     }
 }
 
@@ -450,12 +453,12 @@ struct RentOSWordmark: View {
 
 #Preview("Logo") {
     VStack(spacing: DS.Spacing.xxl) {
-        RentOSLogoMark(size: 220)
+        PurrpertyLogoMark(size: 220)
         HStack(spacing: DS.Spacing.xl) {
-            RentOSLogoTile(size: 120)
-            RentOSLogoTile(size: 64)
+            PurrpertyLogoTile(size: 120)
+            PurrpertyLogoTile(size: 64)
         }
-        RentOSWordmark()
+        PurrpertyWordmark()
     }
     .padding()
     .background(DS.Colors.background)
@@ -466,7 +469,7 @@ struct RentOSWordmark: View {
         @State private var built = false
         var body: some View {
             VStack(spacing: DS.Spacing.xl) {
-                RentOSLogoMark(size: 240, isBuilt: built)
+                PurrpertyLogoMark(size: 240, isBuilt: built)
                 DSButton(title: built ? "Reset" : "Build", variant: .primary) { built.toggle() }
             }
             .padding()

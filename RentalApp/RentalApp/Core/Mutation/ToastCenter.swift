@@ -1,6 +1,6 @@
 //
 //  ToastCenter.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core — The one place transient feedback is announced.
 //

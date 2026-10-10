@@ -1,6 +1,6 @@
 //
 //  MaintenanceComponents.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Maintenance — Shared components: ticket cards (list + kanban),
 //  photo thumbnails, and the workflow stage visualization.

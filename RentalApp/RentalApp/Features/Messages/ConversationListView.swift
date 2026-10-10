@@ -1,6 +1,6 @@
 //
 //  ConversationListView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Messages — Conversation list. On iPhone rows push the chat;
 //  on iPad (regular width) it becomes a Slack-style split layout

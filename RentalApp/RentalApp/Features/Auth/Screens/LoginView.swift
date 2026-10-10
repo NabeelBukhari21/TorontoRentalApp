@@ -1,6 +1,6 @@
 //
 //  LoginView.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Auth — Sign in: email + password, forgot-password link,
 //  Apple/Google placeholders, biometric unlock for returning users,
@@ -119,7 +119,7 @@ struct LoginView: View {
             .dsEntrance(index: 1)
 
             VStack(spacing: DS.Spacing.md) {
-                AuthFooterLink(prompt: "New to RentOS?", actionTitle: "Create account") {
+                AuthFooterLink(prompt: "New to Purrperty?", actionTitle: "Create account") {
                     onNavigate(.roleSelection)
                 }
 

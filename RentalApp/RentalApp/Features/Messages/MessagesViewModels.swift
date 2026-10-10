@@ -1,6 +1,6 @@
 //
 //  MessagesViewModels.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Messages — Conversation list and chat thread view models.
 //

@@ -1,6 +1,6 @@
 //
 //  ConnectivityMonitor.swift
-//  RentalApp (RentOS)
+//  RentalApp (Purrperty)
 //
 //  Core/Realtime — Is there a network at all?
 //
