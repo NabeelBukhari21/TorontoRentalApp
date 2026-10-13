@@ -110,6 +110,8 @@ colourful, for students, on a white background.
   deep-link scheme, the `ca.rentos.*` background-task IDs and the
   keychain service. Changing them breaks sessions and links.
 - Mascot copy may only promise features that actually exist.
+- Onboarding, permissions and paywall work must follow
+  `docs/ONBOARDING_PLAYBOOK.md`.
 
 ## Current status and next steps
 - Done:
