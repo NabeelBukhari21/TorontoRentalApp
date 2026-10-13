@@ -184,14 +184,14 @@ struct OrgConfettiBurst: View {
     /// point is that it's loud. No white — on the white completion screen a
     /// white piece is invisible. Six entries so each accent appears, with
     /// violet (the brand) weighted twice.
-    private static let palette: [Color] = [
+    private static var palette: [Color] { [
         DS.Colors.brand,
         DS.Colors.accentCoral,
         DS.Colors.accentSunny,
         DS.Colors.accentMint,
         DS.Colors.accentSky,
         DS.Colors.brand
-    ]
+    ] }
 
     /// Celebration is decoration, and this is a full-screen burst of motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

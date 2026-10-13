@@ -62,13 +62,13 @@ struct SplashParticleField: View {
     /// Confetti-bright. No white: on the white launch background a white
     /// particle is invisible, which is exactly what two of the three old
     /// colours (white and champagne) would have been.
-    private static let palette: [Color] = [
+    private static var palette: [Color] { [
         DS.Colors.brand,
         DS.Colors.accentCoral,
         DS.Colors.accentSunny,
         DS.Colors.accentMint,
         DS.Colors.accentSky
-    ]
+    ] }
 
     /// Honouring this is not optional: a drifting, twinkling field is exactly
     /// the kind of motion Reduce Motion exists to suppress.

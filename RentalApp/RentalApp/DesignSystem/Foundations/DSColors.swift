@@ -79,17 +79,14 @@ extension DS {
         /// Primary brand colour and CTA fill. Passes as text on white
         /// (4.86) and on cards (4.54); white text on it passes (4.86).
         /// Dark mode lifts it so it still reads on dark surfaces (5.15+).
-        static let brand = Color(
-            light: Color(hex: 0x6C5CE7),
-            dark: Color(hex: 0x8B7FF0)
-        )
+        ///
+        /// Follows the user's accent (violet by default) — see DSAccent.swift.
+        static var brand: Color { AccentStore.shared.accent.brand }
 
         /// Violet for text on a violet tint (selected chips, active tabs).
-        /// `brand` itself drops to 4.04 there; this holds 5.04.
-        static let brandInk = Color(
-            light: Color(hex: 0x5A49E0),
-            dark: Color(hex: 0xA99FF5)
-        )
+        /// `brand` itself drops to 4.04 there; this holds 5.04. Follows the
+        /// user's accent like `brand`.
+        static var brandInk: Color { AccentStore.shared.accent.brandInk }
 
         // MARK: Accents — bright fills
 

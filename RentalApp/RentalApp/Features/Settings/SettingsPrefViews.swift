@@ -228,6 +228,7 @@ struct SettingsAppearancePage: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
+        @Bindable var accentStore = AccentStore.shared
 
         VStack(spacing: DS.Spacing.lg) {
             // Theme picker with live preview tiles.
@@ -268,10 +269,17 @@ struct SettingsAppearancePage: View {
             }
             .dsEntrance(index: 1)
 
-            SettingsSectionCard(title: "Brand") {
-                SettingsValueRow(icon: "paintpalette.fill", title: "Accent", value: "Champagne Gold")
-                SettingsRowDivider()
-                SettingsValueRow(icon: "app.badge.fill", title: "App icon", value: "Obsidian")
+            DSCard(style: .raised) {
+                VStack(alignment: .leading, spacing: DS.Spacing.md) {
+                    Text("Accent").dsOverline()
+
+                    DSAccentPicker(selection: $accentStore.accent, swatchSize: 40)
+
+                    Text("Buttons, highlights and charts follow your accent.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(DS.Colors.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .dsEntrance(index: 2)
         }

@@ -23,11 +23,11 @@ extension DS {
         /// Ends on `accentSkyDeep` rather than plain sky so white text holds
         /// AA across the whole card: 4.86 at the violet end, 5.06 at the sky
         /// end. Plain #4DA8FF would drop to 2.51.
-        static let hero = LinearGradient(
+        static var hero: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.accentSkyDeep],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
-        )
+        ) }
 
         /// Coral → sunny. Celebrations, streak-style highlights, alerts that
         /// should feel warm rather than alarming. Text: `textOnAccent` (ink,
@@ -51,38 +51,38 @@ extension DS {
         /// Primary brand gradient — primary buttons, the FAB, icon wells.
         /// Violet → deeper violet, so white labels pass at both ends
         /// (4.86, 6.06) while still reading as a gradient.
-        static let brand = LinearGradient(
+        static var brand: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.brandInk],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
-        )
+        ) }
 
         /// AI features. Violet → sky, angled differently from `hero` so the
         /// two read as related but distinct. Text: `textOnBrand`.
-        static let ai = LinearGradient(
+        static var ai: LinearGradient { LinearGradient(
             colors: [DS.Colors.accentSkyDeep, DS.Colors.brand],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
-        )
+        ) }
 
         /// Positive stats. Mint → sky, ink text.
         static let success = fresh
 
         /// Filled highlight — sent message bubbles, unread pills, selected
         /// chips, confirmed states. Text: `onHighlight` (white, 4.86–6.06).
-        static let highlight = LinearGradient(
+        static var highlight: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.brandInk],
             startPoint: .top,
             endPoint: .bottom
-        )
+        ) }
 
         /// Horizontal multi-colour sweep for progress fills (lease terms,
         /// usage, onboarding). Decorative — never carries text.
-        static let progress = LinearGradient(
+        static var progress: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.accentSky, DS.Colors.accentMint],
             startPoint: .leading,
             endPoint: .trailing
-        )
+        ) }
 
         // MARK: Hairlines
 

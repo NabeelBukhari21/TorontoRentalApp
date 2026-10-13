@@ -84,7 +84,12 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     // Light by default: the brand is white-first, and on `.system` a phone
     // in dark mode would never show it. Dark mode is fully supported and
     // one tap away in Settings → Appearance.
-    var theme: AppTheme = .light
+    //
+    // Persisted, unlike the rest of this mock: onboarding asks for it, and
+    // an answer that resets on the next launch is a broken promise.
+    var theme: AppTheme = InMemoryPreferencesRepository.storedTheme {
+        didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.themeKey) }
+    }
     var reduceGlassEffects = false
     var showPortfolioValueOnHome = true
 
@@ -96,6 +101,15 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var aiPricingAlerts = false
     /// 0 (only urgent) ... 1 (highly proactive)
     var aiProactiveness: Double = 0.7
+
+    // MARK: Persistence
+
+    private static let themeKey = "appearance.theme.v1"
+
+    /// Light when nothing has been chosen yet — see the note on `theme`.
+    private static var storedTheme: AppTheme {
+        UserDefaults.standard.string(forKey: themeKey).flatMap(AppTheme.init(rawValue:)) ?? .light
+    }
 }
 
 // MARK: - Billing
