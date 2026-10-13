@@ -180,14 +180,49 @@ protocol SubscriptionProviding: Sendable {
 }
 
 struct SubscriptionProduct: Sendable, Identifiable, Equatable {
+
+    enum BillingPeriod: String, Sendable {
+        case month
+        case year
+
+        var months: Int { self == .year ? 12 : 1 }
+    }
+
     let id: String
     let tier: SubscriptionTier
     let displayName: String
     /// Already localized by StoreKit. Never format currency yourself —
     /// StoreKit knows the storefront, the locale and the tax treatment.
     let displayPrice: String
-    let period: String
-    let introductoryOffer: String?
+    /// The raw price, for comparisons only (savings, per-week breakdowns).
+    /// Display it through `formatted(_:)`, which uses the storefront's
+    /// currency.
+    let price: Decimal
+    let currencyCode: String
+    let billingPeriod: BillingPeriod
+    /// Free-trial length, when the product has an introductory offer.
+    let trialDays: Int?
+
+    var period: String { billingPeriod.rawValue }
+
+    var introductoryOffer: String? {
+        trialDays.map { "\($0) days free" }
+    }
+
+    /// The price spread over a week, e.g. for "≈ $6.92 a week".
+    var pricePerWeek: Decimal {
+        let weeks: Decimal = billingPeriod == .year ? 52 : Decimal(52) / 12
+        return price / weeks
+    }
+
+    /// The price spread over a month.
+    var pricePerMonth: Decimal {
+        price / Decimal(billingPeriod.months)
+    }
+
+    func formatted(_ amount: Decimal) -> String {
+        amount.formatted(.currency(code: currencyCode))
+    }
 }
 
 // MARK: - Store
@@ -338,28 +373,38 @@ struct MockSubscriptionProvider: SubscriptionProviding {
     func currentStatus() async -> SubscriptionStatus { simulatedStatus }
 
     func availableProducts() async throws -> [SubscriptionProduct] {
+        // Placeholder prices until App Store Connect products exist.
+        // Product IDs keep the stable `ca.rentos.*` prefix.
         [
-            SubscriptionProduct(
-                id: "ca.rentos.starter.monthly",
-                tier: .starter,
-                displayName: "Starter",
-                displayPrice: "$19.99",
-                period: "month",
-                introductoryOffer: "14 days free"
-            ),
-            SubscriptionProduct(
-                id: "ca.rentos.professional.monthly",
-                tier: .professional,
-                displayName: "Professional",
-                displayPrice: "$49.99",
-                period: "month",
-                introductoryOffer: nil
-            )
+            Self.product("ca.rentos.professional.yearly", .professional, "Premium", 359.99, .year, trial: 14),
+            Self.product("ca.rentos.professional.monthly", .professional, "Premium", 49.99, .month, trial: 14),
+            Self.product("ca.rentos.starter.yearly", .starter, "Starter", 143.99, .year, trial: 14),
+            Self.product("ca.rentos.starter.monthly", .starter, "Starter", 19.99, .month, trial: 14)
         ]
     }
 
     func purchase(_ product: SubscriptionProduct) async throws -> SubscriptionStatus {
         .active(tier: product.tier, expiresAt: Date().addingTimeInterval(30 * 86_400))
+    }
+
+    private static func product(
+        _ id: String,
+        _ tier: SubscriptionTier,
+        _ name: String,
+        _ price: Decimal,
+        _ period: SubscriptionProduct.BillingPeriod,
+        trial: Int?
+    ) -> SubscriptionProduct {
+        SubscriptionProduct(
+            id: id,
+            tier: tier,
+            displayName: name,
+            displayPrice: price.formatted(.currency(code: "CAD")),
+            price: price,
+            currencyCode: "CAD",
+            billingPeriod: period,
+            trialDays: trial
+        )
     }
 
     func restorePurchases() async throws -> SubscriptionStatus { simulatedStatus }

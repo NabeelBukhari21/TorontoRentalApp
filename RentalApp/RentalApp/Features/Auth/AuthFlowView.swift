@@ -30,6 +30,11 @@ struct AuthFlowView: View {
     /// MFA challenge the session coordinator will route to.
     let onAuthenticated: (SignInOutcome) -> Void
 
+    /// Called instead of `onAuthenticated` when the password sign-up form
+    /// created a brand-new account, so the session can start the
+    /// getting-started flow for it.
+    let onSignedUp: (SignInOutcome) -> Void
+
     /// Offered on the login screen when a biometric-gated session is
     /// already on this device.
     private let biometricUnlock: BiometricUnlockOption?
@@ -41,9 +46,11 @@ struct AuthFlowView: View {
     init(
         container: AppContainer = .shared,
         biometricUnlock: BiometricUnlockOption? = nil,
-        onAuthenticated: @escaping (SignInOutcome) -> Void
+        onAuthenticated: @escaping (SignInOutcome) -> Void,
+        onSignedUp: ((SignInOutcome) -> Void)? = nil
     ) {
         self.onAuthenticated = onAuthenticated
+        self.onSignedUp = onSignedUp ?? onAuthenticated
         self.biometricUnlock = biometricUnlock
         _viewModel = State(initialValue: AuthViewModel(
             auth: container.auth,
@@ -109,7 +116,8 @@ struct AuthFlowView: View {
             SignUpView(
                 viewModel: viewModel,
                 onNavigate: { navigate(to: $0) },
-                onAuthenticated: onAuthenticated
+                onAuthenticated: onAuthenticated,
+                onSignedUp: onSignedUp
             )
         case .forgotPassword:
             ForgotPasswordView(

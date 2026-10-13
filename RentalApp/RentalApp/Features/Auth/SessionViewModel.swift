@@ -47,15 +47,18 @@ final class SessionViewModel {
     private let auth: AuthServiceProtocol
     private let store: SessionStoring
     private let analytics: AnalyticsService
+    private let onboarding: OnboardingProfileStore
 
     init(
         auth: AuthServiceProtocol,
         store: SessionStoring,
-        analytics: AnalyticsService
+        analytics: AnalyticsService,
+        onboarding: OnboardingProfileStore
     ) {
         self.auth = auth
         self.store = store
         self.analytics = analytics
+        self.onboarding = onboarding
     }
 
     // MARK: Derived
@@ -73,7 +76,7 @@ final class SessionViewModel {
         // DEBUG-only: start at a specific flow while developing it,
         // without touching the stored session. See `DebugLaunchOverride`.
         if let override = DebugLaunchOverride.current {
-            transition(to: override.initialState)
+            await apply(override)
             return
         }
 
@@ -93,13 +96,45 @@ final class SessionViewModel {
         }
     }
 
-    /// Called when the onboarding pager finishes or is skipped. The
-    /// flag is persisted so it never replays — including after a
-    /// sign-out.
+    /// Called when someone leaves onboarding for the sign-in screen
+    /// ("I already have an account"). The flag is persisted so it never
+    /// replays — including after a sign-out.
     func completeOnboarding() {
+        markOnboardingSeen()
+        transition(to: .unauthenticated)
+    }
+
+    /// Called when onboarding ends with a brand-new account. Staff go on
+    /// to "getting started" once their workspace exists; tenants go
+    /// straight in.
+    func finishOnboarding(with outcome: SignInOutcome) {
+        markOnboardingSeen()
+        handleSignUp(outcome)
+    }
+
+    /// Sign-up from anywhere — onboarding or the auth screens. Flags the
+    /// new account for the getting-started flow before routing it.
+    func handleSignUp(_ outcome: SignInOutcome) {
+        if case .session(let session) = outcome, session.role.isStaff {
+            onboarding.pendingActivationUserID = session.userID
+        }
+        handle(outcome)
+    }
+
+    private func markOnboardingSeen() {
         store.hasCompletedOnboarding = true
         Task { await analytics.track(.onboardingCompleted) }
-        transition(to: .unauthenticated)
+    }
+
+    // MARK: Getting Started
+
+    /// The getting-started flow is done, or was skipped. It never
+    /// replays for this account.
+    func completeGettingStarted(addedProperty: Bool) {
+        guard case .gettingStarted(let session) = state else { return }
+        onboarding.pendingActivationUserID = nil
+        Task { await analytics.track(.activationCompleted(addedProperty: addedProperty)) }
+        transition(to: .authenticated(session))
     }
 
     // MARK: Sign-In Results
@@ -226,7 +261,28 @@ final class SessionViewModel {
     /// Staff without a workspace can't use the app yet; everyone else
     /// goes straight in. Centralized so no caller has to remember it.
     private func route(for session: AuthSession) -> AuthState {
-        session.needsOrganization ? .needsOrganization(session) : .authenticated(session)
+        if session.needsOrganization { return .needsOrganization(session) }
+        if session.role.isStaff, onboarding.pendingActivationUserID == session.userID {
+            return .gettingStarted(session)
+        }
+        return .authenticated(session)
+    }
+
+    /// DEBUG launch override. Flows that need an account restore the
+    /// stored session (the mock backend always has one).
+    private func apply(_ override: DebugLaunchOverride) async {
+        switch override {
+        case .onboarding:
+            transition(to: .onboarding)
+        case .login:
+            transition(to: .unauthenticated)
+        case .gettingStarted:
+            if let restored = await auth.restoreSession() {
+                transition(to: .gettingStarted(restored))
+            } else {
+                transition(to: .unauthenticated)
+            }
+        }
     }
 
     private func transition(to next: AuthState, animated: Bool = true) {

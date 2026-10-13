@@ -287,12 +287,15 @@ enum AuthState: Equatable {
     case awaitingMFA(MFAChallenge)
     /// Signed in, but staff with no organization yet.
     case needsOrganization(AuthSession)
+    /// Signed up on this device and not yet through "getting started":
+    /// first property, notifications, plan. Staff only.
+    case gettingStarted(AuthSession)
     /// Fully authenticated.
     case authenticated(AuthSession)
 
     var session: AuthSession? {
         switch self {
-        case .needsOrganization(let session), .authenticated(let session): session
+        case .needsOrganization(let session), .gettingStarted(let session), .authenticated(let session): session
         default: nil
         }
     }

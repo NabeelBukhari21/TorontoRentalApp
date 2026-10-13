@@ -25,7 +25,9 @@ colourful, for students, on a white background.
   - `RentalApp` launches normally (a restored session goes straight to
     Home).
   - `RentalApp (Onboarding)` passes `-PurrpertyStartAt onboarding`, so
-    the app opens at onboarding. Also supported: `login`. This works in
+    the app opens at onboarding. Also supported: `login` and
+    `gettingStarted` (first property → notifications → paywall, using the
+    stored session). This works in
     DEBUG builds only; see `Core/Diagnostics/DebugLaunchOverride.swift`.
 - Deployment target: iOS 26.4. Default simulator: iPhone 17 Pro. Physical
   device: iPhone 15 Pro Max.
@@ -121,16 +123,24 @@ colourful, for students, on a white background.
   - Purrperty rebrand
   - onboarding hello clip
   - debug launch override
+  - onboarding redesign per `docs/ONBOARDING_PLAYBOOK.md`: quiz →
+    make it yours → building → unlocked → sign-up pitch, then (staff,
+    after org setup) getting started → first property → aha + founder
+    note → notification priming → 3-step trial paywall
+  - user accent colours (`AccentStore`, `DS.Colors.brand` is computed)
 - Next, the user's plan, step by step:
   1. Fix the loading screen.
-  2. Fix onboarding.
-  3. Fix the Home UI.
-  4. Build new features.
+  2. Fix the Home UI.
+  3. Build new features.
 - Open items:
   - The hello clip still carries the DomoAI watermark. Replace it with a
     clean export.
   - Request 1024px exports of the cool, work, sleep and leap poses.
   - The "Reduce glass effects" setting is now a no-op.
   - AI tasks aren't wired to any screens.
+  - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in
+    DEBUG only. Needs real StoreKit products before release.
+  - Home still shows the seeded mock portfolio, not the new account's
+    property; the tenant portal isn't built (tenants see the staff UI).
   - Supabase isn't configured.
   - The GitHub About description needs updating.

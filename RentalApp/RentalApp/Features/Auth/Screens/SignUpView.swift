@@ -13,6 +13,8 @@ struct SignUpView: View {
     @Bindable var viewModel: AuthViewModel
     let onNavigate: (AuthFlowView.Screen) -> Void
     let onAuthenticated: (SignInOutcome) -> Void
+    /// The password form created a new account.
+    let onSignedUp: (SignInOutcome) -> Void
 
     var body: some View {
         VStack(spacing: DS.Spacing.xxl) {
@@ -104,7 +106,7 @@ struct SignUpView: View {
                     ) {
                         Task {
                             if let outcome = await viewModel.signUp() {
-                                onAuthenticated(outcome)
+                                onSignedUp(outcome)
                             }
                         }
                     }

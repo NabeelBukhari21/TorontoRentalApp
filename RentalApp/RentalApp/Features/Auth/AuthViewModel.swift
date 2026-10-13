@@ -30,6 +30,11 @@ final class AuthViewModel {
     /// Chosen on the role-selection screen and carried into sign-up.
     var selectedRole: AppRole = .owner
 
+    /// The auth screens ask for the password twice. Onboarding's sign-up
+    /// shows a reveal toggle and a live checklist instead, so it switches
+    /// the second field off.
+    var requiresPasswordConfirmation = true
+
     // MARK: UI State
 
     var isLoading = false
@@ -80,6 +85,18 @@ final class AuthViewModel {
         strength(of: newPassword)
     }
 
+    /// The rules a new password must meet, each with its live state.
+    /// What the checklist shows is exactly what validation enforces.
+    var passwordRequirements: [PasswordRequirement] {
+        PasswordRequirement.Rule.allCases.map {
+            PasswordRequirement(rule: $0, isMet: $0.isMet(by: password))
+        }
+    }
+
+    private func meetsRequirements(_ value: String) -> Bool {
+        PasswordRequirement.Rule.allCases.allSatisfy { $0.isMet(by: value) }
+    }
+
     private func strength(of value: String) -> Double {
         guard !value.isEmpty else { return 0 }
         var score = 0.0
@@ -109,8 +126,10 @@ final class AuthViewModel {
     func validateSignUp() -> Bool {
         nameError = name.trimmingCharacters(in: .whitespaces).count >= 2 ? nil : "Enter your full name"
         validateEmailField()
-        passwordError = passwordStrength >= 0.5 ? nil : "Use 8+ characters with a mix of letters and numbers"
-        confirmPasswordError = confirmPassword == password && !password.isEmpty ? nil : "Passwords don't match"
+        passwordError = meetsRequirements(password) ? nil : "Use 8+ characters with a mix of letters and numbers"
+        if requiresPasswordConfirmation {
+            confirmPasswordError = confirmPassword == password && !password.isEmpty ? nil : "Passwords don't match"
+        }
         return failIfNeeded(nameError, emailError, passwordError, confirmPasswordError)
     }
 
@@ -120,7 +139,7 @@ final class AuthViewModel {
     }
 
     func validateResetPassword() -> Bool {
-        newPasswordError = newPasswordStrength >= 0.5 ? nil : "Use 8+ characters with a mix of letters and numbers"
+        newPasswordError = meetsRequirements(newPassword) ? nil : "Use 8+ characters with a mix of letters and numbers"
         confirmNewPasswordError = confirmNewPassword == newPassword && !newPassword.isEmpty ? nil : "Passwords don't match"
         return failIfNeeded(newPasswordError, confirmNewPasswordError)
     }
@@ -245,4 +264,37 @@ final class AuthViewModel {
         resetLinkSent = false
         passwordResetDone = false
     }
+}
+
+// MARK: - Password Requirements
+
+/// One rule of the new-password policy and whether it's currently met.
+struct PasswordRequirement: Identifiable, Equatable {
+
+    enum Rule: CaseIterable {
+        case length
+        case letter
+        case number
+
+        var title: String {
+            switch self {
+            case .length: "At least 8 characters"
+            case .letter: "A letter"
+            case .number: "A number"
+            }
+        }
+
+        func isMet(by value: String) -> Bool {
+            switch self {
+            case .length: value.count >= 8
+            case .letter: value.rangeOfCharacter(from: .letters) != nil
+            case .number: value.rangeOfCharacter(from: .decimalDigits) != nil
+            }
+        }
+    }
+
+    let rule: Rule
+    let isMet: Bool
+
+    var id: Rule { rule }
 }

@@ -114,6 +114,15 @@ enum AnalyticsEvent: Sendable, Equatable {
     case mfaChallenged
     case mfaVerified(succeeded: Bool)
     case onboardingCompleted
+    /// A step of the onboarding flow came on screen. Drop-off per step is
+    /// the funnel; the step names are a closed enum (`OnboardingStep`).
+    case onboardingStepViewed(step: String)
+    /// A quiz answer. Both values come from closed enums — never free text.
+    case onboardingAnswered(question: String, answer: String)
+    /// The post-sign-up "getting started" flow finished.
+    case activationCompleted(addedProperty: Bool)
+    /// The answer to the system notification prompt, after priming.
+    case notificationPermissionResponded(granted: Bool)
 
     // Organization
     case organizationCreated(portfolioSize: Int)
@@ -149,6 +158,7 @@ enum AnalyticsEvent: Sendable, Equatable {
     case paywallPresented(source: String)
     case purchaseCompleted(productTier: String)
     case purchaseFailed(reason: String)
+    case paywallDismissed(source: String)
 
     // Screens
     case screenViewed(name: ScreenName)
@@ -167,6 +177,10 @@ enum AnalyticsEvent: Sendable, Equatable {
         case .mfaChallenged:            "mfa_challenged"
         case .mfaVerified:              "mfa_verified"
         case .onboardingCompleted:      "onboarding_completed"
+        case .onboardingStepViewed:     "onboarding_step_viewed"
+        case .onboardingAnswered:       "onboarding_answered"
+        case .activationCompleted:      "activation_completed"
+        case .notificationPermissionResponded: "notification_permission_responded"
         case .organizationCreated:      "organization_created"
         case .memberInvited:            "member_invited"
         case .propertyCreated:          "property_created"
@@ -188,6 +202,7 @@ enum AnalyticsEvent: Sendable, Equatable {
         case .paywallPresented:         "paywall_presented"
         case .purchaseCompleted:        "purchase_completed"
         case .purchaseFailed:           "purchase_failed"
+        case .paywallDismissed:         "paywall_dismissed"
         case .screenViewed:             "screen_viewed"
         }
     }
@@ -235,6 +250,16 @@ enum AnalyticsEvent: Sendable, Equatable {
             ["reason": .enumerated(reason)]
         case .screenViewed(let name):
             ["screen": AnalyticsValue(name)]
+        case .onboardingStepViewed(let step):
+            ["step": .enumerated(step)]
+        case .onboardingAnswered(let question, let answer):
+            ["question": .enumerated(question), "answer": .enumerated(answer)]
+        case .activationCompleted(let addedProperty):
+            ["added_property": .flag(addedProperty)]
+        case .notificationPermissionResponded(let granted):
+            ["granted": .flag(granted)]
+        case .paywallDismissed(let source):
+            ["source": .enumerated(source)]
         case .signedOut, .mfaChallenged, .onboardingCompleted,
              .propertyCreated, .propertyUpdated, .propertyArchived,
              .unitCreated, .tenantCreated, .leaseCreated,
@@ -253,8 +278,10 @@ enum AnalyticsEvent: Sendable, Equatable {
     var isCritical: Bool {
         switch self {
         case .signedIn, .signUpCompleted, .signedOut, .onboardingCompleted,
+             .onboardingStepViewed, .onboardingAnswered, .activationCompleted,
+             .notificationPermissionResponded,
              .organizationCreated, .purchaseCompleted, .purchaseFailed,
-             .paywallPresented:
+             .paywallPresented, .paywallDismissed:
             true
         default:
             false

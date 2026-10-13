@@ -66,6 +66,10 @@ final class AppContainer {
     /// Subscription entitlements. Inert until `paywallEnforced` is on.
     let entitlements: EntitlementStore
 
+    /// Quiz answers from onboarding, kept on the device until — and
+    /// after — there is an account to attach them to.
+    let onboardingProfile: OnboardingProfileStore
+
     /// Transient feedback. ONE instance for the whole app.
     ///
     /// Audit finding: six were being constructed — one owned by
@@ -211,6 +215,8 @@ final class AppContainer {
             provider: subscriptions,
             flags: featureFlags
         )
+
+        self.onboardingProfile = OnboardingProfileStore(persistence: persistence)
 
         // The flag store refuses to remotely disable a data-critical flag
         // while work is still queued. It needs a way to ask, and the outbox

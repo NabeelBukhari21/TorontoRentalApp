@@ -10,6 +10,8 @@
 //
 //      -PurrpertyStartAt onboarding     the onboarding pager
 //      -PurrpertyStartAt login          the sign-in screen
+//      -PurrpertyStartAt gettingStarted first property → notifications →
+//                                       plan, using the stored session
 //
 //  The override is non-destructive: the stored session and onboarding flag
 //  are left untouched, so removing the argument returns to normal launch.
@@ -24,6 +26,7 @@ import Foundation
 enum DebugLaunchOverride: String, CaseIterable, Sendable {
     case onboarding
     case login
+    case gettingStarted
 
     /// Launch arguments of the form `-Key value` land in the
     /// `UserDefaults` argument domain, so no parsing is needed.
@@ -36,13 +39,5 @@ enum DebugLaunchOverride: String, CaseIterable, Sendable {
         #else
         nil
         #endif
-    }
-
-    /// The auth state the app should open in.
-    var initialState: AuthState {
-        switch self {
-        case .onboarding: .onboarding
-        case .login:      .unauthenticated
-        }
     }
 }

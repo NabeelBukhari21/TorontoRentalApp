@@ -64,7 +64,8 @@ struct RootNavigation: View {
         _session = State(initialValue: SessionViewModel(
             auth: container.auth,
             store: container.sessionStore,
-            analytics: container.analytics
+            analytics: container.analytics,
+            onboarding: container.onboardingProfile
         ))
     }
 
@@ -127,16 +128,20 @@ struct RootNavigation: View {
             Color.clear
 
         case .onboarding:
-            OnboardingView { session.completeOnboarding() }
-                .transition(.opacity)
+            OnboardingView(
+                container: container,
+                onSignedUp: { session.finishOnboarding(with: $0) },
+                onSignIn: { session.completeOnboarding() }
+            )
+            .transition(.opacity)
 
         case .unauthenticated:
             AuthenticationNavigation(
                 container: container,
-                biometricUnlock: biometricUnlock
-            ) { outcome in
-                session.handle(outcome)
-            }
+                biometricUnlock: biometricUnlock,
+                onAuthenticated: { session.handle($0) },
+                onSignedUp: { session.handleSignUp($0) }
+            )
             .transition(.opacity)
 
         case .awaitingMFA(let challenge):
@@ -144,10 +149,19 @@ struct RootNavigation: View {
                 .transition(.opacity)
 
         case .needsOrganization:
-            OrgSetupFlowView(container: container) { organizationID, organizationName in
+            OrgSetupFlowView(
+                container: container,
+                suggestedSize: container.onboardingProfile.profile.unitRange?.portfolioSize
+            ) { organizationID, organizationName in
                 Task {
                     await session.attachOrganization(id: organizationID, name: organizationName)
                 }
+            }
+            .transition(.opacity)
+
+        case .gettingStarted(let account):
+            GettingStartedView(container: container, session: account) { addedProperty in
+                session.completeGettingStarted(addedProperty: addedProperty)
             }
             .transition(.opacity)
 

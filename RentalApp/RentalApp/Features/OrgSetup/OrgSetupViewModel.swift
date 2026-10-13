@@ -147,8 +147,11 @@ final class OrgSetupViewModel {
 
     private let service: OrganizationServiceProtocol
 
-    init(service: OrganizationServiceProtocol) {
+    /// `suggestedSize` comes from the onboarding quiz, so a question
+    /// already answered there arrives pre-selected (still changeable).
+    init(service: OrganizationServiceProtocol, suggestedSize: PortfolioSizeOption? = nil) {
         self.service = service
+        self.portfolioSize = suggestedSize
     }
 
     // MARK: Answers

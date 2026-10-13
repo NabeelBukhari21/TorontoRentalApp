@@ -94,9 +94,11 @@ struct OrgCompletionView: View {
 
                 Spacer()
 
+                // "Continue", not "Go to Dashboard": a new account goes on
+                // to getting started (first property) before Home.
                 DSButton(
-                    title: "Go to Dashboard",
-                    icon: DS.Icons.dashboard,
+                    title: "Continue",
+                    icon: "arrow.right",
                     variant: .primary,
                     size: .large,
                     isFullWidth: true

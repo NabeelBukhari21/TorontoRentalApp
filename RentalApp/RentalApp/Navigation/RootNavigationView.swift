@@ -60,7 +60,8 @@ private enum PreviewSession {
         return SessionViewModel(
             auth: container.auth,
             store: container.sessionStore,
-            analytics: container.analytics
+            analytics: container.analytics,
+            onboarding: container.onboardingProfile
         )
     }()
 }

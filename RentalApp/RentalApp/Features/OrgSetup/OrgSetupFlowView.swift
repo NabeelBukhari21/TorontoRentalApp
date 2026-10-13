@@ -18,10 +18,14 @@ struct OrgSetupFlowView: View {
 
     init(
         container: AppContainer = .shared,
+        suggestedSize: PortfolioSizeOption? = nil,
         onFinished: @escaping (_ organizationID: String, _ organizationName: String) -> Void
     ) {
         self.onFinished = onFinished
-        _viewModel = State(initialValue: OrgSetupViewModel(service: container.organization))
+        _viewModel = State(initialValue: OrgSetupViewModel(
+            service: container.organization,
+            suggestedSize: suggestedSize
+        ))
     }
 
     var body: some View {

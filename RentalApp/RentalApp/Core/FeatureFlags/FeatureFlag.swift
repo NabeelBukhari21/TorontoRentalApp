@@ -77,8 +77,17 @@ enum FeatureFlag: String, Sendable, CaseIterable, Codable {
         case .realtimeSync, .offlineWrites, .pushNotifications:
             true
         case .aiCopilot, .aiMaintenanceTriage, .semanticSearch,
-             .bulkPropertyActions, .subscriptionsEnabled, .paywallEnforced:
+             .bulkPropertyActions, .paywallEnforced:
             false
+        case .subscriptionsEnabled:
+            // On in DEBUG so the onboarding paywall can be designed against
+            // the mock products. Release stays off until real StoreKit
+            // products and server-side enforcement exist (Entitlements.swift).
+            #if DEBUG
+            true
+            #else
+            false
+            #endif
         }
     }
 
