@@ -193,17 +193,9 @@ struct OnboardingPersonalizeStep: View {
     @Bindable var viewModel: OnboardingFlowViewModel
 
     var body: some View {
-        @Bindable var accent = viewModel.accent
-
         VStack(spacing: DS.Spacing.xl) {
             OnboardingThemePreview()
                 .dsEntrance(index: 0)
-
-            VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                Text("Accent").dsOverline()
-                DSAccentPicker(selection: $accent.accent)
-            }
-            .dsEntrance(index: 1)
 
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 Text("Appearance").dsOverline()

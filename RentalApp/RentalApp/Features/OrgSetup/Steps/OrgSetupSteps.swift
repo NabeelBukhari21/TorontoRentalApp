@@ -138,12 +138,15 @@ struct OrgLogoStep: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
 
+                // Read on the main actor; PhotosPicker's label closure isn't.
+                let pickerTitle = viewModel.logoImage == nil ? "Upload Logo" : "Choose a Different Photo"
+
                 VStack(spacing: DS.Spacing.md) {
                     PhotosPicker(selection: $pickerItem, matching: .images) {
                         HStack(spacing: DS.Spacing.sm) {
                             Image(systemName: "photo.fill")
                                 .font(.system(size: 15, weight: .semibold))
-                            Text(viewModel.logoImage == nil ? "Upload Logo" : "Choose a Different Photo")
+                            Text(pickerTitle)
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                         }
                         .foregroundStyle(DS.Colors.brandInk)

@@ -78,21 +78,18 @@ final class OnboardingFlowViewModel {
     private let preferences: PreferencesRepositoryProtocol
     private let dashboard: DashboardRepositoryProtocol
     private let analytics: AnalyticsService
-    let accent: AccentStore
 
     init(
         store: OnboardingProfileStore,
         preferences: PreferencesRepositoryProtocol,
         dashboard: DashboardRepositoryProtocol,
         authService: AuthServiceProtocol,
-        analytics: AnalyticsService,
-        accent: AccentStore = .shared
+        analytics: AnalyticsService
     ) {
         self.store = store
         self.preferences = preferences
         self.dashboard = dashboard
         self.analytics = analytics
-        self.accent = accent
         self.profile = store.profile
         self.auth = AuthViewModel(auth: authService)
         auth.requiresPasswordConfirmation = false
@@ -187,8 +184,8 @@ final class OnboardingFlowViewModel {
             "If Purrperty does one thing brilliantly for you, what is it?"
         case .personalize:
             profile.persona == .tenant
-                ? "Pick a colour you love. Your landlord can invite you in after you sign up."
-                : "Pick a colour you love. You can change it anytime in Settings."
+                ? "Light, dark or match your iPhone. Your landlord can invite you in after you sign up."
+                : "Light, dark or match your iPhone. You can change it anytime in Settings."
         default:
             ""
         }
@@ -261,7 +258,7 @@ final class OnboardingFlowViewModel {
         case .units:       answers = [profile.unitRange?.rawValue].compactMap { $0 }
         case .headaches:   answers = profile.headaches.map(\.rawValue).sorted()
         case .goal:        answers = [profile.goal?.rawValue].compactMap { $0 }
-        case .personalize: answers = [accent.accent.rawValue, preferences.theme.rawValue.lowercased()]
+        case .personalize: answers = [preferences.theme.rawValue.lowercased()]
         default:           return
         }
         Task {

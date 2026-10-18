@@ -76,17 +76,12 @@ extension DS {
 
         // MARK: Brand — electric violet
 
-        /// Primary brand colour and CTA fill. Passes as text on white
-        /// (4.86) and on cards (4.54); white text on it passes (4.86).
-        /// Dark mode lifts it so it still reads on dark surfaces (5.15+).
-        ///
-        /// Follows the user's accent (violet by default) — see DSAccent.swift.
-        static var brand: Color { AccentStore.shared.accent.brand }
-
-        /// Violet for text on a violet tint (selected chips, active tabs).
-        /// `brand` itself drops to 4.04 there; this holds 5.04. Follows the
-        /// user's accent like `brand`.
-        static var brandInk: Color { AccentStore.shared.accent.brandInk }
+        /// Legacy bridges to the system accent (the `AccentColor` asset,
+        /// with dark and Increase Contrast variants). Screens moving to
+        /// AppStyle use `.tint` / `Color.accentColor` directly; these go
+        /// when the old design system is deleted (UI rebuild, phase 5).
+        static var brand: Color { .accentColor }
+        static var brandInk: Color { .accentColor }
 
         // MARK: Accents — bright fills
 
@@ -262,10 +257,7 @@ extension DS {
         /// White in light mode (4.86 on violet). Dark ink in dark mode,
         /// because the lifted dark-mode violet is too light for white
         /// (3.29 ✗) but carries dark ink at 5.73.
-        static let textOnBrand = Color(
-            light: Color(hex: 0xFFFFFF),
-            dark: Color(hex: 0x0F1020)
-        )
+        static let textOnBrand = Color.white
 
         /// Text on bright accent fills (coral, sunny, mint, sky) and the
         /// warm and fresh gradients. 6.08–12.25 across all four.
