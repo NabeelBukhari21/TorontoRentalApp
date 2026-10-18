@@ -87,7 +87,7 @@ struct OnboardingView: View {
         .frame(maxWidth: 640)
         .frame(maxWidth: .infinity)
         .background(Color.groupedBackground)
-        .onboardingBottomBar { bottomBar }
+        .primaryActionBar { bottomBar }
     }
 
     @ViewBuilder
@@ -129,13 +129,13 @@ struct OnboardingView: View {
         case .building, .hello:
             EmptyView()
         case .signUp:
-            OnboardingPrimaryButton(title: "Create account", isLoading: viewModel.auth.isLoading) {
+            PrimaryActionButton(title: "Create account", isLoading: viewModel.auth.isLoading) {
                 Task {
                     if let outcome = await viewModel.signUp() { onSignedUp(outcome) }
                 }
             }
         default:
-            OnboardingPrimaryButton(title: viewModel.continueTitle) { viewModel.advance() }
+            PrimaryActionButton(title: viewModel.continueTitle) { viewModel.advance() }
                 .disabled(!viewModel.canContinue)
         }
     }

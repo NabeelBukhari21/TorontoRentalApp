@@ -60,65 +60,6 @@ extension View {
     }
 }
 
-// MARK: - Option Row
-
-/// One answer in a choice list: icon tile, title, optional subtitle and a
-/// checkmark when selected — the same pattern as a Settings picker row.
-struct OnboardingOptionRow: View {
-
-    let symbol: String
-    let tint: Color
-    let title: String
-    var subtitle: String? = nil
-    let isSelected: Bool
-    /// Multi-select answers use a filled circle; single-select a checkmark.
-    var isMultiSelect = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                SymbolTile(systemName: symbol, color: tint)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .foregroundStyle(Color.primary)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                selectionMark
-            }
-            .contentShape(.rect)
-        }
-        .frame(minHeight: 44)
-        .sensoryFeedback(.selection, trigger: isSelected)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    @ViewBuilder
-    private var selectionMark: some View {
-        if isMultiSelect {
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.title2)
-                .foregroundStyle(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(Color(uiColor: .tertiaryLabel)))
-                .contentTransition(.symbolEffect(.replace))
-                .accessibilityHidden(true)
-        } else if isSelected {
-            Image(systemName: "checkmark")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.tint)
-                .transition(.symbolEffect(.appear))
-                .accessibilityHidden(true)
-        }
-    }
-}
-
 // MARK: - Checklist Row
 
 /// One line of an honest progress checklist: waiting, working, done.
@@ -172,29 +113,6 @@ struct OnboardingUnlockRow: View {
     }
 }
 
-// MARK: - Password Requirements
-
-/// Each rule ticks over as it's met, with a light haptic (playbook §3).
-struct PasswordRequirementRow: View {
-
-    let requirement: PasswordRequirement
-
-    var body: some View {
-        Label {
-            Text(requirement.rule.title)
-                .foregroundStyle(requirement.isMet ? .primary : .secondary)
-        } icon: {
-            Image(systemName: requirement.isMet ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(requirement.isMet ? AnyShapeStyle(.green) : AnyShapeStyle(Color(uiColor: .tertiaryLabel)))
-                .contentTransition(.symbolEffect(.replace))
-        }
-        .font(.footnote)
-        .sensoryFeedback(.impact(weight: .light), trigger: requirement.isMet) { _, met in met }
-        .accessibilityElement(children: .combine)
-        .accessibilityValue(requirement.isMet ? "Met" : "Not met")
-    }
-}
-
 // MARK: - Progress
 
 /// Goal-gradient progress (playbook §5) for the navigation bar.
@@ -212,44 +130,6 @@ struct OnboardingProgressView: View {
     }
 }
 
-// MARK: - Bottom Bar
-
-extension View {
-    /// The one prominent action of a setup step, in a bar along the bottom
-    /// edge. The scroll edge effect softens content beneath it.
-    func onboardingBottomBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        safeAreaBar(edge: .bottom) {
-            VStack(spacing: 12) {
-                content()
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-            .frame(maxWidth: 540)
-        }
-    }
-}
-
-/// The prominent full-width button used for every step's main action.
-struct OnboardingPrimaryButton: View {
-
-    let title: String
-    var isLoading = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Text(title).opacity(isLoading ? 0 : 1)
-                if isLoading { ProgressView() }
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.glassProminent)
-        .controlSize(.large)
-        .disabled(isLoading)
-    }
-}
-
 // MARK: - Previews
 
 #Preview("Components") {
@@ -261,8 +141,8 @@ struct OnboardingPrimaryButton: View {
             .onboardingHeaderSection()
 
             Section {
-                OnboardingOptionRow(symbol: "key.fill", tint: .orange, title: "I own rentals", subtitle: "Landlord or owner", isSelected: true) {}
-                OnboardingOptionRow(symbol: "person.2.fill", tint: .blue, title: "I manage for others", isSelected: false) {}
+                ChoiceRow(symbol: "key.fill", tint: .orange, title: "I own rentals", subtitle: "Landlord or owner", isSelected: true) {}
+                ChoiceRow(symbol: "person.2.fill", tint: .blue, title: "I manage for others", isSelected: false) {}
             }
 
             Section {
@@ -271,8 +151,8 @@ struct OnboardingPrimaryButton: View {
                 OnboardingChecklistRow(task: .init(id: "c", title: "Preparing your dashboard"))
             }
         }
-        .onboardingBottomBar {
-            OnboardingPrimaryButton(title: "Continue") {}
+        .primaryActionBar {
+            PrimaryActionButton(title: "Continue") {}
         }
     }
 }

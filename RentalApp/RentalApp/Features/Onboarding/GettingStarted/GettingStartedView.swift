@@ -112,7 +112,7 @@ struct GettingStartedView: View {
             case .kind:
                 Section {
                     ForEach(PropertyKind.allCases, id: \.self) { kind in
-                        OnboardingOptionRow(
+                        ChoiceRow(
                             symbol: kind.icon, tint: tint(for: kind),
                             title: kind.rawValue, subtitle: subtitle(for: kind),
                             isSelected: false
@@ -180,13 +180,13 @@ struct GettingStartedView: View {
         }
         .listStyle(.insetGrouped)
         .scrollDismissesKeyboard(.interactively)
-        .onboardingBottomBar {
+        .primaryActionBar {
             switch viewModel.step {
             case .kind:
                 Button("I'll add one later") { viewModel.skipProperty() }
                     .frame(minHeight: 44)
             default:
-                OnboardingPrimaryButton(title: viewModel.step == .units ? "Add property" : "Continue") {
+                PrimaryActionButton(title: viewModel.step == .units ? "Add property" : "Continue") {
                     viewModel.advance()
                 }
                 .disabled(!viewModel.canContinue)
@@ -271,8 +271,8 @@ private struct GettingStartedCelebration: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(Color.groupedBackground)
         .navigationBarBackButtonHidden()
-        .onboardingBottomBar {
-            OnboardingPrimaryButton(title: "Continue", action: onContinue)
+        .primaryActionBar {
+            PrimaryActionButton(title: "Continue", action: onContinue)
         }
         .sensoryFeedback(.success, trigger: celebrated)
         .onAppear { celebrated = true }
@@ -348,8 +348,8 @@ private struct GettingStartedNotificationPriming: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(Color.groupedBackground)
         .navigationBarBackButtonHidden()
-        .onboardingBottomBar {
-            OnboardingPrimaryButton(title: "Turn on notifications", action: onEnable)
+        .primaryActionBar {
+            PrimaryActionButton(title: "Turn on notifications", action: onEnable)
             Button("Not now", action: onDecline)
                 .frame(minHeight: 44)
         }

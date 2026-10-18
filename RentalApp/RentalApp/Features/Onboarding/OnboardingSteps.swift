@@ -42,8 +42,8 @@ struct OnboardingHelloStep: View {
             .frame(maxWidth: .infinity)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .onboardingBottomBar {
-            OnboardingPrimaryButton(title: "Get started", action: onStart)
+        .primaryActionBar {
+            PrimaryActionButton(title: "Get started", action: onStart)
             Button("I already have an account", action: onSignIn)
                 .frame(minHeight: 44)
         }
@@ -59,7 +59,7 @@ struct OnboardingPersonaStep: View {
     var body: some View {
         Section {
             ForEach(OnboardingPersona.allCases) { persona in
-                OnboardingOptionRow(
+                ChoiceRow(
                     symbol: persona.icon, tint: persona.tint,
                     title: persona.title, subtitle: persona.subtitle,
                     isSelected: viewModel.profile.persona == persona
@@ -78,7 +78,7 @@ struct OnboardingUnitsStep: View {
     var body: some View {
         Section {
             ForEach(OnboardingUnitRange.allCases) { range in
-                OnboardingOptionRow(
+                ChoiceRow(
                     symbol: range.icon, tint: range.tint,
                     title: range.title, subtitle: range.subtitle,
                     isSelected: viewModel.profile.unitRange == range
@@ -98,7 +98,7 @@ struct OnboardingHeadachesStep: View {
     var body: some View {
         Section {
             ForEach(OnboardingHeadache.allCases) { headache in
-                OnboardingOptionRow(
+                ChoiceRow(
                     symbol: headache.icon, tint: headache.tint,
                     title: headache.title,
                     isSelected: viewModel.profile.headaches.contains(headache),
@@ -120,7 +120,7 @@ struct OnboardingGoalStep: View {
     var body: some View {
         Section {
             ForEach(OnboardingGoal.allCases) { goal in
-                OnboardingOptionRow(
+                ChoiceRow(
                     symbol: goal.icon, tint: goal.tint,
                     title: goal.title, subtitle: goal.subtitle,
                     isSelected: viewModel.profile.goal == goal
@@ -140,7 +140,7 @@ struct OnboardingPersonalizeStep: View {
     var body: some View {
         Section {
             ForEach(AppTheme.allCases) { theme in
-                OnboardingOptionRow(
+                ChoiceRow(
                     symbol: theme.icon,
                     tint: theme == .dark ? .indigo : theme == .light ? .orange : .gray,
                     title: theme == .system ? "Automatic" : theme.rawValue,
