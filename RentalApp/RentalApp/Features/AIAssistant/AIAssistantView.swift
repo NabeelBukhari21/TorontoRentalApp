@@ -44,20 +44,12 @@ struct AIAssistantView: View {
                     }
                 }
                 .padding(DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
                 .animation(DS.Motion.smooth, value: viewModel.phase)
             }
         }
-        .dsHeader(
-            title: "Copilot",
-            subtitle: "Your operations copilot",
-            trailingActions: [
-                DSHeaderAction(icon: "clock.arrow.circlepath") {},
-                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
-                    router.push(.notifications)
-                }
-            ]
-        )
+        .navigationTitle("Copilot")
+        .navigationSubtitle("Your operations copilot")
+        .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.start() }
         .refreshable { await viewModel.refresh() }
     }

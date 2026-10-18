@@ -122,7 +122,6 @@ struct TenantListView: View {
                     }
                 }
                 .padding(DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
                 .animation(DS.Motion.smooth, value: viewModel.filteredTenants.map(\.id))
             }
             .refreshable { await viewModel.refresh() }
@@ -138,22 +137,15 @@ struct TenantListView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(
-            title: "Tenants",
-            subtitle: "\(viewModel.activeCount) active leases",
-            showsBack: true,
-            trailingActions: [
-                DSHeaderAction(icon: DS.Icons.add) {
+        .navigationTitle("Tenants")
+        .navigationSubtitle("\(viewModel.activeCount) active leases")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Add tenant", systemImage: AppSymbol.invite.rawValue) {
                     router.present(.newTenant)
                 }
-            ]
-        )
-        .overlay(alignment: .bottomTrailing) {
-            DSFloatingActionButton(icon: "person.badge.plus") {
-                router.present(.newTenant)
             }
-            .padding(.trailing, DS.Spacing.xl)
-            .padding(.bottom, DSTabBar.overlayClearance)
         }
     }
 

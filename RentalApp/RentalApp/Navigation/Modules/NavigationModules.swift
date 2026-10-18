@@ -196,6 +196,7 @@ struct NavigationComingSoonView: View {
                 Spacer()
             }
         }
-        .dsHeader(title: route.title, showsBack: true)
+        .navigationTitle(route.title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -79,7 +79,7 @@ struct DashboardView: View {
 
                     // AI insights.
                     DashboardAIInsightsCard(insights: viewModel.insights) { _ in
-                        router.select(.aiAssistant)
+                        router.push(.assistant)
                     }
                     .dsEntrance(index: 6)
 
@@ -115,7 +115,6 @@ struct DashboardView: View {
                     }
                 }
                 .padding(DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
             }
             .refreshable { await viewModel.refresh() }
 
@@ -145,35 +144,39 @@ struct DashboardView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(
-            title: "Home",
-            subtitle: viewModel.greeting,
-            trailingActions: [
-                DSHeaderAction(icon: DS.Icons.search) {
-                    router.present(.globalSearch)
-                },
-                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
+        .navigationTitle("Home")
+        .navigationSubtitle(viewModel.greeting)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Copilot", systemImage: AppSymbol.assistant.rawValue) {
+                    router.push(.assistant)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Notifications", systemImage: AppSymbol.notifications.rawValue) {
                     router.push(.notifications)
-                },
-                DSHeaderAction(icon: DS.Icons.tenant) {
+                }
+                .badge(viewModel.unreadNotifications)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Profile", systemImage: AppSymbol.person.rawValue) {
                     router.push(.profile)
                 }
-            ]
-        )
-        .overlay(alignment: .bottomTrailing) {
-            DSFloatingActionButton(actions: [
-                DSFABAction(icon: DS.Icons.properties, title: "New Property") {
-                    router.present(.newProperty)
-                },
-                DSFABAction(icon: DS.Icons.maintenance, title: "New Request") {
-                    router.present(.newMaintenanceRequest)
-                },
-                DSFABAction(icon: DS.Icons.messages, title: "New Message") {
-                    router.select(.messages)
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu("New", systemImage: AppSymbol.add.rawValue) {
+                    Button("New property", systemImage: AppSymbol.properties.rawValue) {
+                        router.present(.newProperty)
+                    }
+                    Button("New maintenance request", systemImage: AppSymbol.maintenance.rawValue) {
+                        router.present(.newMaintenanceRequest)
+                    }
+                    Button("New message", systemImage: AppSymbol.messages.rawValue) {
+                        router.select(.messages)
+                    }
                 }
-            ])
-            .padding(.trailing, DS.Spacing.xl)
-            .padding(.bottom, DSTabBar.overlayClearance)
+            }
         }
     }
 

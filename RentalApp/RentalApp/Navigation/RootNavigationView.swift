@@ -2,13 +2,17 @@
 //  RootNavigationView.swift
 //  RentalApp (Purrperty)
 //
-//  Navigation — MainTabNavigation: the main app shell. Adapts to the
-//  environment:
-//  • Compact width (iPhone): floating glass tab bar + per-tab NavigationStacks.
-//  • Regular width (iPad): NavigationSplitView with sidebar.
-//  Also hosts the global bottom-sheet and full-screen presentation layers.
+//  Navigation — The main app shell, built entirely from system containers:
 //
-//  Uses the shared router so deep links and restored state land here.
+//  • `TabView` with the `Tab` API. On iPhone it's the Liquid Glass tab
+//    bar, which minimises as you scroll down; with `.sidebarAdaptable`
+//    the same tabs become a sidebar on iPad, so there's no custom
+//    sidebar or split layout to maintain.
+//  • Search is a dedicated tab (`role: .search`) that the system sets
+//    apart at the trailing end of the tab bar.
+//  • Each tab owns a `NavigationStack` driven by the shared router, so
+//    deep links and restored state land in the right stack.
+//  • Sheets and full-screen covers are native presentations.
 //
 
 import SwiftUI
@@ -17,8 +21,6 @@ struct RootNavigationView: View {
 
     /// The app-wide router — carries restored state and deep-link targets.
     @State private var router = AppRouter.shared
-    @Environment(\.horizontalSizeClass) private var sizeClass
-    @Environment(\.container) private var container
 
     /// Injected by `RootNavigation` at runtime. Read optionally so that
     /// previews of this shell — and of any screen inside it — work
@@ -26,25 +28,54 @@ struct RootNavigationView: View {
     @Environment(SessionViewModel.self) private var providedSession: SessionViewModel?
 
     var body: some View {
-        Group {
-            if sizeClass == .regular {
-                SidebarSplitLayout(router: router)
-            } else {
-                CompactTabLayout(router: router)
+        TabView(selection: tabSelection) {
+            Tab(AppTab.dashboard.title, systemImage: AppTab.dashboard.icon, value: AppTab.dashboard) {
+                stack(for: .dashboard)
+            }
+            Tab(AppTab.properties.title, systemImage: AppTab.properties.icon, value: AppTab.properties) {
+                stack(for: .properties)
+            }
+            Tab(AppTab.maintenance.title, systemImage: AppTab.maintenance.icon, value: AppTab.maintenance) {
+                stack(for: .maintenance)
+            }
+            Tab(AppTab.messages.title, systemImage: AppTab.messages.icon, value: AppTab.messages) {
+                stack(for: .messages)
+            }
+            Tab(value: AppTab.search, role: .search) {
+                stack(for: .search)
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
+        .tabBarMinimizeBehavior(.onScrollDown)
         .sheet(item: $router.activeSheet) { route in
-            DSSheetContainer(route: route)
+            SheetRouteView(route: route)
         }
         .fullScreenCover(item: $router.activeFullScreen) { route in
-            DSFullScreenContainer(route: route)
+            FullScreenRouteView(route: route)
         }
         .environment(router)
         .environment(providedSession ?? PreviewSession.shared)
         // The colour scheme is applied once, at `RootNavigation`, so that
-        // splash, onboarding and auth follow the Appearance setting too.
-        // Applying it here as well would give the window two competing
-        // preferences.
+        // onboarding and auth follow the Appearance setting too.
+    }
+
+    /// Re-selecting the current tab pops it to its root, as in every
+    /// system app. Routed through `AppRouter.select(_:)` so that rule
+    /// lives in one place.
+    private var tabSelection: Binding<AppTab> {
+        Binding(
+            get: { router.selectedTab },
+            set: { router.select($0) }
+        )
+    }
+
+    private func stack(for tab: AppTab) -> some View {
+        NavigationStack(path: router.pathBinding(for: tab)) {
+            TabRootView(tab: tab)
+                .navigationDestination(for: AppRoute.self) { route in
+                    RouteDestinationView(route: route)
+                }
+        }
     }
 }
 
@@ -64,59 +95,6 @@ private enum PreviewSession {
             onboarding: container.onboardingProfile
         )
     }()
-}
-
-// MARK: - Compact Layout (iPhone)
-
-private struct CompactTabLayout: View {
-
-    @Bindable var router: AppRouter
-
-    var body: some View {
-        TabView(selection: $router.selectedTab) {
-            ForEach(AppTab.allCases) { tab in
-                NavigationStack(path: router.pathBinding(for: tab)) {
-                    TabRootView(tab: tab)
-                        .navigationDestination(for: AppRoute.self) { route in
-                            RouteDestinationView(route: route)
-                        }
-                }
-                .toolbar(.hidden, for: .tabBar)
-                .tag(tab)
-                .transition(.opacity)
-            }
-        }
-        .overlay(alignment: .bottom) {
-            DSTabBar(
-                selectedTab: $router.selectedTab,
-                onReselect: { router.popToRoot(in: $0) }
-            )
-        }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
-    }
-}
-
-// MARK: - Split Layout (iPad)
-
-private struct SidebarSplitLayout: View {
-
-    @Bindable var router: AppRouter
-
-    var body: some View {
-        NavigationSplitView {
-            DSSidebar(router: router)
-        } detail: {
-            NavigationStack(path: router.pathBinding(for: router.selectedTab)) {
-                TabRootView(tab: router.selectedTab)
-                    .navigationDestination(for: AppRoute.self) { route in
-                        RouteDestinationView(route: route)
-                    }
-            }
-            // New identity per tab so each section keeps an independent stack.
-            .id(router.selectedTab)
-        }
-        .navigationSplitViewStyle(.balanced)
-    }
 }
 
 // MARK: - Previews

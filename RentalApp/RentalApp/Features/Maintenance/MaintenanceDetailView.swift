@@ -71,7 +71,8 @@ struct MaintenanceDetailView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(title: "Request", showsBack: true)
+        .navigationTitle("Request")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: Header

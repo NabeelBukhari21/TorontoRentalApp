@@ -66,7 +66,7 @@ enum DeepLink {
         case .properties: url(host: PropertyNavigation.deepLinkHost)
         case .maintenance: url(host: MaintenanceNavigation.deepLinkHost)
         case .messages: url(host: MessagesNavigation.deepLinkHost)
-        case .aiAssistant: url(host: "copilot")
+        case .search: url(host: "search")
         }
     }
 

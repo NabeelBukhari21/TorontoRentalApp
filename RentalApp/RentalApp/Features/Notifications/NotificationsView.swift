@@ -56,16 +56,17 @@ struct NotificationsView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(
-            title: "Notifications",
-            subtitle: viewModel.unreadCount > 0 ? "\(viewModel.unreadCount) unread" : "All caught up",
-            showsBack: true,
-            trailingActions: [
-                DSHeaderAction(icon: "checkmark.circle") {
+        .navigationTitle("Notifications")
+        .navigationSubtitle(viewModel.unreadCount > 0 ? "\(viewModel.unreadCount) unread" : "All caught up")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Mark all as read", systemImage: "checkmark.circle") {
                     Task { await viewModel.markAllRead() }
                 }
-            ]
-        )
+                .disabled(viewModel.unreadCount == 0)
+            }
+        }
     }
 
     // MARK: Section

@@ -12,6 +12,9 @@
 //      -PurrpertyStartAt login          the sign-in screen
 //      -PurrpertyStartAt gettingStarted first property → notifications →
 //                                       plan, using the stored session
+//      -PurrpertyStartAt home           the main app, signing in as the
+//                                       mock demo owner if no session is
+//                                       stored (for screenshots and UI work)
 //
 //  The override is non-destructive: the stored session and onboarding flag
 //  are left untouched, so removing the argument returns to normal launch.
@@ -27,6 +30,7 @@ enum DebugLaunchOverride: String, CaseIterable, Sendable {
     case onboarding
     case login
     case gettingStarted
+    case home
 
     /// Launch arguments of the form `-Key value` land in the
     /// `UserDefaults` argument domain, so no parsing is needed.

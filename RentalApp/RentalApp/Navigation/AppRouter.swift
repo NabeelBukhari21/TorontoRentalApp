@@ -101,7 +101,14 @@ final class AppRouter {
     // MARK: Presentation
 
     /// Presents a bottom sheet.
+    ///
+    /// Search is a tab now (`AppTab.search`), so a request to present it
+    /// selects that tab instead — callers don't need to know.
     func present(_ sheet: DSSheetRoute) {
+        if sheet == .globalSearch {
+            selectedTab = .search
+            return
+        }
         activeSheet = sheet
     }
 
@@ -159,7 +166,7 @@ final class AppRouter {
     /// Resolves a `rentos://` URL and navigates. Returns `true` if handled.
     ///
     /// Grammar (host = domain, path = identifiers):
-    ///   rentos://dashboard | properties | maintenance | messages | copilot
+    ///   rentos://dashboard | properties | maintenance | messages | copilot | search
     ///   rentos://properties/<propertyID>
     ///   rentos://tenants[/<tenantID>]
     ///   rentos://maintenance/<ticketID>
@@ -193,7 +200,9 @@ final class AppRouter {
         case "dashboard", "home":
             return (.dashboard, [])
         case "copilot", "ai":
-            return (.aiAssistant, [])
+            return (.dashboard, [.assistant])
+        case "search":
+            return (.search, [])
         case PropertyNavigation.deepLinkHost:
             return PropertyNavigation.resolve(path)
         case TenantNavigation.deepLinkHost:

@@ -144,7 +144,6 @@ struct PropertyListView: View {
                     }
                 }
                 .padding(DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
                 .animation(DS.Motion.smooth, value: viewModel.filteredProperties.map(\.id))
             }
             .refreshable { await viewModel.refresh() }
@@ -165,32 +164,30 @@ struct PropertyListView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(
-            title: "Properties",
-            subtitle: "\(viewModel.propertyCount) properties · \(viewModel.totalUnits) units",
-            trailingActions: [
-                DSHeaderAction(icon: DS.Icons.search) {
-                    router.present(.globalSearch)
-                },
-                DSHeaderAction(icon: viewModel.isSelecting ? DS.Icons.close : "checkmark.circle") {
-                    if viewModel.isSelecting { viewModel.endSelecting() } else { viewModel.beginSelecting() }
-                },
-                DSHeaderAction(icon: "archivebox") {
-                    sheet = .archived
-                },
-                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
-                    router.push(.notifications)
+        .navigationTitle("Properties")
+        .navigationSubtitle("\(viewModel.propertyCount) properties · \(viewModel.totalUnits) units")
+        .toolbar {
+            if viewModel.isSelecting {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { viewModel.endSelecting() }
                 }
-            ]
-        )
-        .overlay(alignment: .bottomTrailing) {
-            if !viewModel.isSelecting {
-                DSFloatingActionButton {
-                    sheet = .create
+            } else {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("More", systemImage: AppSymbol.more.rawValue) {
+                        Button("Select", systemImage: "checkmark.circle") {
+                            viewModel.beginSelecting()
+                        }
+                        Button("Archived properties", systemImage: AppSymbol.archive.rawValue) {
+                            sheet = .archived
+                        }
+                    }
                 }
-                .padding(.trailing, DS.Spacing.xl)
-                .padding(.bottom, DSTabBar.overlayClearance)
-                .transition(.scale.combined(with: .opacity))
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Add property", systemImage: AppSymbol.add.rawValue) {
+                        sheet = .create
+                    }
+                }
             }
         }
         .overlay(alignment: .bottom) {
@@ -200,7 +197,6 @@ struct PropertyListView: View {
                     onArchive: archiveSelected,
                     onCancel: { viewModel.endSelecting() }
                 )
-                .padding(.bottom, DSTabBar.overlayClearance)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }

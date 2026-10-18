@@ -4,9 +4,9 @@
 //
 //  Components — Transient feedback, and the confirmation modifier.
 //
-//  The toast sits above the tab bar rather than at the top, because on
-//  a phone the user's thumb is already down there when they trigger the
-//  action they might want to undo.
+//  Feedback banner: a Liquid Glass capsule at the top of the screen,
+//  like a system banner. It's a control-layer element, so glass is
+//  right here; the message itself is plain text on it.
 //
 
 import SwiftUI
@@ -21,64 +21,57 @@ struct DSToastView: View {
     let onRetry: () -> Void
     let onDismiss: () -> Void
 
+    private var role: StatusRole {
+        switch toast.style {
+        case .success: .positive
+        case .failure: .critical
+        case .info:    .informational
+        }
+    }
+
     var body: some View {
-        HStack(spacing: DS.Spacing.md) {
-            // The cat reacts to the outcome; the text carries the meaning.
-            MascotFaceView(face: toast.style.mascotFace, size: 30)
+        HStack(spacing: 12) {
+            Image(symbol: role.symbol)
+                .font(.title3)
+                .foregroundStyle(role.color)
+                .symbolEffect(.bounce, value: toast.id)
+                .accessibilityHidden(true)
 
             Text(toast.message)
-                .font(.system(size: 13.5, weight: .medium))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .lineLimit(2)
+                .font(.subheadline)
+                .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
-
-            Spacer(minLength: DS.Spacing.sm)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if toast.undo != nil {
                 Button(action: onUndo) {
                     if isUndoing {
                         ProgressView()
-                            .controlSize(.small)
-                            .tint(DS.Colors.brand)
                     } else {
-                        Text("Undo")
-                            .font(.system(size: 13.5, weight: .bold, design: .rounded))
-                            .foregroundStyle(DS.Colors.brand)
+                        Text("Undo").bold()
                     }
                 }
-                .buttonStyle(DSPressStyle(scale: 0.93))
                 .disabled(isUndoing)
             } else if toast.retry != nil {
                 Button("Retry", action: onRetry)
-                    .font(.system(size: 13.5, weight: .bold, design: .rounded))
-                    .foregroundStyle(DS.Colors.brand)
-                    .buttonStyle(DSPressStyle(scale: 0.93))
+                    .bold()
             } else {
-                Button(action: onDismiss) {
-                    Image(systemName: DS.Icons.close)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(DS.Colors.textTertiary)
-                }
-                .buttonStyle(DSPressStyle(scale: 0.9))
+                Button("Dismiss", systemImage: AppSymbol.close.rawValue, action: onDismiss)
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 44, minHeight: 44)
             }
         }
-        .padding(.horizontal, DS.Spacing.lg)
-        .padding(.vertical, DS.Spacing.md)
-        .background(DS.Colors.surfaceRaised, in: Capsule())
-        .overlay(
-            Capsule().strokeBorder(
-                toast.style == .failure
-                    ? AnyShapeStyle(DS.Colors.danger.opacity(0.35))
-                    : AnyShapeStyle(DS.Gradients.cardHairline),
-                lineWidth: 1
-            )
-        )
-        .dsShadow(DS.Shadows.floating)
-        .padding(.horizontal, DS.Spacing.lg)
+        .padding(.leading, 16)
+        .padding(.trailing, 8)
+        .padding(.vertical, 6)
+        .frame(minHeight: 52)
+        .glassEffect(.regular, in: .capsule)
+        .padding(.horizontal)
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isStaticText)
     }
 }
-
-extension Toast.Style: Equatable {}
 
 // MARK: - Host
 
@@ -89,7 +82,9 @@ private struct DSToastHost: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .bottom) {
+            // Top, like a system banner: the tab bar owns the bottom edge
+            // and minimises on scroll, so nothing should sit on it.
+            .overlay(alignment: .top) {
                 if let toast = toasts.current {
                     DSToastView(
                         toast: toast,
@@ -98,9 +93,9 @@ private struct DSToastHost: ViewModifier {
                         onRetry: { Task { await toasts.runRetry() } },
                         onDismiss: { toasts.dismiss() }
                     )
-                    .padding(.bottom, DSTabBar.overlayClearance)
+                    .padding(.top, 4)
                     .transition(
-                        .move(edge: .bottom).combined(with: .opacity)
+                        .move(edge: .top).combined(with: .opacity)
                     )
                     // A toast is an announcement, not a control surface —
                     // it must never swallow a tap meant for the tab bar.

@@ -131,16 +131,16 @@ struct DocumentCenterView: View {
                 .animation(DS.Motion.smooth, value: viewModel.uploads.map(\.id))
             }
         }
-        .dsHeader(
-            title: "Documents",
-            subtitle: "\(viewModel.files.count) files · \(viewModel.folders.count) folders",
-            showsBack: true,
-            trailingActions: [
-                DSHeaderAction(icon: "square.and.arrow.up") {
+        .navigationTitle("Documents")
+        .navigationSubtitle("\(viewModel.files.count) files · \(viewModel.folders.count) folders")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Import", systemImage: "square.and.arrow.down") {
                     Task { await viewModel.importSampleFile() }
                 }
-            ]
-        )
+            }
+        }
         .task { await viewModel.load() }
         .liveUpdates(container.sync) {
             LiveList.reloadSubscription(topic: .documents) {
@@ -151,9 +151,6 @@ struct DocumentCenterView: View {
         .sheet(item: $viewModel.previewFile) { file in
             DocPreviewSheet(file: file)
                 .presentationDetents([.large])
-                .presentationCornerRadius(DS.Radius.xxl)
-                .presentationDragIndicator(.hidden)
-                .presentationBackground(DS.Colors.surfaceRaised)
         }
     }
 

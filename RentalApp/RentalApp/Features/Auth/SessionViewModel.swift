@@ -282,6 +282,17 @@ final class SessionViewModel {
             } else {
                 transition(to: .unauthenticated)
             }
+        case .home:
+            if let restored = await auth.restoreSession() {
+                transition(to: .authenticated(restored))
+            } else if case .session(let demo)? = try? await auth.signIn(
+                email: "owner@rentos.ca",
+                password: MockAccountDirectory.demoPassword
+            ) {
+                transition(to: .authenticated(demo))
+            } else {
+                transition(to: .unauthenticated)
+            }
         }
     }
 

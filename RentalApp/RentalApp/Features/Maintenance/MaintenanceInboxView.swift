@@ -47,24 +47,14 @@ struct MaintenanceInboxView: View {
             }
         }
         .refreshable { await viewModel.refresh() }
-        .dsHeader(
-            title: "Maintenance",
-            subtitle: "\(viewModel.openCount) open · \(viewModel.urgentCount) urgent",
-            trailingActions: [
-                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
-                    router.push(.notifications)
-                },
-                DSHeaderAction(icon: DS.Icons.tenant) {
-                    router.push(.profile)
+        .navigationTitle("Maintenance")
+        .navigationSubtitle("\(viewModel.openCount) open · \(viewModel.urgentCount) urgent")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("New request", systemImage: AppSymbol.add.rawValue) {
+                    router.present(.newMaintenanceRequest)
                 }
-            ]
-        )
-        .overlay(alignment: .bottomTrailing) {
-            DSFloatingActionButton {
-                router.present(.newMaintenanceRequest)
             }
-            .padding(.trailing, DS.Spacing.xl)
-            .padding(.bottom, DSTabBar.overlayClearance)
         }
     }
 
@@ -202,7 +192,6 @@ struct MaintenanceInboxView: View {
                     DSPaginationFooter(isLoading: viewModel.isLoadingMore)
                 }
                 .padding(.horizontal, DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
                 .animation(DS.Motion.smooth, value: viewModel.filteredTickets.map(\.id))
             }
         }
@@ -218,7 +207,6 @@ struct MaintenanceInboxView: View {
                 }
             }
             .padding(.horizontal, DS.Spacing.lg)
-            .padding(.bottom, DSTabBar.overlayClearance)
         }
     }
 

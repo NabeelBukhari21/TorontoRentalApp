@@ -12,12 +12,18 @@ import SwiftUI
 // MARK: - Tabs
 
 /// Top-level sections shown in the tab bar (iPhone) and sidebar (iPad).
+/// `search` is the system search tab (`Tab(role: .search)`): it sits
+/// apart from the others in the tab bar and owns global search.
+///
+/// Four sections plus Search, because an iPhone tab bar fits five; a
+/// sixth would push two tabs into a "More" tab. The AI Copilot lives on
+/// Home's stack instead (`AppRoute.assistant`).
 enum AppTab: String, CaseIterable, Identifiable, Hashable, Codable {
     case dashboard
     case properties
     case maintenance
     case messages
-    case aiAssistant
+    case search
 
     var id: String { rawValue }
 
@@ -27,19 +33,21 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable, Codable {
         case .properties: "Properties"
         case .maintenance: "Maintenance"
         case .messages: "Messages"
-        case .aiAssistant: "AI"
+        case .search: "Search"
         }
     }
 
-    var icon: String {
+    var symbol: AppSymbol {
         switch self {
-        case .dashboard: DS.Icons.dashboard
-        case .properties: DS.Icons.properties
-        case .maintenance: DS.Icons.maintenance
-        case .messages: DS.Icons.messages
-        case .aiAssistant: DS.Icons.ai
+        case .dashboard: .home
+        case .properties: .properties
+        case .maintenance: .maintenance
+        case .messages: .messages
+        case .search: .search
         }
     }
+
+    var icon: String { symbol.rawValue }
 }
 
 // MARK: - Push Routes
@@ -48,6 +56,7 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable, Codable {
 /// Associated values carry only identifiers — views resolve their own data later.
 /// `Codable` so navigation state survives relaunch and deep links round-trip.
 enum AppRoute: Hashable, Codable {
+    case assistant
     case propertyDetail(propertyID: String)
     case units(propertyID: String)
     case unitDetail(unitID: String)
@@ -63,6 +72,7 @@ enum AppRoute: Hashable, Codable {
 
     var title: String {
         switch self {
+        case .assistant: "Copilot"
         case .propertyDetail: "Property Details"
         case .units: "Units"
         case .unitDetail: "Unit"
@@ -80,6 +90,7 @@ enum AppRoute: Hashable, Codable {
 
     var icon: String {
         switch self {
+        case .assistant: AppSymbol.assistant.rawValue
         case .propertyDetail: DS.Icons.properties
         case .units, .unitDetail: DS.Icons.unit
         case .tenants: DS.Icons.tenants

@@ -99,7 +99,8 @@ struct TenantDetailView: View {
         }
         .task { await viewModel.load() }
         .task(id: selectedTab) { await viewModel.loadTab(selectedTab) }
-        .dsHeader(title: tenant?.name ?? "Tenant", showsBack: true)
+        .navigationTitle(tenant?.name ?? "Tenant")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: Profile Header

@@ -35,7 +35,8 @@ struct SettingsSectionView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .dsHeader(title: section.title, showsBack: true)
+        .navigationTitle(section.title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -24,8 +24,8 @@ struct TabRootView: View {
             MaintenanceInboxView()
         case .messages:
             ConversationListView()
-        case .aiAssistant:
-            AIAssistantView()
+        case .search:
+            SearchTabRoot()
         }
     }
 }
@@ -38,6 +38,8 @@ struct RouteDestinationView: View {
 
     var body: some View {
         switch route {
+        case .assistant:
+            AIAssistantView()
         case .propertyDetail, .units, .unitDetail:
             PropertyNavigation.destination(for: route)
         case .tenants, .tenantDetail:

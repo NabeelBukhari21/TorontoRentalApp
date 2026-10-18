@@ -108,7 +108,8 @@ struct SettingsHubView: View {
                 .padding(.bottom, DS.Spacing.huge)
             }
         }
-        .dsHeader(title: "Settings", showsBack: true)
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear { biometricEnabled = session.session?.biometricEnabled ?? false }
         .confirmationDialog(
             "Sign out of Purrperty?",

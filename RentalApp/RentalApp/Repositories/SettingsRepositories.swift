@@ -81,10 +81,9 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
 
     // Appearance
     //
-    // Light by default: the brand is white-first, and on `.system` a phone
-    // in dark mode would never show it. Dark mode is fully supported and
-    // one tap away in Settings → Appearance.
-    //
+    // System by default, like every first-party app: dark mode, Increase
+    // Contrast and Reduce Transparency then come from the user's device
+    // settings. Light and Dark stay one tap away in Settings → Appearance.
     // Persisted, unlike the rest of this mock: onboarding asks for it, and
     // an answer that resets on the next launch is a broken promise.
     var theme: AppTheme = InMemoryPreferencesRepository.storedTheme {
@@ -106,9 +105,9 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
 
     private static let themeKey = "appearance.theme.v1"
 
-    /// Light when nothing has been chosen yet — see the note on `theme`.
+    /// System when nothing has been chosen yet — see the note on `theme`.
     private static var storedTheme: AppTheme {
-        UserDefaults.standard.string(forKey: themeKey).flatMap(AppTheme.init(rawValue:)) ?? .light
+        UserDefaults.standard.string(forKey: themeKey).flatMap(AppTheme.init(rawValue:)) ?? .system
     }
 }
 

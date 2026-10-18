@@ -46,7 +46,6 @@ struct ConversationListView: View {
                     router.push(.conversation(conversationID: conversation.id))
                 }
                 .padding(DS.Spacing.lg)
-                .padding(.bottom, DSTabBar.overlayClearance)
             }
         }
         .task { await viewModel.load() }
@@ -55,16 +54,8 @@ struct ConversationListView: View {
                 await viewModel.refresh()
             }
         }
-        .dsHeader(
-            title: "Messages",
-            subtitle: viewModel.totalUnread > 0 ? "\(viewModel.totalUnread) unread" : "All caught up",
-            trailingActions: [
-                DSHeaderAction(icon: "square.and.pencil") {},
-                DSHeaderAction(icon: DS.Icons.notifications, badge: viewModel.unreadNotifications) {
-                    router.push(.notifications)
-                }
-            ]
-        )
+        .navigationTitle("Messages")
+        .navigationSubtitle(viewModel.totalUnread > 0 ? "\(viewModel.totalUnread) unread" : "All caught up")
     }
 
     // MARK: Split (iPad)
@@ -100,13 +91,8 @@ struct ConversationListView: View {
                 }
             }
         }
-        .dsHeader(
-            title: "Messages",
-            subtitle: viewModel.totalUnread > 0 ? "\(viewModel.totalUnread) unread" : "All caught up",
-            trailingActions: [
-                DSHeaderAction(icon: "square.and.pencil") {}
-            ]
-        )
+        .navigationTitle("Messages")
+        .navigationSubtitle(viewModel.totalUnread > 0 ? "\(viewModel.totalUnread) unread" : "All caught up")
     }
 
     private var emptyPane: some View {
