@@ -68,13 +68,23 @@ struct StatusLabel: View {
 /// The filled rounded square used beside rows in Settings.
 struct SymbolTile: View {
 
-    let symbol: AppSymbol
+    let systemName: String
     var color: Color = .accentColor
 
     @ScaledMetric(relativeTo: .body) private var side: CGFloat = 30
 
+    init(symbol: AppSymbol, color: Color = .accentColor) {
+        self.systemName = symbol.rawValue
+        self.color = color
+    }
+
+    init(systemName: String, color: Color = .accentColor) {
+        self.systemName = systemName
+        self.color = color
+    }
+
     var body: some View {
-        Image(symbol: symbol)
+        Image(systemName: systemName)
             .font(.callout.weight(.semibold))
             .foregroundStyle(.white)
             .frame(width: side, height: side)

@@ -50,9 +50,9 @@ enum OnboardingPersona: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var tint: Color {
         switch self {
-        case .landlord:        DS.Colors.accentSunny
-        case .propertyManager: DS.Colors.accentSky
-        case .tenant:          DS.Colors.accentMint
+        case .landlord:        .orange
+        case .propertyManager: .blue
+        case .tenant:          .green
         }
     }
 
@@ -109,10 +109,10 @@ enum OnboardingUnitRange: String, Codable, CaseIterable, Identifiable, Sendable 
 
     var tint: Color {
         switch self {
-        case .one:         DS.Colors.accentMint
-        case .twoToFive:   DS.Colors.accentSky
-        case .sixToTwenty: DS.Colors.accentSunny
-        case .twentyPlus:  DS.Colors.accentCoral
+        case .one:         .green
+        case .twoToFive:   .blue
+        case .sixToTwenty: .orange
+        case .twentyPlus:  .red
         }
     }
 
@@ -176,18 +176,13 @@ enum OnboardingHeadache: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Bright accents carry dark ink; the brand fill carries `textOnBrand`.
-    var iconColor: Color {
-        self == .findingTenants ? DS.Colors.textOnBrand : DS.Colors.textOnAccent
-    }
-
     var tint: Color {
         switch self {
-        case .lateRent:       DS.Colors.accentMint
-        case .repairs:        DS.Colors.accentCoral
-        case .tenantMessages: DS.Colors.accentSky
-        case .paperwork:      DS.Colors.accentSunny
-        case .findingTenants: DS.Colors.brand
+        case .lateRent:       .green
+        case .repairs:        .red
+        case .tenantMessages: .blue
+        case .paperwork:      .orange
+        case .findingTenants: .purple
         }
     }
 
@@ -196,31 +191,31 @@ enum OnboardingHeadache: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .lateRent:
             OnboardingUnlock(
-                icon: "bell.badge.fill", tint: DS.Colors.accentMint,
+                icon: "bell.badge.fill", tint: .green,
                 title: "Payment alerts are on",
                 detail: "You'll hear when rent lands, and when it's late."
             )
         case .repairs:
             OnboardingUnlock(
-                icon: "wrench.and.screwdriver.fill", tint: DS.Colors.accentCoral,
+                icon: "wrench.and.screwdriver.fill", tint: .red,
                 title: "Repairs, sorted by urgency",
                 detail: "One inbox with priorities, vendors and photos."
             )
         case .tenantMessages:
             OnboardingUnlock(
-                icon: "bubble.left.and.bubble.right.fill", tint: DS.Colors.accentSky,
+                icon: "bubble.left.and.bubble.right.fill", tint: .blue,
                 title: "Every tenant chat in one place",
                 detail: "Real-time messages, with alerts switched on."
             )
         case .paperwork:
             OnboardingUnlock(
-                icon: "doc.text.fill", tint: DS.Colors.accentSunny,
+                icon: "doc.text.fill", tint: .orange,
                 title: "A home for every document",
                 detail: "Leases, receipts and notices, filed by property."
             )
         case .findingTenants:
             OnboardingUnlock(
-                icon: "door.left.hand.open", tint: DS.Colors.brand, iconColor: DS.Colors.textOnBrand,
+                icon: "door.left.hand.open", tint: .purple,
                 title: "Vacancies at a glance",
                 detail: "Occupancy for every unit, and trends over time."
             )
@@ -263,9 +258,9 @@ enum OnboardingGoal: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var tint: Color {
         switch self {
-        case .saveTime:       DS.Colors.accentSky
-        case .getPaidOnTime:  DS.Colors.accentMint
-        case .fewerVacancies: DS.Colors.accentCoral
+        case .saveTime:       .blue
+        case .getPaidOnTime:  .green
+        case .fewerVacancies: .red
         }
     }
 
@@ -282,19 +277,19 @@ enum OnboardingGoal: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .saveTime:
             OnboardingUnlock(
-                icon: "sparkles", tint: DS.Colors.accentSky,
+                icon: "sparkles", tint: .blue,
                 title: "Purr's brief on Home",
                 detail: "What needs you today, in one glance."
             )
         case .getPaidOnTime:
             OnboardingUnlock(
-                icon: "creditcard.fill", tint: DS.Colors.accentMint,
+                icon: "creditcard.fill", tint: .green,
                 title: "Rent collected, live",
                 detail: "This month's collection on your Home screen."
             )
         case .fewerVacancies:
             OnboardingUnlock(
-                icon: "chart.line.uptrend.xyaxis", tint: DS.Colors.accentCoral,
+                icon: "chart.line.uptrend.xyaxis", tint: .red,
                 title: "Occupancy trends",
                 detail: "Per property, so a dip never sneaks up on you."
             )
@@ -307,18 +302,16 @@ enum OnboardingGoal: String, Codable, CaseIterable, Identifiable, Sendable {
 /// One line on the "Here's what you unlocked" screen.
 struct OnboardingUnlock: Identifiable, Equatable {
     let icon: String
+    /// System colour for the icon tile (white symbol on it).
     let tint: Color
-    /// Ink on the bright accents; `textOnBrand` when the tint is the brand.
-    var iconColor: Color = DS.Colors.textOnAccent
     let title: String
     let detail: String
 
     var id: String { title }
 
-    init(icon: String, tint: Color, iconColor: Color = DS.Colors.textOnAccent, title: String, detail: String) {
+    init(icon: String, tint: Color, title: String, detail: String) {
         self.icon = icon
         self.tint = tint
-        self.iconColor = iconColor
         self.title = title
         self.detail = detail
     }
@@ -338,7 +331,7 @@ struct OnboardingProfile: Codable, Equatable, Sendable {
         var result: [OnboardingUnlock] = []
         if let unitRange {
             result.append(OnboardingUnlock(
-                icon: "square.grid.2x2.fill", tint: DS.Colors.brand, iconColor: DS.Colors.textOnBrand,
+                icon: "square.grid.2x2.fill", tint: .purple,
                 title: "Your portfolio dashboard",
                 detail: "Set up for \(unitRange.title) \(unitRange == .one ? "unit" : "units")."
             ))

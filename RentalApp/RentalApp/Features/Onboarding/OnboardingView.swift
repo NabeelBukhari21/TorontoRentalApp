@@ -2,9 +2,13 @@
 //  OnboardingView.swift
 //  RentalApp (Purrperty)
 //
-//  Onboarding — Flow container: progress, back, the step, and one
-//  primary call to action. See `OnboardingFlowViewModel` for the flow
-//  and docs/ONBOARDING_PLAYBOOK.md for why it's shaped this way.
+//  Onboarding — Flow container. A navigation stack gives each step a
+//  system navigation bar (Back, and progress in the principal slot); the
+//  step itself is an inset-grouped list topped by Purr and a large title;
+//  the step's single main action sits in a bottom bar.
+//
+//  The flow, answers and analytics live in `OnboardingFlowViewModel`;
+//  docs/ONBOARDING_PLAYBOOK.md explains why it's shaped this way.
 //
 
 import SwiftUI
@@ -17,6 +21,7 @@ struct OnboardingView: View {
     let onSignIn: () -> Void
 
     @State private var viewModel: OnboardingFlowViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(
         container: AppContainer,
@@ -35,121 +40,103 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        ZStack {
-            SplashBackground()
-            SplashParticleField(particleCount: 14)
-
-            VStack(spacing: 0) {
-                if viewModel.step.showsProgress {
-                    topBar
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+        NavigationStack {
+            Group {
+                if viewModel.step == .hello {
+                    OnboardingHelloStep(onStart: viewModel.advance, onSignIn: onSignIn)
+                } else {
+                    stepList
                 }
-
-                content
             }
+            .id(viewModel.step)
+            .transition(reduceMotion ? .opacity : .push(from: viewModel.movesForward ? .trailing : .leading))
+            .toolbar { toolbar }
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .animation(DS.Motion.smooth, value: viewModel.step.showsProgress)
     }
 
-    // MARK: Top Bar
+    // MARK: Toolbar
 
-    private var topBar: some View {
-        HStack(spacing: DS.Spacing.md) {
-            AuthBackButton { viewModel.goBack() }
-                .opacity(viewModel.step.allowsBack ? 1 : 0)
-                .disabled(!viewModel.step.allowsBack)
-
-            OnboardingProgressBar(progress: viewModel.progress, label: viewModel.stepLabel)
-        }
-        .padding(.horizontal, DS.Spacing.xl)
-        .padding(.top, DS.Spacing.sm)
-    }
-
-    // MARK: Content
-
-    @ViewBuilder
-    private var content: some View {
-        if viewModel.step == .hello {
-            OnboardingHelloStep(onStart: viewModel.advance, onSignIn: onSignIn)
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.bottom, DS.Spacing.xl)
-                .transition(.opacity)
-        } else {
-            ScrollView(showsIndicators: false) {
-                stepBody
-                    .id(viewModel.step)
-                    .transition(
-                        .asymmetric(
-                            insertion: .move(edge: viewModel.movesForward ? .trailing : .leading).combined(with: .opacity),
-                            removal: .move(edge: viewModel.movesForward ? .leading : .trailing).combined(with: .opacity)
-                        )
-                    )
-                    .padding(.horizontal, DS.Spacing.xl)
-                    .padding(.vertical, DS.Spacing.xl)
-                    .frame(maxWidth: 560)
-                    .frame(maxWidth: .infinity)
+    @ToolbarContentBuilder
+    private var toolbar: some ToolbarContent {
+        if viewModel.step.allowsBack {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Back", systemImage: "chevron.backward") { viewModel.goBack() }
             }
-            .scrollDismissesKeyboard(.interactively)
-            .scrollBounceBehavior(.basedOnSize)
-
-            if showsContinue {
-                DSButton(
-                    title: viewModel.continueTitle,
-                    variant: .primary,
-                    size: .large,
-                    isFullWidth: true
-                ) { viewModel.advance() }
-                .disabled(!viewModel.canContinue)
-                .animation(DS.Motion.gentle, value: viewModel.canContinue)
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.bottom, DS.Spacing.lg)
-                .frame(maxWidth: 560)
-                .transition(.opacity)
+        }
+        if viewModel.step.showsProgress {
+            ToolbarItem(placement: .principal) {
+                OnboardingProgressView(progress: viewModel.progress, label: viewModel.stepLabel)
             }
         }
     }
 
-    /// The building step advances itself and sign-up has its own button.
-    private var showsContinue: Bool {
-        viewModel.step != .building && viewModel.step != .signUp
+    // MARK: Step
+
+    private var stepList: some View {
+        List {
+            Section {
+                OnboardingHeader(mood: viewModel.mascotMood, title: header.title, message: header.message)
+            }
+            .onboardingHeaderSection()
+
+            stepSections
+        }
+        .listStyle(.insetGrouped)
+        .scrollDismissesKeyboard(.interactively)
+        .frame(maxWidth: 640)
+        .frame(maxWidth: .infinity)
+        .background(Color.groupedBackground)
+        .onboardingBottomBar { bottomBar }
     }
 
     @ViewBuilder
-    private var stepBody: some View {
+    private var stepSections: some View {
         switch viewModel.step {
-        case .hello:
-            EmptyView()
-
-        case .persona, .units, .headaches, .goal, .personalize:
-            VStack(spacing: DS.Spacing.xl) {
-                OnboardingQuestionHeader(
-                    mood: viewModel.mascotMood,
-                    question: viewModel.question,
-                    line: viewModel.mascotLine
-                )
-                quizOptions
-            }
-
-        case .building:
-            OnboardingBuildingStep(tasks: viewModel.buildTasks)
-
-        case .unlocked:
-            OnboardingUnlockedStep(profile: viewModel.profile)
-
-        case .signUp:
-            OnboardingSignUpStep(viewModel: viewModel, onSignedUp: onSignedUp, onSignIn: onSignIn)
-        }
-    }
-
-    @ViewBuilder
-    private var quizOptions: some View {
-        switch viewModel.step {
+        case .hello:       EmptyView()
         case .persona:     OnboardingPersonaStep(viewModel: viewModel)
         case .units:       OnboardingUnitsStep(viewModel: viewModel)
         case .headaches:   OnboardingHeadachesStep(viewModel: viewModel)
         case .goal:        OnboardingGoalStep(viewModel: viewModel)
         case .personalize: OnboardingPersonalizeStep(viewModel: viewModel)
-        default:           EmptyView()
+        case .building:    OnboardingBuildingStep(tasks: viewModel.buildTasks)
+        case .unlocked:    OnboardingUnlockedStep(profile: viewModel.profile)
+        case .signUp:      OnboardingSignUpStep(viewModel: viewModel, onSignedUp: onSignedUp, onSignIn: onSignIn)
+        }
+    }
+
+    /// Large title and explanation for the current step.
+    private var header: (title: String, message: String?) {
+        switch viewModel.step {
+        case .building:
+            ("Building your Purrperty", "This takes a few seconds.")
+        case .unlocked:
+            ("Here's what you unlocked", viewModel.profile.goal?.outcome)
+        case .signUp:
+            ("Create your account", viewModel.profile.persona == .tenant
+                ? "Join your landlord on Purrperty."
+                : viewModel.profile.goal?.outcome ?? "Save your setup so it's here every time you open the app.")
+        default:
+            (viewModel.question, viewModel.mascotLine)
+        }
+    }
+
+    // MARK: Bottom Bar
+
+    @ViewBuilder
+    private var bottomBar: some View {
+        switch viewModel.step {
+        case .building, .hello:
+            EmptyView()
+        case .signUp:
+            OnboardingPrimaryButton(title: "Create account", isLoading: viewModel.auth.isLoading) {
+                Task {
+                    if let outcome = await viewModel.signUp() { onSignedUp(outcome) }
+                }
+            }
+        default:
+            OnboardingPrimaryButton(title: viewModel.continueTitle) { viewModel.advance() }
+                .disabled(!viewModel.canContinue)
         }
     }
 }

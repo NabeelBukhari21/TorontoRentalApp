@@ -2,8 +2,11 @@
 //  GettingStartedView.swift
 //  RentalApp (Purrperty)
 //
-//  Getting started — First property, the aha celebration with the
-//  founder's note, notification priming, then the trial paywall.
+//  Getting started — First property (one question per screen), the aha
+//  celebration with the founder's note, notification priming, then the
+//  trial paywall. Same structure as onboarding: system navigation bar,
+//  inset-grouped list with Purr and a large title, one action at the
+//  bottom.
 //
 
 import SwiftUI
@@ -12,6 +15,7 @@ struct GettingStartedView: View {
 
     @State private var viewModel: GettingStartedViewModel
     private let container: AppContainer
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(
         container: AppContainer,
@@ -27,229 +31,196 @@ struct GettingStartedView: View {
     }
 
     var body: some View {
-        ZStack {
-            SplashBackground()
-            if viewModel.step != .paywall {
-                SplashParticleField(particleCount: 12)
+        if viewModel.step == .paywall {
+            PaywallFlowView(container: container, profile: viewModel.profile, source: "onboarding") { _ in
+                viewModel.finish()
             }
-
-            if viewModel.step == .paywall {
-                PaywallFlowView(container: container, profile: viewModel.profile, source: "onboarding") { _ in
-                    viewModel.finish()
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else {
-                VStack(spacing: 0) {
-                    if viewModel.step.isPropertyStep {
-                        topBar.transition(.opacity)
-                    }
-                    content
-                }
+            .transition(.move(edge: .bottom))
+        } else {
+            NavigationStack {
+                content
+                    .id(viewModel.step)
+                    .transition(reduceMotion ? .opacity : .push(from: viewModel.movesForward ? .trailing : .leading))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { toolbar }
             }
-
-            if viewModel.step == .celebration {
-                OrgConfettiBurst()
-                    .allowsHitTesting(false)
-                    .ignoresSafeArea()
+            .overlay {
+                if viewModel.step == .celebration {
+                    OrgConfettiBurst()
+                        .allowsHitTesting(false)
+                        .ignoresSafeArea()
+                        .accessibilityHidden(true)
+                }
             }
         }
-        .animation(DS.Motion.smooth, value: viewModel.step)
     }
 
-    // MARK: Chrome
+    // MARK: Toolbar
 
-    private var topBar: some View {
-        HStack(spacing: DS.Spacing.md) {
-            AuthBackButton { viewModel.goBack() }
-                .opacity(viewModel.step == .kind ? 0 : 1)
-                .disabled(viewModel.step == .kind)
-
-            OnboardingProgressBar(progress: viewModel.progress, label: viewModel.stepLabel)
+    @ToolbarContentBuilder
+    private var toolbar: some ToolbarContent {
+        if viewModel.step.isPropertyStep && viewModel.step != .kind {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Back", systemImage: "chevron.backward") { viewModel.goBack() }
+            }
         }
-        .padding(.horizontal, DS.Spacing.xl)
-        .padding(.top, DS.Spacing.sm)
+        if viewModel.step.isPropertyStep {
+            ToolbarItem(placement: .principal) {
+                OnboardingProgressView(progress: viewModel.progress, label: viewModel.stepLabel)
+            }
+        }
     }
+
+    // MARK: Content
 
     @ViewBuilder
     private var content: some View {
-        ScrollView(showsIndicators: false) {
-            stepBody
-                .id(viewModel.step)
-                .transition(
-                    .asymmetric(
-                        insertion: .move(edge: viewModel.movesForward ? .trailing : .leading).combined(with: .opacity),
-                        removal: .move(edge: viewModel.movesForward ? .leading : .trailing).combined(with: .opacity)
-                    )
-                )
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.vertical, DS.Spacing.xl)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .scrollBounceBehavior(.basedOnSize)
-
-        footer
-            .padding(.horizontal, DS.Spacing.xl)
-            .padding(.bottom, DS.Spacing.lg)
-            .frame(maxWidth: 560)
-    }
-
-    @ViewBuilder
-    private var stepBody: some View {
         switch viewModel.step {
         case .kind, .address, .name, .units:
-            VStack(spacing: DS.Spacing.xl) {
-                OnboardingQuestionHeader(mood: viewModel.mascotMood, question: viewModel.question, line: viewModel.mascotLine)
-                propertyField
-                if let error = viewModel.saveError {
-                    AuthFormError(message: error)
-                }
-            }
+            propertyStep
         case .saving:
-            VStack(spacing: DS.Spacing.xxl) {
-                MascotView(mood: .working, size: 120, isInteractive: false)
-                    .padding(.top, DS.Spacing.xxl)
-                Text("Moving \(viewModel.draft.name) in…")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                OnboardingBuildChecklist(tasks: viewModel.saveTasks)
-            }
+            savingStep
         case .celebration:
-            GettingStartedCelebration(propertyName: viewModel.createdProperty?.name ?? viewModel.draft.name, firstName: viewModel.firstName)
+            GettingStartedCelebration(
+                propertyName: viewModel.createdProperty?.name ?? viewModel.draft.name,
+                firstName: viewModel.firstName,
+                onContinue: viewModel.advance
+            )
         case .notifications:
-            GettingStartedNotificationPriming(propertyName: viewModel.createdProperty?.name)
+            GettingStartedNotificationPriming(
+                propertyName: viewModel.createdProperty?.name,
+                onEnable: { Task { await viewModel.enableNotifications() } },
+                onDecline: viewModel.declineNotifications
+            )
         case .paywall:
             EmptyView()
         }
     }
 
-    @ViewBuilder
-    private var propertyField: some View {
+    // MARK: Property Steps
+
+    private var propertyStep: some View {
         @Bindable var viewModel = viewModel
 
-        switch viewModel.step {
-        case .kind:
-            VStack(spacing: DS.Spacing.md) {
-                ForEach(Array(PropertyKind.allCases.enumerated()), id: \.element) { index, kind in
-                    OnboardingChoiceCard(
-                        icon: kind.icon, tint: tint(for: kind),
-                        title: kind.rawValue, subtitle: subtitle(for: kind),
-                        isSelected: viewModel.draft.kind == kind && viewModel.step != .kind
-                    ) { viewModel.choose(kind) }
-                    .dsEntrance(index: index)
+        return List {
+            Section {
+                OnboardingHeader(mood: viewModel.mascotMood, title: viewModel.question, message: viewModel.mascotLine)
+            }
+            .onboardingHeaderSection()
+
+            switch viewModel.step {
+            case .kind:
+                Section {
+                    ForEach(PropertyKind.allCases, id: \.self) { kind in
+                        OnboardingOptionRow(
+                            symbol: kind.icon, tint: tint(for: kind),
+                            title: kind.rawValue, subtitle: subtitle(for: kind),
+                            isSelected: false
+                        ) { viewModel.choose(kind) }
+                    }
                 }
-            }
-        case .address:
-            AuthCard {
-                VStack(spacing: DS.Spacing.lg) {
-                    AuthTextField(
-                        label: "Street address", text: $viewModel.draft.addressLine1,
-                        icon: "mappin.and.ellipse", textContentType: .fullStreetAddress
-                    )
-                    AuthTextField(
-                        label: "Postal code (optional)", text: $viewModel.draft.postalCode,
-                        icon: "envelope.open.fill", textContentType: .postalCode,
-                        error: viewModel.postalCodeIsValid ? nil : "That doesn't look like a Canadian postal code",
-                        showsValidCheck: !viewModel.draft.postalCode.isEmpty && viewModel.postalCodeIsValid
-                    )
-                    AuthTextField(label: "City", text: $viewModel.draft.city, icon: "building.columns.fill", textContentType: .addressCity)
+
+            case .address:
+                Section {
+                    LabeledContent("Street") {
+                        TextField("Street", text: $viewModel.draft.addressLine1, prompt: Text("Required"))
+                            .textContentType(.fullStreetAddress)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    LabeledContent("Postal code") {
+                        TextField("Postal code", text: $viewModel.draft.postalCode, prompt: Text("Optional"))
+                            .textContentType(.postalCode)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                            .multilineTextAlignment(.trailing)
+                    }
+                    LabeledContent("City") {
+                        TextField("City", text: $viewModel.draft.city)
+                            .textContentType(.addressCity)
+                            .multilineTextAlignment(.trailing)
+                    }
+                } footer: {
+                    if !viewModel.postalCodeIsValid {
+                        Label("That doesn't look like a Canadian postal code.", symbol: .caution)
+                            .foregroundStyle(.red)
+                    }
                 }
+
+            case .name:
+                Section {
+                    TextField("Property name", text: $viewModel.draft.name, prompt: Text("Property name"))
+                        .submitLabel(.next)
+                        .onSubmit { if viewModel.canContinue { viewModel.advance() } }
+                } footer: {
+                    Text("Shown in your list and on Home.")
+                }
+
+            case .units:
+                Section {
+                    Stepper(value: $viewModel.unitCount, in: 1...GettingStartedViewModel.maxUnits) {
+                        LabeledContent("Units") {
+                            Text(viewModel.unitCount, format: .number)
+                                .contentTransition(.numericText(value: Double(viewModel.unitCount)))
+                                .monospacedDigit()
+                        }
+                    }
+                    .sensoryFeedback(.selection, trigger: viewModel.unitCount)
+                } footer: {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("You can name each unit later, from the property.")
+                        if let error = viewModel.saveError {
+                            Label(error, symbol: .caution).foregroundStyle(.red)
+                        }
+                    }
+                }
+
+            default:
+                EmptyView()
             }
-        case .name:
-            AuthCard {
-                AuthTextField(label: "Property name", text: $viewModel.draft.name, icon: "tag.fill")
+        }
+        .listStyle(.insetGrouped)
+        .scrollDismissesKeyboard(.interactively)
+        .onboardingBottomBar {
+            switch viewModel.step {
+            case .kind:
+                Button("I'll add one later") { viewModel.skipProperty() }
+                    .frame(minHeight: 44)
+            default:
+                OnboardingPrimaryButton(title: viewModel.step == .units ? "Add property" : "Continue") {
+                    viewModel.advance()
+                }
+                .disabled(!viewModel.canContinue)
             }
-        case .units:
-            unitsStepper
-        default:
-            EmptyView()
         }
     }
 
-    private var unitsStepper: some View {
-        HStack(spacing: DS.Spacing.xl) {
-            stepperButton("minus", delta: -1, disabled: viewModel.unitCount <= 1)
+    // MARK: Saving
 
-            Text("\(viewModel.unitCount)")
-                .font(.system(size: 72, weight: .heavy, design: .rounded))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .contentTransition(.numericText(value: Double(viewModel.unitCount)))
-                .frame(minWidth: 120)
-                .accessibilityLabel("\(viewModel.unitCount) units")
-
-            stepperButton("plus", delta: 1, disabled: viewModel.unitCount >= GettingStartedViewModel.maxUnits)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, DS.Spacing.xxl)
-        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous).strokeBorder(DS.Colors.outline, lineWidth: 1))
-        .sensoryFeedback(.selection, trigger: viewModel.unitCount)
-        .accessibilityElement(children: .contain)
-        .accessibilityAdjustableAction { direction in
-            viewModel.changeUnits(by: direction == .increment ? 1 : -1)
-        }
-    }
-
-    private func stepperButton(_ icon: String, delta: Int, disabled: Bool) -> some View {
-        Button { viewModel.changeUnits(by: delta) } label: {
-            Image(systemName: icon)
-                .font(.system(size: 22, weight: .heavy))
-                .foregroundStyle(DS.Colors.textOnBrand)
-                .frame(width: 56, height: 56)
-                .background(DS.Colors.brand, in: Circle())
-        }
-        .buttonStyle(DSPressStyle(scale: 0.9))
-        .buttonRepeatBehavior(.enabled)
-        .disabled(disabled)
-        .opacity(disabled ? 0.4 : 1)
-        .accessibilityLabel(delta > 0 ? "More units" : "Fewer units")
-    }
-
-    // MARK: Footer
-
-    @ViewBuilder
-    private var footer: some View {
-        switch viewModel.step {
-        case .kind:
-            Button("I'll add one later") { viewModel.skipProperty() }
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(DS.Colors.textSecondary)
-                .padding(.vertical, DS.Spacing.md)
-        case .address, .name, .units:
-            DSButton(
-                title: viewModel.step == .units ? "Add my property" : "Continue",
-                variant: .primary, size: .large, isFullWidth: true
-            ) { viewModel.advance() }
-            .disabled(!viewModel.canContinue)
-        case .celebration:
-            DSButton(title: "Keep going", icon: "arrow.right", variant: .primary, size: .large, isFullWidth: true) {
-                viewModel.advance()
+    private var savingStep: some View {
+        List {
+            Section {
+                OnboardingHeader(mood: .working, title: "Adding \(viewModel.draft.name)")
             }
-        case .notifications:
-            VStack(spacing: DS.Spacing.sm) {
-                DSButton(title: "Turn on notifications", icon: "bell.fill", variant: .primary, size: .large, isFullWidth: true) {
-                    Task { await viewModel.enableNotifications() }
+            .onboardingHeaderSection()
+
+            Section {
+                ForEach(viewModel.saveTasks) { task in
+                    OnboardingChecklistRow(task: task)
                 }
-                Button("Not now") { viewModel.declineNotifications() }
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .padding(.vertical, DS.Spacing.sm)
             }
-        case .saving, .paywall:
-            EmptyView()
         }
+        .listStyle(.insetGrouped)
+        .navigationBarBackButtonHidden()
     }
 
     // MARK: Kind Styling
 
     private func tint(for kind: PropertyKind) -> Color {
         switch kind {
-        case .condo:      DS.Colors.accentSky
-        case .multiUnit:  DS.Colors.accentSunny
-        case .house:      DS.Colors.accentMint
-        case .commercial: DS.Colors.accentCoral
+        case .condo:      .blue
+        case .multiUnit:  .orange
+        case .house:      .green
+        case .commercial: .red
         }
     }
 
@@ -271,68 +242,66 @@ private struct GettingStartedCelebration: View {
 
     let propertyName: String
     let firstName: String
+    let onContinue: () -> Void
 
     @State private var celebrated = false
 
     var body: some View {
-        VStack(spacing: DS.Spacing.xl) {
-            MascotView(mood: .excited, size: 200)
-                .padding(.top, DS.Spacing.lg)
+        ScrollView {
+            VStack(spacing: 20) {
+                MascotView(mood: .excited, size: 180)
+                    .accessibilityHidden(true)
 
-            VStack(spacing: DS.Spacing.sm) {
-                Text("\(propertyName) is live!")
-                    .font(.system(size: 32, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                Text("Your first property is on Purrperty.")
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundStyle(DS.Colors.textSecondary)
+                VStack(spacing: 8) {
+                    Text("\(propertyName) is live")
+                        .font(.largeTitle.bold())
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Your first property is on Purrperty.")
+                        .foregroundStyle(.secondary)
+                }
+
+                FounderNoteCard(firstName: firstName)
             }
-            .dsEntrance(index: 1)
-
-            FounderNoteCard(firstName: firstName)
-                .dsEntrance(index: 3)
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .frame(maxWidth: 540)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .background(Color.groupedBackground)
+        .navigationBarBackButtonHidden()
+        .onboardingBottomBar {
+            OnboardingPrimaryButton(title: "Continue", action: onContinue)
         }
         .sensoryFeedback(.success, trigger: celebrated)
         .onAppear { celebrated = true }
     }
 }
 
-/// A short, handwritten-style note. Signed by a person, not a brand.
+/// A short note signed by a person, not a brand.
 private struct FounderNoteCard: View {
 
     let firstName: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.md) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Hi \(firstName),")
-                .font(.custom("Noteworthy-Bold", size: 20, relativeTo: .title3))
+                .font(.headline)
 
-            Text("Thank you for giving Purrperty a try. I built it so looking after your rentals takes minutes, not evenings. I hope it does exactly that for you.")
-                .font(.custom("Noteworthy-Light", size: 17, relativeTo: .body))
+            Text("Thanks for giving Purrperty a try. I built it so looking after your rentals takes minutes, not evenings. I hope it does exactly that for you.")
                 .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(FounderNote.signature)
-                    .font(.custom("SnellRoundhand-Bold", size: 30, relativeTo: .title))
-                    .foregroundStyle(DS.Colors.brandInk)
+                    .font(.title3.italic())
+                    .foregroundStyle(.tint)
                 Text(FounderNote.title)
-                    .font(DS.Typography.caption)
-                    .foregroundStyle(DS.Colors.textSecondary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
-        .foregroundStyle(DS.Colors.textPrimary)
-        .padding(DS.Spacing.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                .fill(DS.Colors.accentSunny.opacity(0.16))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                .strokeBorder(DS.Colors.accentSunny.opacity(0.5), lineWidth: 1)
-        )
-        .rotationEffect(.degrees(-1.2))
+        .appCard()
         .accessibilityElement(children: .combine)
     }
 }
@@ -346,69 +315,66 @@ enum FounderNote {
 // MARK: - Notification Priming
 
 /// A preview of a real notification first; the system prompt only if
-/// they tap "Turn on" (playbook §7).
+/// they tap "Turn on notifications" (playbook §7).
 private struct GettingStartedNotificationPriming: View {
 
     let propertyName: String?
-
-    @State private var bannerVisible = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let onEnable: () -> Void
+    let onDecline: () -> Void
 
     var body: some View {
-        VStack(spacing: DS.Spacing.xxl) {
-            ZStack(alignment: .top) {
-                MascotView(mood: .happy, size: 170)
-                    .padding(.top, 96)
+        ScrollView {
+            VStack(spacing: 24) {
+                notificationPreview
+                    .padding(.top, 24)
 
-                banner
-                    .offset(y: bannerVisible ? 0 : -40)
-                    .opacity(bannerVisible ? 1 : 0)
+                MascotView(mood: .happy, size: 140)
+                    .accessibilityHidden(true)
+
+                VStack(spacing: 8) {
+                    Text("Never miss a rent payment")
+                        .font(.largeTitle.bold())
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Get a nudge when rent lands, a repair comes in or a tenant messages you. You choose which in Settings.")
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
             }
+            .padding(.horizontal, 24)
+            .frame(maxWidth: 540)
             .frame(maxWidth: .infinity)
-            .padding(.top, DS.Spacing.lg)
-
-            VStack(spacing: DS.Spacing.sm) {
-                Text("Never miss a rent payment")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                Text("Get a nudge the moment rent lands, a repair comes in or a tenant messages you. You choose which in Settings.")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
         }
-        .onAppear {
-            withAnimation(reduceMotion ? .none : DS.Motion.bouncy.delay(0.4)) { bannerVisible = true }
+        .scrollBounceBehavior(.basedOnSize)
+        .background(Color.groupedBackground)
+        .navigationBarBackButtonHidden()
+        .onboardingBottomBar {
+            OnboardingPrimaryButton(title: "Turn on notifications", action: onEnable)
+            Button("Not now", action: onDecline)
+                .frame(minHeight: 44)
         }
     }
 
-    private var banner: some View {
-        HStack(alignment: .top, spacing: DS.Spacing.md) {
-            PurrpertyLogoTile(size: 40, animates: false)
+    /// An illustration of the banner they'll get — plain content, not glass.
+    private var notificationPreview: some View {
+        HStack(alignment: .top, spacing: 12) {
+            PurrpertyLogoTile(size: 38, animates: false)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("Purrperty")
-                        .font(.system(size: 14, weight: .semibold))
+                    Text("Purrperty").font(.subheadline.weight(.semibold))
                     Spacer()
-                    Text("now")
-                        .font(.system(size: 13))
-                        .foregroundStyle(DS.Colors.textSecondary)
+                    Text("now").font(.footnote).foregroundStyle(.secondary)
                 }
-                Text("Rent received ✅")
-                    .font(.system(size: 15, weight: .semibold))
+                Text("Rent received").font(.subheadline.weight(.semibold))
                 Text(propertyName.map { "Unit 1 at \($0) just paid this month's rent." } ?? "Unit 2 just paid this month's rent.")
-                    .font(.system(size: 15))
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .lineLimit(2)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
         }
-        .foregroundStyle(DS.Colors.textPrimary)
-        .padding(DS.Spacing.md)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(DS.Colors.outline, lineWidth: 1))
-        .dsShadow(DS.Shadows.floating)
+        .padding(14)
+        .background(Color.secondaryGroupedBackground, in: .rect(cornerRadius: 24))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Example notification: Rent received")
     }

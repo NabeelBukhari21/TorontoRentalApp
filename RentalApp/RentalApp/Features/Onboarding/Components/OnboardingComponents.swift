@@ -2,172 +2,152 @@
 //  OnboardingComponents.swift
 //  RentalApp (Purrperty)
 //
-//  Onboarding — Building blocks shared by the onboarding and
-//  getting-started flows: choice cards, the progress bar, the honest
-//  build checklist, unlock rows and the live password checklist.
+//  Onboarding — Building blocks shared by onboarding and getting started.
+//
+//  Modelled on the system's own setup flows (Face ID, Apple Pay, Health):
+//  an illustration, a large title and one line of explanation at the top;
+//  an inset-grouped list of choices with checkmarks; one prominent action
+//  in a bottom bar. Purr is the illustration — content, never chrome.
 //
 
 import SwiftUI
 
-// MARK: - Progress
+// MARK: - Header
 
-/// Goal-gradient progress (playbook §5): a filled bar plus "Step x of y".
-struct OnboardingProgressBar: View {
+/// Purr, a large title and a short explanation, centred like a system
+/// setup screen. Used as the first, borderless section of a step's list.
+struct OnboardingHeader: View {
 
-    let progress: Double
-    let label: String
+    let mood: MascotMood
+    let title: String
+    var message: String? = nil
+    /// Kept below each pose's crisp limit (see `MascotPose.nativePixels`).
+    var mascotSize: CGFloat = 120
+
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(DS.Colors.track)
-                    Capsule()
-                        .fill(DS.Gradients.progress)
-                        .frame(width: max(proxy.size.width * progress, 8))
-                }
-            }
-            .frame(height: 8)
-            .animation(DS.Motion.smooth, value: progress)
+        VStack(spacing: 12) {
+            // Artwork gives way to text at accessibility sizes.
+            MascotView(mood: mood, size: typeSize.isAccessibilitySize ? mascotSize * 0.6 : mascotSize)
+                .accessibilityHidden(true)
 
-            Text(label)
-                .font(DS.Typography.caption)
-                .foregroundStyle(DS.Colors.textSecondary)
-                .contentTransition(.numericText())
-                .animation(DS.Motion.smooth, value: label)
+            Text(title)
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+
+            if let message {
+                Text(message)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(label)
-        .accessibilityValue("\(Int(progress * 100)) percent")
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 8)
     }
 }
 
-// MARK: - Choice Card
+extension View {
+    /// Places a view as a full-width, background-free list section.
+    func onboardingHeaderSection() -> some View {
+        self
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowSeparator(.hidden)
+            .listSectionSeparator(.hidden)
+    }
+}
 
-/// A big, colourful answer card. One accent per option so the choices
-/// read as distinct (playbook §5, Von Restorff), with the brand ring
-/// reserved for the selected one.
-struct OnboardingChoiceCard: View {
+// MARK: - Option Row
 
-    let icon: String
+/// One answer in a choice list: icon tile, title, optional subtitle and a
+/// checkmark when selected — the same pattern as a Settings picker row.
+struct OnboardingOptionRow: View {
+
+    let symbol: String
     let tint: Color
-    /// Dark ink on the bright accents; pass `textOnBrand` for a brand tint.
-    var iconColor: Color = DS.Colors.textOnAccent
     let title: String
     var subtitle: String? = nil
     let isSelected: Bool
-    /// Multi-select answers show a checkbox instead of a radio dot.
+    /// Multi-select answers use a filled circle; single-select a checkmark.
     var isMultiSelect = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: DS.Spacing.lg) {
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(iconColor)
-                    .frame(width: 52, height: 52)
-                    .background(tint, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
-                    .scaleEffect(isSelected ? 1.06 : 1)
+            HStack(spacing: 12) {
+                SymbolTile(systemName: symbol, color: tint)
 
-                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(DS.Colors.textPrimary)
+                        .foregroundStyle(Color.primary)
                     if let subtitle {
                         Text(subtitle)
-                            .font(DS.Typography.subheadline)
-                            .foregroundStyle(DS.Colors.textSecondary)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.secondary)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer(minLength: 8)
 
                 selectionMark
             }
-            .padding(DS.Spacing.lg)
-            .background(
-                RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .fill(isSelected ? DS.Colors.brand.opacity(0.08) : DS.Colors.surfaceRaised)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    .strokeBorder(isSelected ? DS.Colors.brand : DS.Colors.outline, lineWidth: isSelected ? 2.5 : 1)
-            )
-            .dsShadow(isSelected ? DS.Shadows.glow(DS.Colors.brand, intensity: 0.18) : DS.Shadows.soft)
+            .contentShape(.rect)
         }
-        .buttonStyle(DSPressStyle(scale: 0.97))
+        .frame(minHeight: 44)
         .sensoryFeedback(.selection, trigger: isSelected)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder
     private var selectionMark: some View {
-        // A rounded square for multi-select, a circle for single: the
-        // same corner radius gets both, so one shape type covers them.
-        let shape = RoundedRectangle(cornerRadius: isMultiSelect ? 7 : 13, style: .continuous)
-
-        ZStack {
-            shape.strokeBorder(isSelected ? DS.Colors.brand : DS.Colors.outline, lineWidth: 2)
-            shape.fill(DS.Colors.brand).opacity(isSelected ? 1 : 0)
+        if isMultiSelect {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(Color(uiColor: .tertiaryLabel)))
+                .contentTransition(.symbolEffect(.replace))
+                .accessibilityHidden(true)
+        } else if isSelected {
             Image(systemName: "checkmark")
-                .font(.system(size: 12, weight: .heavy))
-                .foregroundStyle(DS.Colors.textOnBrand)
-                .opacity(isSelected ? 1 : 0)
-                .scaleEffect(isSelected ? 1 : 0.3)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.tint)
+                .transition(.symbolEffect(.appear))
+                .accessibilityHidden(true)
         }
-        .frame(width: 26, height: 26)
     }
 }
 
-// MARK: - Build Checklist
+// MARK: - Checklist Row
 
-/// The "Building your Purrperty…" lines. Each ticks when its real work
-/// finishes.
-struct OnboardingBuildChecklist: View {
+/// One line of an honest progress checklist: waiting, working, done.
+struct OnboardingChecklistRow: View {
 
-    let tasks: [OnboardingBuildTask]
+    let task: OnboardingBuildTask
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.md) {
-            ForEach(tasks) { task in
-                HStack(spacing: DS.Spacing.md) {
-                    ZStack {
-                        Circle()
-                            .strokeBorder(DS.Colors.outline, lineWidth: 2)
-                            .opacity(task.state == .done ? 0 : 1)
-                        if task.state == .running {
-                            ProgressView()
-                                .controlSize(.small)
-                                .tint(DS.Colors.brand)
-                        }
-                        Circle()
-                            .fill(DS.Colors.success)
-                            .scaleEffect(task.state == .done ? 1 : 0.2)
-                            .opacity(task.state == .done ? 1 : 0)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .heavy))
-                            .foregroundStyle(DS.Colors.onFixedColor)
-                            .opacity(task.state == .done ? 1 : 0)
-                    }
-                    .frame(width: 26, height: 26)
-
-                    Text(task.title)
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundStyle(task.state == .pending ? DS.Colors.textTertiary : DS.Colors.textPrimary)
+        HStack(spacing: 12) {
+            ZStack {
+                if task.state == .running {
+                    ProgressView()
+                } else {
+                    Image(systemName: task.state == .done ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(task.state == .done ? AnyShapeStyle(.green) : AnyShapeStyle(Color(uiColor: .tertiaryLabel)))
+                        .contentTransition(.symbolEffect(.replace))
                 }
-                .sensoryFeedback(.success, trigger: task.state == .done)
-                .accessibilityElement(children: .combine)
-                .accessibilityValue(task.state == .done ? "Done" : task.state == .running ? "In progress" : "Waiting")
             }
+            .frame(width: 28)
+            .accessibilityHidden(true)
+
+            Text(task.title)
+                .foregroundStyle(task.state == .pending ? .secondary : .primary)
         }
-        .padding(DS.Spacing.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                .strokeBorder(DS.Colors.outline, lineWidth: 1)
-        )
-        .dsShadow(DS.Shadows.card)
+        .frame(minHeight: 44)
+        .sensoryFeedback(.success, trigger: task.state == .done)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(task.state == .done ? "Done" : task.state == .running ? "In progress" : "Waiting")
     }
 }
 
@@ -178,102 +158,121 @@ struct OnboardingUnlockRow: View {
     let unlock: OnboardingUnlock
 
     var body: some View {
-        HStack(spacing: DS.Spacing.md) {
-            Image(systemName: unlock.icon)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(unlock.iconColor)
-                .frame(width: 44, height: 44)
-                .background(unlock.tint, in: RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
-
+        Label {
             VStack(alignment: .leading, spacing: 2) {
                 Text(unlock.title)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
                 Text(unlock.detail)
-                    .font(DS.Typography.subheadline)
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(DS.Colors.accentMintInk)
+        } icon: {
+            SymbolTile(systemName: unlock.icon, color: unlock.tint)
         }
-        .padding(DS.Spacing.md)
-        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                .strokeBorder(DS.Colors.outline, lineWidth: 1)
-        )
         .accessibilityElement(children: .combine)
     }
 }
 
-// MARK: - Password Checklist
+// MARK: - Password Requirements
 
-/// Each rule ticks with an animated check and a light haptic as it's met
-/// (playbook §3).
-struct OnboardingPasswordChecklist: View {
+/// Each rule ticks over as it's met, with a light haptic (playbook §3).
+struct PasswordRequirementRow: View {
 
-    let requirements: [PasswordRequirement]
+    let requirement: PasswordRequirement
 
     var body: some View {
-        HStack(spacing: DS.Spacing.sm) {
-            ForEach(requirements) { requirement in
-                HStack(spacing: DS.Spacing.xs) {
-                    ZStack {
-                        Circle()
-                            .strokeBorder(DS.Colors.outline, lineWidth: 1.5)
-                        Circle()
-                            .fill(DS.Colors.success)
-                            .scaleEffect(requirement.isMet ? 1 : 0.1)
-                            .opacity(requirement.isMet ? 1 : 0)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 8, weight: .heavy))
-                            .foregroundStyle(DS.Colors.onFixedColor)
-                            .opacity(requirement.isMet ? 1 : 0)
-                    }
-                    .frame(width: 16, height: 16)
-
-                    Text(requirement.rule.title)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(requirement.isMet ? DS.Colors.textPrimary : DS.Colors.textSecondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                }
-                .animation(DS.Motion.bouncy, value: requirement.isMet)
-                .sensoryFeedback(.impact(weight: .light), trigger: requirement.isMet) { _, met in met }
-                .accessibilityElement(children: .combine)
-                .accessibilityValue(requirement.isMet ? "Met" : "Not met")
-            }
+        Label {
+            Text(requirement.rule.title)
+                .foregroundStyle(requirement.isMet ? .primary : .secondary)
+        } icon: {
+            Image(systemName: requirement.isMet ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(requirement.isMet ? AnyShapeStyle(.green) : AnyShapeStyle(Color(uiColor: .tertiaryLabel)))
+                .contentTransition(.symbolEffect(.replace))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.footnote)
+        .sensoryFeedback(.impact(weight: .light), trigger: requirement.isMet) { _, met in met }
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(requirement.isMet ? "Met" : "Not met")
+    }
+}
+
+// MARK: - Progress
+
+/// Goal-gradient progress (playbook §5) for the navigation bar.
+struct OnboardingProgressView: View {
+
+    let progress: Double
+    let label: String
+
+    var body: some View {
+        ProgressView(value: progress)
+            .frame(width: 160)
+            .animation(.smooth, value: progress)
+            .accessibilityLabel("Setup progress")
+            .accessibilityValue(label)
+    }
+}
+
+// MARK: - Bottom Bar
+
+extension View {
+    /// The one prominent action of a setup step, in a bar along the bottom
+    /// edge. The scroll edge effect softens content beneath it.
+    func onboardingBottomBar<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        safeAreaBar(edge: .bottom) {
+            VStack(spacing: 12) {
+                content()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .frame(maxWidth: 540)
+        }
+    }
+}
+
+/// The prominent full-width button used for every step's main action.
+struct OnboardingPrimaryButton: View {
+
+    let title: String
+    var isLoading = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Text(title).opacity(isLoading ? 0 : 1)
+                if isLoading { ProgressView() }
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.glassProminent)
+        .controlSize(.large)
+        .disabled(isLoading)
     }
 }
 
 // MARK: - Previews
 
 #Preview("Components") {
-    ScrollView {
-        VStack(spacing: DS.Spacing.lg) {
-            OnboardingProgressBar(progress: 0.4, label: "Step 3 of 7")
-            OnboardingChoiceCard(
-                icon: "key.fill", tint: DS.Colors.accentSunny,
-                title: "I own rentals", subtitle: "Landlord or owner",
-                isSelected: true, action: {}
-            )
-            OnboardingChoiceCard(
-                icon: "wrench.and.screwdriver.fill", tint: DS.Colors.accentCoral,
-                title: "Repairs", isSelected: false, isMultiSelect: true, action: {}
-            )
-            OnboardingBuildChecklist(tasks: [
-                .init(id: "a", title: "Saving your answers", state: .done),
-                .init(id: "b", title: "Switching on your alerts", state: .running),
-                .init(id: "c", title: "Preparing your dashboard")
-            ])
-            OnboardingUnlockRow(unlock: OnboardingHeadache.repairs.unlock)
+    NavigationStack {
+        List {
+            Section {
+                OnboardingHeader(mood: .thinking, title: "Who are you?", message: "Tell me a little about you.")
+            }
+            .onboardingHeaderSection()
+
+            Section {
+                OnboardingOptionRow(symbol: "key.fill", tint: .orange, title: "I own rentals", subtitle: "Landlord or owner", isSelected: true) {}
+                OnboardingOptionRow(symbol: "person.2.fill", tint: .blue, title: "I manage for others", isSelected: false) {}
+            }
+
+            Section {
+                OnboardingChecklistRow(task: .init(id: "a", title: "Saving your answers", state: .done))
+                OnboardingChecklistRow(task: .init(id: "b", title: "Switching on your alerts", state: .running))
+                OnboardingChecklistRow(task: .init(id: "c", title: "Preparing your dashboard"))
+            }
         }
-        .padding()
+        .onboardingBottomBar {
+            OnboardingPrimaryButton(title: "Continue") {}
+        }
     }
 }

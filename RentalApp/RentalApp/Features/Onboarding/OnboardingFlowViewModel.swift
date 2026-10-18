@@ -173,7 +173,7 @@ final class OnboardingFlowViewModel {
     var mascotLine: String {
         switch step {
         case .persona:
-            "Hi again! Tell me a little about you and I'll set things up to match."
+            "Tell me a little about you, and I'll set things up to match."
         case .units:
             profile.unitRange?.reaction ?? "Roughly is fine. I'll size your dashboard to fit."
         case .headaches:
