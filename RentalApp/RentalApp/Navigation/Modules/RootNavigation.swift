@@ -18,10 +18,11 @@
 //  screen — no coordination, no flags, no chance of the two
 //  disagreeing.
 //
-//  The splash is the one exception: it stays up until both the
-//  animation has finished *and* the session check has resolved,
-//  whichever is slower. A launch that resolves in 200ms shouldn't
-//  flash the brand and vanish.
+//  There is no splash screen. Per the HIG (Launching), the launch
+//  screen is the system-generated one — a plain system background —
+//  and while the session check runs (well under a second) the root
+//  shows that same background, so launch reads as the app simply
+//  appearing, then onboarding, sign-in or Home.
 //
 //  Module map:
 //  • RootNavigation            — this launch coordinator
@@ -47,10 +48,6 @@ struct RootNavigation: View {
     private let container: AppContainer
     @State private var session: SessionViewModel
 
-    /// The splash animation has played through. Tracked separately from
-    /// the session check so neither can cut the other short.
-    @State private var splashFinished = false
-
     /// The app-wide toast centre, taken from the container.
     ///
     /// Previously constructed here with `@State`, which made it a *second*
@@ -59,7 +56,7 @@ struct RootNavigation: View {
     /// is owned by the composition root and injected like everything else.
     private var toasts: ToastCenter { container.toasts }
 
-    init(container: AppContainer = .shared) {
+    init(container: AppContainer) {
         self.container = container
         _session = State(initialValue: SessionViewModel(
             auth: container.auth,
@@ -69,33 +66,11 @@ struct RootNavigation: View {
         ))
     }
 
-    /// Hold the splash until the brand moment is done *and* we know
-    /// where the user belongs.
-    private var showsSplash: Bool {
-        !splashFinished || session.state == .checking
-    }
-
     var body: some View {
-        ZStack {
-            if showsSplash {
-                SplashView { splashFinished = true }
-                    .transition(
-                        .asymmetric(
-                            insertion: .identity,
-                            removal: .opacity.combined(with: .scale(scale: 1.06))
-                        )
-                    )
-            } else {
-                destination
-            }
-        }
-        .animation(.easeInOut(duration: 0.7), value: showsSplash)
+        destination
         // One colour-scheme source for the whole app, launch flow included.
-        // Previously this was applied only inside the main tab shell, and
-        // the launch, onboarding and auth screens forced themselves dark —
-        // so the Appearance setting never reached them. Light is the
-        // default (see `InMemoryPreferencesRepository.theme`); System and
-        // Dark remain available in Settings → Appearance.
+        // System is the default (see `InMemoryPreferencesRepository.theme`);
+        // Light and Dark remain available in Settings → Appearance.
         .preferredColorScheme(container.preferences.theme.colorScheme)
         .environment(session)
         .environment(\.toasts, toasts)
@@ -107,8 +82,7 @@ struct RootNavigation: View {
         // Conflicts are queued from anywhere — a form, a background drain —
         // so the sheet that settles them lives above all of it.
         .dsConflictResolution(container.conflicts)
-        // The session check runs behind the splash animation, so a
-        // returning user pays nothing for it.
+        // The session check runs while the launch background shows.
         .task { await session.bootstrap() }
         // Deep links land on the shared router; one that arrives during
         // the launch flow has its destination set before Main appears.
@@ -123,9 +97,11 @@ struct RootNavigation: View {
     private var destination: some View {
         switch session.state {
         case .checking:
-            // Unreachable — `showsSplash` covers it. Kept explicit so
-            // the compiler enforces exhaustiveness if a case is added.
-            Color.clear
+            // Matches the system-generated launch screen exactly, so the
+            // hand-off from launch screen to app is invisible.
+            Color.plainBackground
+                .ignoresSafeArea()
+                .accessibilityHidden(true)
 
         case .onboarding:
             OnboardingView(

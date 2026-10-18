@@ -101,7 +101,8 @@ colourful, for students, on a white background.
   the simulator to check UI work. Use screenshots for UI.
 - Commit after each coherent piece of work, with a descriptive message
   (this is a portfolio repo). Author: `NabeelBukhari21
-  <nabeelbukhari21@gmail.com>`. The user pushes via GitHub Desktop.
+  <nabeelbukhari21@gmail.com>`. Push to `origin main` after every
+  commit so the GitHub history builds up as you go.
 - Security:
   - Never commit `Supabase.xcconfig`; it is gitignored.
   - Use the anon key only, never `service_role`.
