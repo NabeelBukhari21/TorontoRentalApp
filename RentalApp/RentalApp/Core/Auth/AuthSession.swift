@@ -49,7 +49,7 @@ enum AppRole: String, Codable, Sendable, CaseIterable, Identifiable {
         case .owner: "Full access to the portfolio, billing, and team"
         case .propertyManager: "Manage properties, tenants, and maintenance"
         case .tenant: "View your lease, pay rent, submit requests"
-        case .vendor: "Receive work orders and submit invoices"
+        case .vendor: "Receive work orders and book visits"
         }
     }
 

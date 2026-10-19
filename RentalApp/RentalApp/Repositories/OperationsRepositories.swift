@@ -150,6 +150,65 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
         try await mutate(ticketID) { $0.replySent = true }
     }
 
+    // MARK: Vendor Actions
+
+    func accept(_ ticketID: String, by vendorName: String) async throws {
+        try await mutate(ticketID) { ticket in
+            guard ticket.status == .new else { return }
+            ticket.status = .inProgress
+            ticket.comments.append(Self.vendorComment(vendorName, "Accepted the job."))
+        }
+    }
+
+    func decline(_ ticketID: String, by vendorName: String, reason: String) async throws {
+        let reason = reason.trimmingCharacters(in: .whitespacesAndNewlines)
+        try await mutate(ticketID) { ticket in
+            ticket.vendor = nil
+            ticket.scheduledVisit = nil
+            ticket.status = .new
+            ticket.comments.append(Self.vendorComment(
+                vendorName, reason.isEmpty ? "Declined the job." : "Declined the job: \(reason)"
+            ))
+        }
+    }
+
+    func scheduleVisit(_ ticketID: String, at date: Date, by vendorName: String, note: String) async throws {
+        guard date > .now else {
+            throw AppError.validation("Choose a time in the future.")
+        }
+        let note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        try await mutate(ticketID) { ticket in
+            let rebooked = ticket.scheduledVisit != nil
+            ticket.scheduledVisit = date
+            ticket.status = .scheduled
+            let when = date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute())
+            ticket.comments.append(Self.vendorComment(
+                vendorName, "\(rebooked ? "Rebooked" : "Booked") a visit for \(when)." + (note.isEmpty ? "" : " \(note)")
+            ))
+        }
+    }
+
+    func complete(_ ticketID: String, by vendorName: String, notes: String) async throws {
+        let notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !notes.isEmpty else {
+            throw AppError.validation("Say what was done, so the landlord and tenant know.")
+        }
+        try await mutate(ticketID) { ticket in
+            ticket.status = .done
+            ticket.comments.append(Self.vendorComment(vendorName, "Marked done: \(notes)"))
+        }
+    }
+
+    func addVendorNote(_ text: String, to ticketID: String, by vendorName: String) async throws {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        try await mutate(ticketID) { $0.comments.append(Self.vendorComment(vendorName, text)) }
+    }
+
+    private static func vendorComment(_ vendorName: String, _ text: String) -> TicketComment {
+        TicketComment(author: vendorName, isManager: false, text: text, time: "Just now")
+    }
+
     // MARK: Internals
 
     /// Applies a change, records it as an override, and invalidates the
@@ -196,6 +255,9 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
         }
         if let unitID = query.filter.unitID {
             result = result.filter { $0.unitID == unitID }
+        }
+        if let vendorID = query.filter.vendorID {
+            result = result.filter { $0.vendor?.id == vendorID }
         }
 
         let ascending = query.sort.direction.isAscending

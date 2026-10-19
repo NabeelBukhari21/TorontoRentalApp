@@ -103,11 +103,14 @@ struct MaintenanceFilter: Equatable, Sendable {
     var status: TicketStatus?
     /// One unit's requests — what a tenant sees.
     var unitID: String?
+    /// One vendor's jobs — what a vendor sees.
+    var vendorID: String?
 
-    init(priority: TicketPriority? = nil, status: TicketStatus? = nil, unitID: String? = nil) {
+    init(priority: TicketPriority? = nil, status: TicketStatus? = nil, unitID: String? = nil, vendorID: String? = nil) {
         self.priority = priority
         self.status = status
         self.unitID = unitID
+        self.vendorID = vendorID
     }
 
     static let all = MaintenanceFilter()
@@ -379,6 +382,23 @@ struct PortalAccount: Sendable, Equatable {
     let landlord: LandlordContact
 }
 
+/// The vendor record behind a signed-in vendor.
+struct VendorAccount: Sendable, Equatable {
+    let vendorID: String
+    let company: String
+    let contactName: String
+    let conversationID: String?
+    /// The organization that sends them work.
+    let client: LandlordContact
+}
+
+/// Links a vendor's sign-in to their vendor record (server:
+/// `vendors.portal_user_id`, enforced by RLS).
+@MainActor
+protocol VendorPortalRepositoryProtocol: AnyObject {
+    func account(for session: AuthSession) async throws -> VendorAccount?
+}
+
 /// Links a tenant's sign-in to their tenant record. On the server this is
 /// `tenants.portal_user_id = auth.uid()`, enforced by RLS: a tenant can
 /// only ever read their own lease, ledger, requests and thread.
@@ -458,6 +478,21 @@ protocol MaintenanceRepositoryProtocol: AnyObject {
     func assign(_ vendorID: String, to ticketID: String) async throws
     func addComment(_ text: String, to ticketID: String) async throws
     func markReplySent(_ ticketID: String) async throws
+
+    // MARK: Vendor actions
+    //
+    // What an assigned vendor can do to their own job. On the server, RLS
+    // checks the job is assigned to `current_vendor_id()`.
+
+    /// Takes the job: moves it to in progress and notes who accepted.
+    func accept(_ ticketID: String, by vendorName: String) async throws
+    /// Hands the job back to the organization, unassigned.
+    func decline(_ ticketID: String, by vendorName: String, reason: String) async throws
+    /// Books (or rebooks) the visit.
+    func scheduleVisit(_ ticketID: String, at date: Date, by vendorName: String, note: String) async throws
+    /// Marks the work finished with what was done.
+    func complete(_ ticketID: String, by vendorName: String, notes: String) async throws
+    func addVendorNote(_ text: String, to ticketID: String, by vendorName: String) async throws
 }
 
 // MARK: - Messaging

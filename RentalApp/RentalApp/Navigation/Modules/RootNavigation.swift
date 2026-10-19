@@ -147,6 +147,10 @@ struct RootNavigation: View {
             TenantPortalView(session: account, container: container)
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))
 
+        case .authenticated(let account) where account.role == .vendor:
+            VendorPortalView(session: account, container: container)
+                .transition(.opacity.combined(with: .scale(scale: 1.02)))
+
         case .authenticated:
             MainTabNavigation()
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))

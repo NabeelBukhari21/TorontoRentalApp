@@ -63,7 +63,9 @@ extension Projections {
                 },
                 vendor: vendor.map(projectVendor),
                 comments: comments,
-                unitID: request.unitID?.description
+                unitID: request.unitID?.description,
+                scheduledVisit: request.status == .scheduled ? request.scheduledFor : nil,
+                propertyAddress: property.map { "\($0.address.line1), \($0.address.city)" }
             )
         }
     }

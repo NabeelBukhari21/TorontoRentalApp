@@ -153,6 +153,7 @@ struct Vendor: Identifiable, Hashable {
 struct TicketComment: Identifiable {
     let id = UUID()
     let author: String
+    /// Written by staff. Everyone else — tenant or vendor — is false.
     let isManager: Bool
     let text: String
     let time: String
@@ -216,6 +217,10 @@ struct MaintenanceTicket: Identifiable, Sendable {
     /// The unit, when it's not the common area. Lets a tenant see every
     /// request for their home, whoever reported it.
     var unitID: String? = nil
+    /// When a visit is booked, once someone has scheduled one.
+    var scheduledVisit: Date? = nil
+    /// Street address, for whoever is going there.
+    var propertyAddress: String? = nil
 }
 
 // MARK: - Mock Data

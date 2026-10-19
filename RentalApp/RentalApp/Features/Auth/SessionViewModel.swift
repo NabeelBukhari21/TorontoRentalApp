@@ -294,14 +294,18 @@ final class SessionViewModel {
                 transition(to: .unauthenticated)
             }
         case .tenant:
-            if case .session(let tenant)? = try? await auth.signIn(
-                email: "tenant@rentos.ca",
-                password: MockAccountDirectory.demoPassword
-            ) {
-                transition(to: .authenticated(tenant))
-            } else {
-                transition(to: .unauthenticated)
-            }
+            await signInDemo(email: "tenant@rentos.ca")
+        case .vendor:
+            await signInDemo(email: "vendor@rentos.ca")
+        }
+    }
+
+    /// DEBUG launch override: signs in one of the mock demo accounts.
+    private func signInDemo(email: String) async {
+        if case .session(let account)? = try? await auth.signIn(email: email, password: MockAccountDirectory.demoPassword) {
+            transition(to: .authenticated(account))
+        } else {
+            transition(to: .unauthenticated)
         }
     }
 

@@ -85,7 +85,7 @@ struct TenantMessagesView: View {
         if let conversationID = viewModel.account?.conversationID, let account = viewModel.account {
             ChatView(
                 conversationID: conversationID,
-                perspective: .tenant(landlordName: account.landlord.name, context: "Your landlord"),
+                perspective: .counterpart(otherName: account.landlord.name, context: "Your landlord"),
                 container: container
             )
         } else if let landlord = viewModel.account?.landlord {

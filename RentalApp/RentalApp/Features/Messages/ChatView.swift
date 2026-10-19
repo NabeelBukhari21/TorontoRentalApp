@@ -13,8 +13,9 @@ import SwiftUI
 enum ChatPerspective: Equatable {
     /// Staff in the management app: the header shows the tenant or vendor.
     case staff
-    /// A tenant in the portal: the header shows their landlord.
-    case tenant(landlordName: String, context: String)
+    /// A tenant or vendor in their portal: the header shows the
+    /// organization they deal with.
+    case counterpart(otherName: String, context: String)
 }
 
 struct ChatView: View {
@@ -37,7 +38,7 @@ struct ChatView: View {
         self.conversationID = conversationID
         self.isEmbedded = isEmbedded
         self.perspective = perspective
-        let viewer: MessageSender = if case .tenant = perspective { .counterpart } else { .staff }
+        let viewer: MessageSender = if case .counterpart = perspective { .counterpart } else { .staff }
         _viewModel = State(initialValue: ChatViewModel(
             conversationID: conversationID,
             repository: container.messages,
@@ -45,17 +46,18 @@ struct ChatView: View {
         ))
     }
 
-    private var isTenant: Bool {
-        if case .tenant = perspective { true } else { false }
+    /// Viewed from a portal rather than the management app.
+    private var isCounterpart: Bool {
+        if case .counterpart = perspective { true } else { false }
     }
 
     /// The other person in the thread, as this viewer sees it.
     private func otherName(_ conversation: Conversation) -> String {
-        if case .tenant(let landlordName, _) = perspective { landlordName } else { conversation.name }
+        if case .counterpart(let otherName, _) = perspective { otherName } else { conversation.name }
     }
 
     private func otherContext(_ conversation: Conversation) -> String {
-        if case .tenant(_, let context) = perspective { context } else { conversation.context }
+        if case .counterpart(_, let context) = perspective { context } else { conversation.context }
     }
 
     private var conversation: Conversation? { viewModel.conversation }
@@ -105,8 +107,8 @@ struct ChatView: View {
 
     private func chatHeader(_ conversation: Conversation) -> some View {
         HStack(spacing: DS.Spacing.md) {
-            // A tenant's thread is a tab root: there's nothing to go back to.
-            if !isEmbedded && !isTenant {
+            // A portal's thread is a tab root: there's nothing to go back to.
+            if !isEmbedded && !isCounterpart {
                 DSIconButton(icon: "chevron.left", diameter: 36) {
                     dismiss()
                 }
@@ -116,7 +118,7 @@ struct ChatView: View {
             DSAvatar(
                 name: otherName(conversation),
                 size: .medium,
-                status: !isTenant && conversation.isOnline ? .success : nil
+                status: !isCounterpart && conversation.isOnline ? .success : nil
             )
 
             VStack(alignment: .leading, spacing: 1) {
@@ -137,7 +139,7 @@ struct ChatView: View {
                         }
                         .foregroundStyle(DS.Colors.brand)
                     } else {
-                        Text(!isTenant && conversation.isOnline ? "Online · \(conversation.context)" : otherContext(conversation))
+                        Text(!isCounterpart && conversation.isOnline ? "Online · \(conversation.context)" : otherContext(conversation))
                             .foregroundStyle(DS.Colors.textTertiary)
                     }
                 }
@@ -147,7 +149,7 @@ struct ChatView: View {
 
             Spacer()
 
-            if !isTenant {
+            if !isCounterpart {
                 DSIconButton(icon: "phone.fill", diameter: 36) {}
                 DSIconButton(icon: DS.Icons.more, diameter: 36) {}
             }

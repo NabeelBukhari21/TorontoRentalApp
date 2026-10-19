@@ -27,7 +27,8 @@ colourful, for students, on a white background.
   - `RentalApp (Onboarding)` passes `-PurrpertyStartAt onboarding`, so
     the app opens at onboarding. Also supported: `login` and
     `gettingStarted` (first property → notifications → paywall, using the
-    stored session), `home` (demo owner) and `tenant` (demo tenant portal). This works in
+    stored session), `home` (demo owner), `tenant` (demo tenant portal) and
+    `vendor` (demo vendor portal). This works in
     DEBUG builds only; see `Core/Diagnostics/DebugLaunchOverride.swift`.
 - Deployment target: iOS 26.4. Default simulator: iPhone 17 Pro. Physical
   device: iPhone 15 Pro Max.
@@ -137,7 +138,11 @@ colourful, for students, on a white background.
      money movement; Ontario: no late fees, $20 NSF cap, N4 guidance)
   4. Tenant portal — done (`Features/TenantPortal`; tenants never see
      the staff shell; `-PurrpertyStartAt tenant` signs in the demo tenant)
-  5. Vendor experience — next. 6. push/widgets/Live Activities/Siri
+  5. Vendor experience — done (`Features/VendorPortal`; accept → book
+     visit (Ontario entry-notice check) → mark done; `-PurrpertyStartAt
+     vendor`)
+  6. Push, widgets, Live Activities, Siri — next (needs Xcode target and
+     capability steps from the user)
 - Earlier plan, step by step:
   1. Fix the loading screen.
   2. Fix the Home UI.

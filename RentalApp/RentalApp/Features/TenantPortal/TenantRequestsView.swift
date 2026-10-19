@@ -159,11 +159,10 @@ extension TicketStatus {
         }
     }
 
+    /// Progress, not a warning: work being done is good news.
     var role: StatusRole {
         switch self {
-        case .new: .informational
-        case .inProgress: .caution
-        case .scheduled: .informational
+        case .new, .inProgress, .scheduled: .informational
         case .done: .positive
         }
     }

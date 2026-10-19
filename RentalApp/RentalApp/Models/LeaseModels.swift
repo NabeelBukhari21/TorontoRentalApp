@@ -84,6 +84,27 @@ enum OntarioTenancyRules {
     /// termination date it can give, for a monthly tenancy.
     static let n4NoticeDays = 14
 
+    /// Hours of written notice before entering a rental unit (RTA s. 27).
+    static let entryNoticeHours = 24
+    /// Entry with notice must be between these hours.
+    static let entryWindow = 8..<20
+
+    /// Why a visit at `date` can't go ahead as booked, or nil when it can.
+    /// Notice isn't needed in an emergency or when the tenant has agreed to
+    /// entry.
+    static func entryProblem(at date: Date, now: Date = .now, tenantConsented: Bool, isEmergency: Bool) -> String? {
+        guard !tenantConsented, !isEmergency else { return nil }
+        let earliest = now.addingTimeInterval(TimeInterval(entryNoticeHours * 3600))
+        if date < earliest {
+            return "The tenant needs \(entryNoticeHours) hours' written notice. Choose \(earliest.formatted(date: .abbreviated, time: .shortened)) or later."
+        }
+        let hour = Calendar.current.component(.hour, from: date)
+        if !entryWindow.contains(hour) {
+            return "With notice, entry has to be between 8 a.m. and 8 p.m."
+        }
+        return nil
+    }
+
     /// Written notice (Form N1) needed before a rent increase.
     static let increaseNoticeDays = 90
 
