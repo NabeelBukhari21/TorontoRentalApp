@@ -35,6 +35,11 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
         try await SimulatedLatency.wait(.list)
         try Task.checkCancellation()
 
+        if let filter = query.filter {
+            return Self.sorted(Self.results(for: filter, kinds: query.kinds), by: query.sort)
+                .page(query.page)
+        }
+
         let term = query.trimmed.lowercased()
         var scored = corpus()
             .filter { query.kinds.isEmpty || query.kinds.contains($0.kind) }
@@ -79,6 +84,12 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
 
     func counts(for query: SearchQuery) async throws -> [SearchKind: Int] {
         guard query.isSearchable else { return [:] }
+
+        if let filter = query.filter {
+            let total = Self.results(for: filter, kinds: []).count
+            return total > 0 ? [filter.kind: total] : [:]
+        }
+
         let term = query.trimmed.lowercased()
 
         return corpus()
@@ -86,6 +97,27 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
             .reduce(into: [:]) { counts, entry in
                 counts[entry.kind, default: 0] += 1
             }
+    }
+
+    // MARK: Filters
+
+    /// A filter keyword is answered by a predicate, not by text matching.
+    /// Not cached: "ends within 60 days" goes stale with the clock and with
+    /// every edit, and the walk is cheap next to the projection one.
+    private static func results(for filter: SearchFilter, kinds: Set<SearchKind>) -> [SearchResult] {
+        guard kinds.isEmpty || kinds.contains(filter.kind) else { return [] }
+        return Projections.searchResults(for: filter)
+    }
+
+    private static func sorted(_ results: [SearchResult], by sort: SearchSort) -> [SearchResult] {
+        switch sort {
+        case .relevance:
+            results.sorted { $0.rank > $1.rank }
+        case .recent:
+            results.sorted { $0.updatedAt > $1.updatedAt }
+        case .title:
+            results.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        }
     }
 
     // MARK: Scoring

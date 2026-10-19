@@ -27,16 +27,11 @@ final class SupabaseSearchRepository: SearchRepositoryProtocol {
         guard query.isSearchable else { return .empty }
 
         do {
-            let rows: [SearchRow] = try await client
-                .rpc("global_search", params: SearchParams(
-                    query: query.trimmed,
-                    kinds: query.kinds.isEmpty ? nil : query.kinds.map(\.rawValue).sorted(),
-                    sort: query.sort.rawValue,
-                    limit: query.page.size,
-                    offset: query.page.page * query.page.size
-                ))
-                .execute()
-                .value
+            let rows = try await fetchRows(
+                query,
+                limit: query.page.size,
+                offset: query.page.page * query.page.size
+            )
 
             let items = rows.compactMap(\.asResult)
             // `total_count` is a window function over the full match set, so
@@ -100,16 +95,8 @@ final class SupabaseSearchRepository: SearchRepositoryProtocol {
             unscoped.kinds = []
             unscoped.page = PageRequest(page: 0, size: 100)
 
-            let rows: [SearchRow] = try await client
-                .rpc("global_search", params: SearchParams(
-                    query: unscoped.trimmed,
-                    kinds: nil,
-                    sort: "relevance",
-                    limit: 100,
-                    offset: 0
-                ))
-                .execute()
-                .value
+            unscoped.sort = .relevance
+            let rows = try await fetchRows(unscoped, limit: 100, offset: 0)
 
             return rows.reduce(into: [:]) { counts, row in
                 guard let kind = SearchKind(rawValue: row.kind) else { return }
@@ -121,7 +108,59 @@ final class SupabaseSearchRepository: SearchRepositoryProtocol {
     }
 }
 
+// MARK: - Dispatch
+
+private extension SupabaseSearchRepository {
+
+    /// A filter keyword ("expiring") names a state, not text, so it goes to
+    /// `search_filtered`; anything else is a text search. Both return the
+    /// same row shape.
+    func fetchRows(_ query: SearchQuery, limit: Int, offset: Int) async throws -> [SearchRow] {
+        let kinds = query.kinds.isEmpty ? nil : query.kinds.map(\.rawValue).sorted()
+
+        if let filter = query.filter {
+            return try await client
+                .rpc("search_filtered", params: FilterParams(
+                    filter: filter.keyword,
+                    kinds: kinds,
+                    sort: query.sort.rawValue,
+                    limit: limit,
+                    offset: offset
+                ))
+                .execute()
+                .value
+        }
+
+        return try await client
+            .rpc("global_search", params: SearchParams(
+                query: query.trimmed,
+                kinds: kinds,
+                sort: query.sort.rawValue,
+                limit: limit,
+                offset: offset
+            ))
+            .execute()
+            .value
+    }
+}
+
 // MARK: - Wire Types
+
+private struct FilterParams: Encodable {
+    let filter: String
+    let kinds: [String]?
+    let sort: String
+    let limit: Int
+    let offset: Int
+
+    enum CodingKeys: String, CodingKey {
+        case filter = "p_filter"
+        case kinds  = "p_kinds"
+        case sort   = "p_sort"
+        case limit  = "p_limit"
+        case offset = "p_offset"
+    }
+}
 
 private struct SearchParams: Encodable {
     let query: String

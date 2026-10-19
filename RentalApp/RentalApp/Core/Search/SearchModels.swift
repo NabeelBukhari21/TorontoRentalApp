@@ -256,6 +256,11 @@ struct SearchQuery: Sendable, Equatable {
     /// and costs a full-table trigram scan for a useless result set.
     var isSearchable: Bool { trimmed.count >= 2 }
 
+    /// The structured filter this query names, if its whole text is one of
+    /// the filter keywords. Derived rather than stored, so typing "expiring"
+    /// and tapping the shortcut are the same query.
+    var filter: SearchFilter? { SearchFilter(keyword: trimmed) }
+
     var firstPage: SearchQuery {
         var copy = self
         copy.page = PageRequest(page: 0, size: page.size)
@@ -346,16 +351,64 @@ final class RecentSearchStore {
     }
 }
 
+// MARK: - Filters
+
+/// A keyword that means a *state*, not a word to match.
+///
+/// "expiring" never appears in a lease's text, so full-text search cannot
+/// answer it. Each case instead names a predicate over the data, evaluated
+/// by the repository: the in-memory graph checks the domain models, and
+/// Supabase runs `search_filtered`. The keyword is the wire value, so the
+/// two stay in lockstep.
+enum SearchFilter: String, Sendable, CaseIterable, Identifiable {
+    case vacant
+    case urgent
+    case expiring
+    case overdue
+
+    /// Leases ending within this many days count as expiring — Ontario's
+    /// 60-day notice window, the same one `Lease.isRenewalDue` uses.
+    static let expiringWindowDays = 60
+
+    /// Matches the whole query, case-insensitively. "expiring leases" is
+    /// still a text search; only the bare keyword is a filter.
+    init?(keyword: String) {
+        self.init(rawValue: keyword.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+    }
+
+    var id: String { rawValue }
+    var keyword: String { rawValue }
+
+    /// The one kind each filter returns, so scope chips can rule it out.
+    var kind: SearchKind {
+        switch self {
+        case .vacant:   .unit
+        case .urgent:   .maintenanceRequest
+        case .expiring: .lease
+        case .overdue:  .tenant
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .vacant:   "Units without a tenant"
+        case .urgent:   "High-priority maintenance"
+        case .expiring: "Leases ending soon"
+        case .overdue:  "Tenants behind on rent"
+        }
+    }
+
+    var suggestion: SearchSuggestion {
+        SearchSuggestion(id: "sc-\(rawValue)", text: keyword, subtitle: subtitle, source: .shortcut)
+    }
+}
+
 // MARK: - Shortcuts
 
 enum SearchShortcuts {
 
     /// Offered on an empty field. Each is a real query, not a special case —
-    /// so they behave exactly like something the user typed.
-    static let all: [SearchSuggestion] = [
-        .init(id: "sc-vacant",   text: "vacant",   subtitle: "Units without a tenant",   source: .shortcut),
-        .init(id: "sc-urgent",   text: "urgent",   subtitle: "High-priority maintenance", source: .shortcut),
-        .init(id: "sc-expiring", text: "expiring", subtitle: "Leases ending soon",        source: .shortcut),
-        .init(id: "sc-overdue",  text: "overdue",  subtitle: "Tenants behind on rent",    source: .shortcut)
-    ]
+    /// so they behave exactly like something the user typed, and the
+    /// repository resolves the keyword to its `SearchFilter`.
+    static let all: [SearchSuggestion] = SearchFilter.allCases.map(\.suggestion)
 }
