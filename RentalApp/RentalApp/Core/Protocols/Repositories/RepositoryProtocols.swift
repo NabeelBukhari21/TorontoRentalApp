@@ -337,6 +337,28 @@ struct MaintenanceSummary: Sendable, Equatable {
     )
 }
 
+/// What the new-request form collects.
+///
+/// Names travel with the ids so the in-memory source can build the row
+/// without a join; a networked source sends only the ids.
+struct MaintenanceRequestDraft: Sendable, Equatable {
+    var propertyID: String?
+    var propertyName: String = ""
+    /// Nil means the common area.
+    var unitID: String?
+    var unitName: String = ""
+    var tenantName: String?
+    var title: String = ""
+    var details: String = ""
+    var category: TicketCategory = .general
+    var priority: TicketPriority = .medium
+    /// JPEG data, already downscaled for upload.
+    var photos: [Data] = []
+    var access = TicketAccess(permissionToEnter: false, window: .anytime)
+
+    static let maxPhotos = 6
+}
+
 @MainActor
 protocol MaintenanceRepositoryProtocol: AnyObject {
     func tickets(matching query: MaintenanceQuery, forceRefresh: Bool) async throws -> Page<MaintenanceTicket>
@@ -347,6 +369,8 @@ protocol MaintenanceRepositoryProtocol: AnyObject {
     func vendor(id: String) async throws -> Vendor?
     func timeline(forTicketID id: String) async throws -> [TenantEvent]
 
+    @discardableResult
+    func create(_ draft: MaintenanceRequestDraft) async throws -> MaintenanceTicket
     func move(_ ticketID: String, to status: TicketStatus) async throws
     func assign(_ vendorID: String, to ticketID: String) async throws
     func addComment(_ text: String, to ticketID: String) async throws

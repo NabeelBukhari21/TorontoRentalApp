@@ -38,7 +38,9 @@ struct SheetRouteView: View {
             PropertyFormView(mode: .create, container: container)
         case .newTenant:
             CreateTenantView(container: container)
-        case .quickActions, .newMaintenanceRequest, .filters:
+        case .newMaintenanceRequest:
+            NewMaintenanceRequestView(container: container)
+        case .quickActions, .filters:
             ComingSoonSheet(route: route)
         }
     }

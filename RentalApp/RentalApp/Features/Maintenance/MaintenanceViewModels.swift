@@ -218,6 +218,13 @@ final class MaintenanceDetailViewModel {
         vendors.filter { $0.specialty == ticket.category && $0.id != suggestedID }
     }
 
+    /// Who could take a request that hasn't been triaged: vendors for its
+    /// trade, or every vendor when none match.
+    func candidateVendors(for ticket: MaintenanceTicket) -> [Vendor] {
+        let matching = vendors.filter { $0.specialty == ticket.category }
+        return matching.isEmpty ? vendors : matching
+    }
+
     /// Conversations are keyed by person — derive the slug from the tenant.
     func conversationID(for ticket: MaintenanceTicket) -> String {
         ticket.tenantName

@@ -73,6 +73,14 @@ struct PropertyUnit: Identifiable, Sendable, Codable {
     let rent: Int
     let tenantName: String?
     let status: UnitStatus
+    /// Set only when the property has more than one building, where unit
+    /// labels repeat ("Unit 101" in Tower A and in Tower B).
+    var building: String? = nil
+
+    /// The label to show wherever units of one property are listed together.
+    var displayName: String {
+        building.map { "\(name) · \($0)" } ?? name
+    }
 
     enum UnitStatus: String, Codable {
         case occupied = "Occupied"

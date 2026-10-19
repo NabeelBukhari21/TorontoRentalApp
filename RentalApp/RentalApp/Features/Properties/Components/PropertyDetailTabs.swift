@@ -147,7 +147,7 @@ struct PropertyUnitsTab: View {
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(unit.name)
+                            Text(unit.displayName)
                                 .font(DS.Typography.headline)
                                 .foregroundStyle(DS.Colors.textPrimary)
 

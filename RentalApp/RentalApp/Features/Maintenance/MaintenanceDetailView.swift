@@ -40,7 +40,9 @@ struct MaintenanceDetailView: View {
                     VStack(spacing: DS.Spacing.lg) {
                         headerCard(ticket).dsEntrance(index: 0)
                         workflowCard(ticket).dsEntrance(index: 1)
-                        aiPanel(ticket).dsEntrance(index: 2)
+                        if let ai = ticket.ai {
+                            aiPanel(ticket, ai: ai).dsEntrance(index: 2)
+                        }
 
                         if ticket.photoCount > 0 {
                             photosCard(ticket).dsEntrance(index: 3)
@@ -94,10 +96,23 @@ struct MaintenanceDetailView: View {
                     .foregroundStyle(DS.Colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(ticket.description)
-                    .font(DS.Typography.footnote)
+                if !ticket.description.isEmpty {
+                    Text(ticket.description)
+                        .font(DS.Typography.footnote)
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if let access = ticket.access {
+                    Label(
+                        access.permissionToEnter
+                            ? "Entry allowed · \(access.window.rawValue)"
+                            : "24-hour notice needed to enter",
+                        systemImage: access.permissionToEnter ? "door.left.hand.open" : "clock"
+                    )
+                    .font(DS.Typography.caption)
                     .foregroundStyle(DS.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                }
 
                 Rectangle().fill(DS.Colors.outline).frame(height: 0.5)
 
@@ -145,7 +160,7 @@ struct MaintenanceDetailView: View {
 
     // MARK: AI Panel
 
-    private func aiPanel(_ ticket: MaintenanceTicket) -> some View {
+    private func aiPanel(_ ticket: MaintenanceTicket, ai: TicketAIAnalysis) -> some View {
         VStack(alignment: .leading, spacing: DS.Spacing.lg) {
             // Header.
             HStack(spacing: DS.Spacing.sm) {
@@ -163,7 +178,7 @@ struct MaintenanceDetailView: View {
 
                 Spacer()
 
-                Text("\(Int(ticket.ai.categoryConfidence * 100))% confidence")
+                Text("\(Int(ai.categoryConfidence * 100))% confidence")
                     .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                     .foregroundStyle(DS.Colors.textOnBrand)
             }
@@ -175,7 +190,7 @@ struct MaintenanceDetailView: View {
                         .stroke(DS.Colors.textOnBrand.opacity(0.25), lineWidth: 7)
 
                     Circle()
-                        .trim(from: 0, to: ticket.ai.urgencyScore)
+                        .trim(from: 0, to: ai.urgencyScore)
                         .stroke(
                             AngularGradient(
                                 colors: [DS.Colors.accentSunny, DS.Colors.accentCoral],
@@ -186,7 +201,7 @@ struct MaintenanceDetailView: View {
                         .rotationEffect(.degrees(-90))
 
                     VStack(spacing: 0) {
-                        Text("\(Int(ticket.ai.urgencyScore * 100))")
+                        Text("\(Int(ai.urgencyScore * 100))")
                             .font(.system(size: 19, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(DS.Colors.textOnBrand)
@@ -197,7 +212,7 @@ struct MaintenanceDetailView: View {
                 }
                 .frame(width: 74, height: 74)
 
-                Text(ticket.ai.summary)
+                Text(ai.summary)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(DS.Colors.textOnBrand)
                     .fixedSize(horizontal: false, vertical: true)
@@ -205,7 +220,7 @@ struct MaintenanceDetailView: View {
 
             // Suggested actions.
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-                ForEach(Array(ticket.ai.suggestedActions.enumerated()), id: \.offset) { index, action in
+                ForEach(Array(ai.suggestedActions.enumerated()), id: \.offset) { index, action in
                     HStack(alignment: .top, spacing: DS.Spacing.sm) {
                         Image(systemName: "sparkle")
                             .font(.system(size: 9, weight: .bold))
@@ -228,7 +243,7 @@ struct MaintenanceDetailView: View {
                     .kerning(1)
                     .foregroundStyle(DS.Colors.textOnBrand)
 
-                Text(ticket.ai.draftReply)
+                Text(ai.draftReply)
                     .font(.system(size: 12.5, weight: .medium))
                     .italic()
                     .foregroundStyle(DS.Colors.textOnBrand)
@@ -288,9 +303,22 @@ struct MaintenanceDetailView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DS.Spacing.sm) {
-                        ForEach(0..<ticket.photoCount, id: \.self) { index in
-                            TicketPhotoThumb(index: index, paletteIndex: ticket.paletteIndex)
-                                .dsEntrance(index: index)
+                        if ticket.photoData.isEmpty {
+                            ForEach(0..<ticket.photoCount, id: \.self) { index in
+                                TicketPhotoThumb(index: index, paletteIndex: ticket.paletteIndex)
+                                    .dsEntrance(index: index)
+                            }
+                        } else {
+                            ForEach(Array(ticket.photoData.enumerated()), id: \.offset) { index, data in
+                                if let image = UIImage(data: data) {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 92, height: 92)
+                                        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+                                        .accessibilityLabel("Photo \(index + 1)")
+                                }
+                            }
                         }
 
                         // Add photo affordance.
@@ -319,7 +347,7 @@ struct MaintenanceDetailView: View {
                 if let vendor = ticket.vendor {
                     assignedVendorRow(vendor)
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
-                } else if let suggested = viewModel.vendor(id: ticket.ai.suggestedVendorID) {
+                } else if let suggested = ticket.ai.flatMap({ viewModel.vendor(id: $0.suggestedVendorID) }) {
                     VStack(spacing: DS.Spacing.md) {
                         HStack(spacing: DS.Spacing.xs) {
                             Image(systemName: DS.Icons.ai)
@@ -335,6 +363,13 @@ struct MaintenanceDetailView: View {
 
                         // Alternates.
                         ForEach(viewModel.alternateVendors(for: ticket, excluding: suggested.id)) { vendor in
+                            vendorRow(vendor, ticketID: ticket.id, highlighted: false)
+                        }
+                    }
+                } else {
+                    // Not triaged yet: vendors for this trade, or everyone.
+                    VStack(spacing: DS.Spacing.md) {
+                        ForEach(viewModel.candidateVendors(for: ticket)) { vendor in
                             vendorRow(vendor, ticketID: ticket.id, highlighted: false)
                         }
                     }

@@ -20,6 +20,8 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     private let cache: RepositoryCache
     private var overrides: [String: MaintenanceTicket] = [:]
+    /// Requests created this session, newest first, with when they were made.
+    private var created: [(ticket: MaintenanceTicket, at: Date)] = []
 
     init(cache: RepositoryCache = .shared) {
         self.cache = cache
@@ -65,10 +67,61 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     func timeline(forTicketID id: String) async throws -> [TenantEvent] {
         try await SimulatedLatency.wait(.detail)
+        if let entry = created.first(where: { $0.ticket.id == id }) {
+            return [
+                TenantEvent(
+                    icon: TicketStatus.new.icon, kind: .info,
+                    title: "Request received",
+                    detail: "\(entry.ticket.unitName) · \(entry.ticket.propertyName)",
+                    date: FakeDateFormat.relative(entry.at)
+                )
+            ]
+        }
         return Projections.timeline(forTicketID: id)
     }
 
     // MARK: Writes
+
+    func create(_ draft: MaintenanceRequestDraft) async throws -> MaintenanceTicket {
+        try Self.validate(draft)
+        try await SimulatedLatency.wait(.write)
+
+        let ticket = MaintenanceTicket(
+            id: "req-\(UUID().uuidString.lowercased())",
+            title: draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
+            description: draft.details.trimmingCharacters(in: .whitespacesAndNewlines),
+            propertyName: draft.propertyName,
+            unitName: draft.unitID == nil ? "Common area" : draft.unitName,
+            tenantName: draft.tenantName ?? "Staff report",
+            priority: draft.priority,
+            status: .new,
+            category: draft.category,
+            createdAgo: "Just now",
+            photoCount: draft.photos.count,
+            paletteIndex: created.count % 6,
+            ai: nil,
+            vendor: nil,
+            comments: [],
+            access: draft.access,
+            photoData: draft.photos
+        )
+        created.insert((ticket, .now), at: 0)
+        cache.invalidate(prefix: Self.namespace)
+        return ticket
+    }
+
+    /// The same rules the `maintenance_requests` CHECK constraints enforce.
+    private static func validate(_ draft: MaintenanceRequestDraft) throws {
+        guard draft.propertyID != nil else {
+            throw AppError.validation("Choose the property.")
+        }
+        guard draft.title.trimmingCharacters(in: .whitespacesAndNewlines).count >= 3 else {
+            throw AppError.validation("Describe the problem in a few words.")
+        }
+        guard draft.photos.count <= MaintenanceRequestDraft.maxPhotos else {
+            throw AppError.validation("Attach up to \(MaintenanceRequestDraft.maxPhotos) photos.")
+        }
+    }
 
     func move(_ ticketID: String, to status: TicketStatus) async throws {
         try await mutate(ticketID) { $0.status = status }
@@ -119,8 +172,9 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
         let base = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
             Projections.tickets()
         }
-        guard !overrides.isEmpty else { return base }
-        return base.map { overrides[$0.id] ?? $0 }
+        let all = created.map(\.ticket) + base
+        guard !overrides.isEmpty else { return all }
+        return all.map { overrides[$0.id] ?? $0 }
     }
 
     static func apply(_ query: MaintenanceQuery, to source: [MaintenanceTicket]) -> [MaintenanceTicket] {

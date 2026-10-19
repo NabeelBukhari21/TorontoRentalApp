@@ -64,18 +64,20 @@ struct TicketCard: View {
                             .foregroundStyle(DS.Colors.textTertiary)
                         }
 
-                        // AI chip.
-                        HStack(spacing: 3) {
-                            Image(systemName: DS.Icons.ai)
-                                .font(.system(size: 9, weight: .bold))
-                            Text("\(Int(ticket.ai.urgencyScore * 100))")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .monospacedDigit()
+                        // AI chip, once the request has been triaged.
+                        if let ai = ticket.ai {
+                            HStack(spacing: 3) {
+                                Image(systemName: DS.Icons.ai)
+                                    .font(.system(size: 9, weight: .bold))
+                                Text("\(Int(ai.urgencyScore * 100))")
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .monospacedDigit()
+                            }
+                            .foregroundStyle(DS.Colors.brandInk)
+                            .padding(.horizontal, DS.Spacing.sm)
+                            .padding(.vertical, 3)
+                            .background(DS.Colors.brand.opacity(0.12), in: Capsule())
                         }
-                        .foregroundStyle(DS.Colors.brandInk)
-                        .padding(.horizontal, DS.Spacing.sm)
-                        .padding(.vertical, 3)
-                        .background(DS.Colors.brand.opacity(0.12), in: Capsule())
 
                         Spacer(minLength: 0)
 

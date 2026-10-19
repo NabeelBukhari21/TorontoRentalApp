@@ -61,6 +61,9 @@ enum Projections {
         guard let property = backend.properties.first(where: { $0.id.description == id })
         else { return [] }
 
+        let buildings = backend.buildings.filter { $0.propertyID == property.id }
+        let buildingNames = Dictionary(uniqueKeysWithValues: buildings.map { ($0.id, $0.name) })
+
         return backend.units(in: property.id).map { unit in
             let lease = backend.activeLeaseByUnit[unit.id]
             let tenantName = lease
@@ -74,7 +77,8 @@ enum Projections {
                 sqft: unit.squareFeet ?? 700,
                 rent: Int(truncating: unit.marketRent.amount as NSDecimalNumber),
                 tenantName: tenantName,
-                status: unitStatus(unit.status)
+                status: unitStatus(unit.status),
+                building: buildings.count > 1 ? buildingNames[unit.buildingID] : nil
             )
         }
     }

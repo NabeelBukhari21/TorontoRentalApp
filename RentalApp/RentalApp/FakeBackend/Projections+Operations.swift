@@ -51,14 +51,16 @@ extension Projections {
                 createdAgo: FakeDateFormat.relative(request.createdAt),
                 photoCount: request.photos.count,
                 paletteIndex: index % 6,
-                ai: TicketAIAnalysis(
-                    urgencyScore: request.aiAnalysis?.urgencyScore ?? 0.4,
-                    categoryConfidence: request.aiAnalysis?.categoryConfidence ?? 0.8,
-                    summary: request.aiAnalysis?.summary ?? "",
-                    suggestedActions: request.aiAnalysis?.suggestedActions ?? [],
-                    draftReply: request.aiAnalysis?.draftTenantReply ?? "",
-                    suggestedVendorID: request.aiAnalysis?.suggestedVendorID?.description ?? ""
-                ),
+                ai: request.aiAnalysis.map { analysis in
+                    TicketAIAnalysis(
+                        urgencyScore: analysis.urgencyScore,
+                        categoryConfidence: analysis.categoryConfidence,
+                        summary: analysis.summary,
+                        suggestedActions: analysis.suggestedActions,
+                        draftReply: analysis.draftTenantReply ?? "",
+                        suggestedVendorID: analysis.suggestedVendorID?.description ?? ""
+                    )
+                },
                 vendor: vendor.map(projectVendor),
                 comments: comments
             )

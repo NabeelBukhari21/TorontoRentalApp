@@ -296,6 +296,20 @@ final class SyncEngine {
         saveCursor()
     }
 
+    /// Tells this device's subscribers that this device changed `topic`.
+    ///
+    /// The server's echo of a local write is suppressed (see `isEcho`), so
+    /// without this a screen other than the one that wrote — the inbox
+    /// behind a "New request" sheet, say — would never hear about it. Sent
+    /// with no rows: reload subscriptions refetch, and row-patching
+    /// subscriptions have nothing to apply.
+    func publishLocalChange(_ topic: RealtimeTopic) async {
+        if RealtimeTopic.dashboardInputs.contains(topic) {
+            cache.invalidateAll()
+        }
+        await dispatch([], topic: topic)
+    }
+
     private func dispatch(_ changes: [RealtimeChange], topic: RealtimeTopic) async {
         for subscription in subscriptions.values where subscription.topic == topic {
             await subscription.apply(changes)

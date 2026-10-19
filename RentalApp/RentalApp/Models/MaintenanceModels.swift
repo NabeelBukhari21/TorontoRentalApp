@@ -168,6 +168,27 @@ struct TicketAIAnalysis {
     let suggestedVendorID: String
 }
 
+// MARK: - Access
+
+/// When the tenant would like a visit, if they've given permission to enter.
+enum AccessWindow: String, CaseIterable, Identifiable, Sendable {
+    case anytime = "Any time"
+    case mornings = "Mornings"
+    case afternoons = "Afternoons"
+    case evenings = "Evenings"
+
+    var id: String { rawValue }
+}
+
+/// Whether someone can let themselves in to do the work.
+///
+/// Without permission, Ontario's RTA (s. 27) requires 24 hours' written
+/// notice before entering, except in an emergency.
+struct TicketAccess: Sendable, Equatable {
+    var permissionToEnter: Bool
+    var window: AccessWindow
+}
+
 // MARK: - Ticket
 
 struct MaintenanceTicket: Identifiable, Sendable {
@@ -183,10 +204,15 @@ struct MaintenanceTicket: Identifiable, Sendable {
     let createdAgo: String
     let photoCount: Int
     let paletteIndex: Int
-    let ai: TicketAIAnalysis
+    /// Nil until the request has been through AI triage. A request created
+    /// in the app has none until the AI layer runs on it.
+    let ai: TicketAIAnalysis?
     var vendor: Vendor?
     var comments: [TicketComment]
     var replySent = false
+    var access: TicketAccess? = nil
+    /// Photos attached in the app. Seeded requests only carry a count.
+    var photoData: [Data] = []
 }
 
 // MARK: - Mock Data
