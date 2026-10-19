@@ -141,8 +141,12 @@ colourful, for students, on a white background.
   5. Vendor experience — done (`Features/VendorPortal`; accept → book
      visit (Ontario entry-notice check) → mark done; `-PurrpertyStartAt
      vendor`)
-  6. Push, widgets, Live Activities, Siri — next (needs Xcode target and
-     capability steps from the user)
+  6. Siri & Shortcuts — done (`Core/Intents`, in-app App Intents).
+     Push, widgets, Live Activities — waiting on the user's Xcode steps:
+     Push Notifications + Background Modes (remote notifications) + App
+     Groups `group.Seneca.Syed.RentalApp` on RentalApp; a
+     `PurrpertyWidgets` Widget Extension (Live Activity included) with the
+     same App Group, iOS 26.4; `NSSupportsLiveActivities` = YES.
 - Earlier plan, step by step:
   1. Fix the loading screen.
   2. Fix the Home UI.

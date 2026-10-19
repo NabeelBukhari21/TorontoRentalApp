@@ -283,15 +283,13 @@ final class SessionViewModel {
                 transition(to: .unauthenticated)
             }
         case .home:
-            if let restored = await auth.restoreSession() {
+            // The management app: a stored staff session, otherwise the
+            // demo owner (a stored tenant or vendor session would open
+            // their portal instead).
+            if let restored = await auth.restoreSession(), restored.role.isStaff {
                 transition(to: .authenticated(restored))
-            } else if case .session(let demo)? = try? await auth.signIn(
-                email: "owner@rentos.ca",
-                password: MockAccountDirectory.demoPassword
-            ) {
-                transition(to: .authenticated(demo))
             } else {
-                transition(to: .unauthenticated)
+                await signInDemo(email: "owner@rentos.ca")
             }
         case .tenant:
             await signInDemo(email: "tenant@rentos.ca")
