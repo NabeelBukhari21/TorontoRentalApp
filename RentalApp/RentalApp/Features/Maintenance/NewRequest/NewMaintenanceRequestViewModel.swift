@@ -13,6 +13,16 @@
 import SwiftUI
 import Observation
 
+/// A unit the request is fixed to, when the person reporting it lives
+/// there — a tenant reports for their own home and nowhere else.
+struct RequestLocation: Sendable, Equatable {
+    let propertyID: String
+    let propertyName: String
+    let unitID: String
+    let unitName: String
+    let tenantName: String
+}
+
 @MainActor
 @Observable
 final class NewMaintenanceRequestViewModel {
@@ -34,18 +44,31 @@ final class NewMaintenanceRequestViewModel {
     private(set) var isPreparingPhotos = false
     private(set) var isSubmitting = false
     var errorMessage: String?
+    /// Set when a tenant is reporting: the location can't be changed.
+    let fixedLocation: RequestLocation?
 
     init(
         maintenance: MaintenanceRepositoryProtocol,
         properties: PropertyRepositoryProtocol,
         sync: SyncEngine,
-        analytics: AnalyticsService
+        analytics: AnalyticsService,
+        fixedLocation: RequestLocation? = nil
     ) {
         self.maintenance = maintenance
         self.properties = properties
         self.sync = sync
         self.analytics = analytics
+        self.fixedLocation = fixedLocation
+        if let fixedLocation {
+            draft.propertyID = fixedLocation.propertyID
+            draft.propertyName = fixedLocation.propertyName
+            draft.unitID = fixedLocation.unitID
+            draft.unitName = fixedLocation.unitName
+            draft.tenantName = fixedLocation.tenantName
+        }
     }
+
+    var isTenantReporting: Bool { fixedLocation != nil }
 
     // MARK: Derived
 
@@ -57,7 +80,15 @@ final class NewMaintenanceRequestViewModel {
 
     /// Something worth confirming before it's thrown away.
     var hasChanges: Bool {
-        draft != MaintenanceRequestDraft()
+        var untouched = MaintenanceRequestDraft()
+        if let fixedLocation {
+            untouched.propertyID = fixedLocation.propertyID
+            untouched.propertyName = fixedLocation.propertyName
+            untouched.unitID = fixedLocation.unitID
+            untouched.unitName = fixedLocation.unitName
+            untouched.tenantName = fixedLocation.tenantName
+        }
+        return draft != untouched
     }
 
     var remainingPhotoSlots: Int {
@@ -67,7 +98,7 @@ final class NewMaintenanceRequestViewModel {
     // MARK: Loading
 
     func load() async {
-        guard propertyOptions.isEmpty else { return }
+        guard fixedLocation == nil, propertyOptions.isEmpty else { return }
         isLoadingProperties = true
         defer { isLoadingProperties = false }
         do {

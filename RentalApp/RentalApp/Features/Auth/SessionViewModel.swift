@@ -293,6 +293,15 @@ final class SessionViewModel {
             } else {
                 transition(to: .unauthenticated)
             }
+        case .tenant:
+            if case .session(let tenant)? = try? await auth.signIn(
+                email: "tenant@rentos.ca",
+                password: MockAccountDirectory.demoPassword
+            ) {
+                transition(to: .authenticated(tenant))
+            } else {
+                transition(to: .unauthenticated)
+            }
         }
     }
 

@@ -141,6 +141,12 @@ struct RootNavigation: View {
             }
             .transition(.opacity)
 
+        case .authenticated(let account) where account.role == .tenant:
+            // Tenants get their own app. The management shell, its router
+            // and its restored navigation are never built for them.
+            TenantPortalView(session: account, container: container)
+                .transition(.opacity.combined(with: .scale(scale: 1.02)))
+
         case .authenticated:
             MainTabNavigation()
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))

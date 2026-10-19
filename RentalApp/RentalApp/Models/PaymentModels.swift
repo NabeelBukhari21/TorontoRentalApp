@@ -202,6 +202,28 @@ struct TenantLedger: Sendable, Equatable {
     let conversationID: String?
 }
 
+extension TenantLedger {
+
+    /// A plain-text receipt for a payment. Ontario landlords must give one
+    /// free when a tenant asks (RTA s. 109); tenants can share their own.
+    func receipt(for entry: LedgerEntry, issuedBy landlord: String) -> String {
+        guard case .payment(let method) = entry.kind else { return "" }
+        var lines = [
+            "Rent receipt",
+            "",
+            "Received from: \(tenantName)",
+            "Rental unit: \(unitName), \(propertyName)",
+            "Amount: \((-entry.amount).formatted(.currency(code: "CAD")))",
+            "Date received: \(entry.date.formatted(date: .long, time: .omitted))",
+            "Method: \(method.rawValue)"
+        ]
+        if let reference = entry.reference { lines.append("Reference: \(reference)") }
+        if let note = entry.note { lines.append("Note: \(note)") }
+        lines += ["", "Issued by \(landlord)"]
+        return lines.joined(separator: "\n")
+    }
+}
+
 // MARK: - Draft
 
 /// What the record-payment form collects.

@@ -52,14 +52,17 @@ struct StatusLabel: View {
     }
 
     var body: some View {
-        Label {
-            Text(title)
-        } icon: {
+        // An HStack rather than a Label: as the content of a list row's
+        // LabeledContent, a Label is laid out as a row of its own and
+        // leaves a tall empty gap.
+        HStack(spacing: 6) {
             Image(symbol: role.symbol)
                 .foregroundStyle(role.color)
                 .accessibilityHidden(true)
+            Text(title)
         }
         .font(.subheadline)
+        .accessibilityElement(children: .combine)
     }
 }
 

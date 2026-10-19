@@ -27,7 +27,7 @@ colourful, for students, on a white background.
   - `RentalApp (Onboarding)` passes `-PurrpertyStartAt onboarding`, so
     the app opens at onboarding. Also supported: `login` and
     `gettingStarted` (first property → notifications → paywall, using the
-    stored session). This works in
+    stored session), `home` (demo owner) and `tenant` (demo tenant portal). This works in
     DEBUG builds only; see `Core/Diagnostics/DebugLaunchOverride.swift`.
 - Deployment target: iOS 26.4. Default simulator: iPhone 17 Pro. Physical
   device: iPhone 15 Pro Max.
@@ -135,8 +135,9 @@ colourful, for students, on a white background.
      `OntarioTenancyRules`) — done
   3. Rent collection and payments — done (records received rent; no
      money movement; Ontario: no late fees, $20 NSF cap, N4 guidance)
-  4. Tenant portal — next. 5. vendor experience, 6. push/widgets/Live
-     Activities/Siri
+  4. Tenant portal — done (`Features/TenantPortal`; tenants never see
+     the staff shell; `-PurrpertyStartAt tenant` signs in the demo tenant)
+  5. Vendor experience — next. 6. push/widgets/Live Activities/Siri
 - Earlier plan, step by step:
   1. Fix the loading screen.
   2. Fix the Home UI.
@@ -150,6 +151,6 @@ colourful, for students, on a white background.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in
     DEBUG only. Needs real StoreKit products before release.
   - Home still shows the seeded mock portfolio, not the new account's
-    property; the tenant portal isn't built (tenants see the staff UI).
+    property.
   - Supabase isn't configured.
   - The GitHub About description needs updating.

@@ -97,14 +97,17 @@ enum TenantSortField: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-/// Nil priority means "any priority".
+/// Nil means "any" for each field.
 struct MaintenanceFilter: Equatable, Sendable {
     var priority: TicketPriority?
     var status: TicketStatus?
+    /// One unit's requests — what a tenant sees.
+    var unitID: String?
 
-    init(priority: TicketPriority? = nil, status: TicketStatus? = nil) {
+    init(priority: TicketPriority? = nil, status: TicketStatus? = nil, unitID: String? = nil) {
         self.priority = priority
         self.status = status
+        self.unitID = unitID
     }
 
     static let all = MaintenanceFilter()
@@ -357,6 +360,34 @@ protocol TenantRepositoryProtocol: AnyObject {
     func moveTenant(id: String, with draft: UnitTransferDraft) async throws -> LeaseSummary
 }
 
+// MARK: - Tenant Portal
+
+/// Who to pay and who to contact, as the tenant sees it.
+struct LandlordContact: Sendable, Equatable {
+    let name: String
+    let email: String
+    let phone: String?
+    /// Where Interac e-Transfers go.
+    let eTransferEmail: String
+}
+
+/// The tenant record behind a signed-in tenant.
+struct PortalAccount: Sendable, Equatable {
+    let tenantID: String
+    let tenantName: String
+    let conversationID: String?
+    let landlord: LandlordContact
+}
+
+/// Links a tenant's sign-in to their tenant record. On the server this is
+/// `tenants.portal_user_id = auth.uid()`, enforced by RLS: a tenant can
+/// only ever read their own lease, ledger, requests and thread.
+@MainActor
+protocol TenantPortalRepositoryProtocol: AnyObject {
+    /// Nil when the landlord hasn't linked this sign-in to a tenancy yet.
+    func account(for session: AuthSession) async throws -> PortalAccount?
+}
+
 // MARK: - Payments
 
 /// Rent owed and received. Records payments a landlord has received;
@@ -442,7 +473,14 @@ protocol MessageRepositoryProtocol: AnyObject {
     var typingIn: Set<String> { get }
 
     func markRead(_ conversationID: String) async throws
-    func send(_ text: String, attachment: ChatAttachment?, in conversationID: String) async throws
+    func send(_ text: String, attachment: ChatAttachment?, in conversationID: String, from sender: MessageSender) async throws
+}
+
+extension MessageRepositoryProtocol {
+    /// Sends as staff — the management app's default.
+    func send(_ text: String, attachment: ChatAttachment?, in conversationID: String) async throws {
+        try await send(text, attachment: attachment, in: conversationID, from: .staff)
+    }
 }
 
 // MARK: - Documents

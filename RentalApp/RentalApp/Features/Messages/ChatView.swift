@@ -9,23 +9,53 @@
 
 import SwiftUI
 
+/// Who the thread is shown to.
+enum ChatPerspective: Equatable {
+    /// Staff in the management app: the header shows the tenant or vendor.
+    case staff
+    /// A tenant in the portal: the header shows their landlord.
+    case tenant(landlordName: String, context: String)
+}
+
 struct ChatView: View {
 
     let conversationID: String
     let isEmbedded: Bool
+    let perspective: ChatPerspective
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.container) private var container
     @State private var viewModel: ChatViewModel
     @FocusState private var composerFocused: Bool
 
-    init(conversationID: String, isEmbedded: Bool = false, container: AppContainer = .shared) {
+    init(
+        conversationID: String,
+        isEmbedded: Bool = false,
+        perspective: ChatPerspective = .staff,
+        container: AppContainer = .shared
+    ) {
         self.conversationID = conversationID
         self.isEmbedded = isEmbedded
+        self.perspective = perspective
+        let viewer: MessageSender = if case .tenant = perspective { .counterpart } else { .staff }
         _viewModel = State(initialValue: ChatViewModel(
             conversationID: conversationID,
-            repository: container.messages
+            repository: container.messages,
+            viewer: viewer
         ))
+    }
+
+    private var isTenant: Bool {
+        if case .tenant = perspective { true } else { false }
+    }
+
+    /// The other person in the thread, as this viewer sees it.
+    private func otherName(_ conversation: Conversation) -> String {
+        if case .tenant(let landlordName, _) = perspective { landlordName } else { conversation.name }
+    }
+
+    private func otherContext(_ conversation: Conversation) -> String {
+        if case .tenant(_, let context) = perspective { context } else { conversation.context }
     }
 
     private var conversation: Conversation? { viewModel.conversation }
@@ -75,7 +105,8 @@ struct ChatView: View {
 
     private func chatHeader(_ conversation: Conversation) -> some View {
         HStack(spacing: DS.Spacing.md) {
-            if !isEmbedded {
+            // A tenant's thread is a tab root: there's nothing to go back to.
+            if !isEmbedded && !isTenant {
                 DSIconButton(icon: "chevron.left", diameter: 36) {
                     dismiss()
                 }
@@ -83,13 +114,13 @@ struct ChatView: View {
             }
 
             DSAvatar(
-                name: conversation.name,
+                name: otherName(conversation),
                 size: .medium,
-                status: conversation.isOnline ? .success : nil
+                status: !isTenant && conversation.isOnline ? .success : nil
             )
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(conversation.name)
+                Text(otherName(conversation))
                     .font(DS.Typography.headline)
                     .foregroundStyle(DS.Colors.textPrimary)
                     .lineLimit(1)
@@ -106,7 +137,7 @@ struct ChatView: View {
                         }
                         .foregroundStyle(DS.Colors.brand)
                     } else {
-                        Text(conversation.isOnline ? "Online · \(conversation.context)" : conversation.context)
+                        Text(!isTenant && conversation.isOnline ? "Online · \(conversation.context)" : otherContext(conversation))
                             .foregroundStyle(DS.Colors.textTertiary)
                     }
                 }
@@ -116,8 +147,10 @@ struct ChatView: View {
 
             Spacer()
 
-            DSIconButton(icon: "phone.fill", diameter: 36) {}
-            DSIconButton(icon: DS.Icons.more, diameter: 36) {}
+            if !isTenant {
+                DSIconButton(icon: "phone.fill", diameter: 36) {}
+                DSIconButton(icon: DS.Icons.more, diameter: 36) {}
+            }
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)
@@ -139,14 +172,14 @@ struct ChatView: View {
                                 ChatDateSeparator(text: separator)
                             }
 
-                            ChatBubble(message: message, senderName: conversation.name)
+                            ChatBubble(message: message, senderName: otherName(conversation))
                                 .dsEntrance(index: min(index, 8))
                         }
                         .id(message.id)
                     }
 
                     if isTyping {
-                        TypingIndicatorBubble(senderName: conversation.name)
+                        TypingIndicatorBubble(senderName: otherName(conversation))
                             .id("typing-indicator")
                     }
 

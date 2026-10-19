@@ -22,12 +22,13 @@ struct NewMaintenanceRequestView: View {
 
     private enum Field { case title, details }
 
-    init(container: AppContainer) {
+    init(container: AppContainer, fixedLocation: RequestLocation? = nil) {
         _viewModel = State(initialValue: NewMaintenanceRequestViewModel(
             maintenance: container.maintenance,
             properties: container.properties,
             sync: container.sync,
-            analytics: container.analytics
+            analytics: container.analytics,
+            fixedLocation: fixedLocation
         ))
     }
 
@@ -86,7 +87,18 @@ struct NewMaintenanceRequestView: View {
 
     // MARK: Where
 
+    @ViewBuilder
     private var locationSection: some View {
+        if let fixed = viewModel.fixedLocation {
+            Section("Where") {
+                LabeledContent("Home", value: "\(fixed.unitName), \(fixed.propertyName)")
+            }
+        } else {
+            pickerLocationSection
+        }
+    }
+
+    private var pickerLocationSection: some View {
         Section {
             Picker("Property", selection: propertySelection) {
                 if viewModel.draft.propertyID == nil {
@@ -165,11 +177,14 @@ struct NewMaintenanceRequestView: View {
     }
 
     private var priorityFooter: String {
+        if viewModel.isTenantReporting, viewModel.draft.priority == .urgent {
+            return "No heat, no water, an active leak or anything unsafe. If anyone is in danger, call 911 first."
+        }
         switch viewModel.draft.priority {
-        case .urgent: "No heat, no water, an active leak or anything unsafe."
-        case .high:   "Needs fixing within a day or two."
-        case .medium: "Needs fixing this week."
-        case .low:    "Whenever it's convenient."
+        case .urgent: return "No heat, no water, an active leak or anything unsafe."
+        case .high:   return "Needs fixing within a day or two."
+        case .medium: return "Needs fixing this week."
+        case .low:    return "Whenever it's convenient."
         }
     }
 
@@ -221,7 +236,8 @@ struct NewMaintenanceRequestView: View {
         @Bindable var viewModel = viewModel
 
         return Section {
-            Toggle("Tenant allows entry", isOn: $viewModel.draft.access.permissionToEnter.animation())
+            Toggle(viewModel.isTenantReporting ? "OK to enter if I'm not home" : "Tenant allows entry",
+                   isOn: $viewModel.draft.access.permissionToEnter.animation())
             if viewModel.draft.access.permissionToEnter {
                 Picker("Best time", selection: $viewModel.draft.access.window) {
                     ForEach(AccessWindow.allCases) { window in
@@ -232,9 +248,16 @@ struct NewMaintenanceRequestView: View {
         } header: {
             Text("Access")
         } footer: {
-            Text(viewModel.draft.access.permissionToEnter
-                 ? "The vendor can let themselves in during this time."
-                 : "Without permission, give 24 hours' written notice before entering, unless it's an emergency.")
+            Text(accessFooter)
+        }
+    }
+
+    private var accessFooter: String {
+        switch (viewModel.isTenantReporting, viewModel.draft.access.permissionToEnter) {
+        case (true, true):  "Someone may come in during this time to do the work."
+        case (true, false): "Your landlord will give you 24 hours' written notice before anyone enters, unless it's an emergency."
+        case (false, true): "The vendor can let themselves in during this time."
+        case (false, false): "Without permission, give 24 hours' written notice before entering, unless it's an emergency."
         }
     }
 

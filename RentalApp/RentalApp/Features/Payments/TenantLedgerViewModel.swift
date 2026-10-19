@@ -83,22 +83,7 @@ final class TenantLedgerViewModel {
         }
     }
 
-    /// A plain-text receipt. Ontario landlords must give one free when a
-    /// tenant asks (RTA s. 109).
     func receipt(for entry: LedgerEntry) -> String {
-        guard let ledger, case .payment(let method) = entry.kind else { return "" }
-        var lines = [
-            "Rent receipt",
-            "",
-            "Received from: \(ledger.tenantName)",
-            "Rental unit: \(ledger.unitName), \(ledger.propertyName)",
-            "Amount: \((-entry.amount).formatted(.currency(code: "CAD")))",
-            "Date received: \(entry.date.formatted(date: .long, time: .omitted))",
-            "Method: \(method.rawValue)"
-        ]
-        if let reference = entry.reference { lines.append("Reference: \(reference)") }
-        if let note = entry.note { lines.append("Note: \(note)") }
-        lines += ["", "Issued by \(landlordName)"]
-        return lines.joined(separator: "\n")
+        ledger?.receipt(for: entry, issuedBy: landlordName) ?? ""
     }
 }

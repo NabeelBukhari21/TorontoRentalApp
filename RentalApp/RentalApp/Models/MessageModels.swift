@@ -47,10 +47,19 @@ enum MessageStatus {
     case read
 }
 
+/// Who wrote a message: the organization's staff, or the person on the
+/// other side of the thread.
+enum MessageSender: Sendable, Equatable {
+    case staff
+    case counterpart
+}
+
 struct ChatMessage: Identifiable {
     let id = UUID()
     var text: String
-    let isMine: Bool
+    /// Sent by staff. Threads are stored from the organization's side;
+    /// a tenant's view flips this so their own messages are "mine".
+    var isMine: Bool
     let time: String
     var status: MessageStatus = .read
     var attachment: ChatAttachment? = nil

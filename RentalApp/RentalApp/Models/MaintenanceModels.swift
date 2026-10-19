@@ -213,6 +213,9 @@ struct MaintenanceTicket: Identifiable, Sendable {
     var access: TicketAccess? = nil
     /// Photos attached in the app. Seeded requests only carry a count.
     var photoData: [Data] = []
+    /// The unit, when it's not the common area. Lets a tenant see every
+    /// request for their home, whoever reported it.
+    var unitID: String? = nil
 }
 
 // MARK: - Mock Data

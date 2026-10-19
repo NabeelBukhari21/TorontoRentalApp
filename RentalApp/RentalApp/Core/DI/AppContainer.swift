@@ -24,6 +24,7 @@ final class AppContainer {
     let properties: PropertyRepositoryProtocol
     let tenants: TenantRepositoryProtocol
     let payments: PaymentRepositoryProtocol
+    let tenantPortal: TenantPortalRepositoryProtocol
     let maintenance: MaintenanceRepositoryProtocol
     let messages: MessageRepositoryProtocol
     let documents: DocumentRepositoryProtocol
@@ -115,6 +116,7 @@ final class AppContainer {
         properties: PropertyRepositoryProtocol,
         tenants: TenantRepositoryProtocol,
         payments: PaymentRepositoryProtocol,
+        tenantPortal: TenantPortalRepositoryProtocol,
         maintenance: MaintenanceRepositoryProtocol,
         messages: MessageRepositoryProtocol,
         documents: DocumentRepositoryProtocol,
@@ -153,6 +155,7 @@ final class AppContainer {
         self.properties = properties
         self.tenants = tenants
         self.payments = payments
+        self.tenantPortal = tenantPortal
         self.maintenance = maintenance
         self.messages = messages
         self.documents = documents
@@ -371,6 +374,7 @@ final class AppContainer {
             // ── Still in-memory; each is one file away ──────────────
             tenants: InMemoryTenantRepository(),
             payments: payments,
+            tenantPortal: InMemoryTenantPortalRepository(),
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
@@ -432,6 +436,7 @@ final class AppContainer {
             properties: InMemoryPropertyRepository(),
             tenants: InMemoryTenantRepository(),
             payments: payments,
+            tenantPortal: InMemoryTenantPortalRepository(),
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
@@ -567,6 +572,7 @@ final class AppContainer {
             properties: InMemoryPropertyRepository(),
             tenants: InMemoryTenantRepository(),
             payments: payments,
+            tenantPortal: InMemoryTenantPortalRepository(),
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),

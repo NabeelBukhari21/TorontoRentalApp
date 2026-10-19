@@ -62,7 +62,8 @@ extension Projections {
                     )
                 },
                 vendor: vendor.map(projectVendor),
-                comments: comments
+                comments: comments,
+                unitID: request.unitID?.description
             )
         }
     }

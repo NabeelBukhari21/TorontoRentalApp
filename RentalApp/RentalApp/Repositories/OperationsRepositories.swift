@@ -103,7 +103,8 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
             vendor: nil,
             comments: [],
             access: draft.access,
-            photoData: draft.photos
+            photoData: draft.photos,
+            unitID: draft.unitID
         )
         created.insert((ticket, .now), at: 0)
         cache.invalidate(prefix: Self.namespace)
@@ -193,6 +194,9 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
         if let status = query.filter.status {
             result = result.filter { $0.status == status }
         }
+        if let unitID = query.filter.unitID {
+            result = result.filter { $0.unitID == unitID }
+        }
 
         let ascending = query.sort.direction.isAscending
         switch query.sort.field {
@@ -203,8 +207,9 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
                     : $0.priority < $1.priority
             }
         case .createdAt:
-            // Source order is already newest-first.
-            if !ascending { result.reverse() }
+            // Source order is already newest-first, so only ascending
+            // (oldest first) needs reversing.
+            if ascending { result.reverse() }
         case .property:
             result.sort { ascending ? $0.propertyName < $1.propertyName : $0.propertyName > $1.propertyName }
         }
@@ -266,12 +271,12 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
         cache.invalidate(prefix: Self.namespace)
     }
 
-    func send(_ text: String, attachment: ChatAttachment?, in conversationID: String) async throws {
+    func send(_ text: String, attachment: ChatAttachment?, in conversationID: String, from sender: MessageSender) async throws {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty || attachment != nil else { return }
 
         let message = ChatMessage(
-            text: trimmed, isMine: true, time: "Now",
+            text: trimmed, isMine: sender == .staff, time: "Now",
             status: .sending, attachment: attachment
         )
         // Sending into a thread nobody has opened yet (a rent reminder
@@ -281,14 +286,18 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
         }
         threads[conversationID, default: []].append(message)
 
-        Task { await simulateDelivery(of: message.id, in: conversationID) }
+        Task { await simulateDelivery(of: message.id, in: conversationID, from: sender) }
     }
 
     // MARK: Realtime Simulation
 
-    private func simulateDelivery(of messageID: UUID, in conversationID: String) async {
+    private func simulateDelivery(of messageID: UUID, in conversationID: String, from sender: MessageSender) async {
         try? await Task.sleep(for: .milliseconds(500))
         setStatus(.sent, for: messageID, in: conversationID)
+
+        // Only the tenant/vendor side is simulated. A message from a tenant
+        // waits for a real person at the organization to answer it.
+        guard sender == .staff else { return }
 
         try? await Task.sleep(for: .milliseconds(700))
         setStatus(.read, for: messageID, in: conversationID)

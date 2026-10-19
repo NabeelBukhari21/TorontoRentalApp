@@ -105,18 +105,31 @@ final class ChatViewModel {
 
     private let repository: MessageRepositoryProtocol
     let conversationID: String
+    /// Who is reading and writing: staff in the management app, the
+    /// tenant in the portal.
+    let viewer: MessageSender
 
     private(set) var state: LoadState<[ChatMessage]> = .idle
     private(set) var conversation: Conversation?
 
     var draft = ""
 
-    init(conversationID: String, repository: MessageRepositoryProtocol) {
+    init(conversationID: String, repository: MessageRepositoryProtocol, viewer: MessageSender = .staff) {
         self.conversationID = conversationID
         self.repository = repository
+        self.viewer = viewer
     }
 
-    var messages: [ChatMessage] { state.value ?? [] }
+    /// The thread from the viewer's side: their own messages are "mine".
+    var messages: [ChatMessage] {
+        let thread = state.value ?? []
+        guard viewer == .counterpart else { return thread }
+        return thread.map { message in
+            var flipped = message
+            flipped.isMine.toggle()
+            return flipped
+        }
+    }
     var isLoading: Bool { state.isLoading }
     var error: AppError? { state.error }
     var isTyping: Bool { repository.typingIn.contains(conversationID) }
@@ -129,7 +142,11 @@ final class ChatViewModel {
         do {
             conversation = try await repository.conversation(id: conversationID)
             state = .loaded(try await repository.messages(forConversationID: conversationID, forceRefresh: false))
-            try await repository.markRead(conversationID)
+            // Read state is the organization's inbox; a tenant opening the
+            // thread mustn't clear what staff haven't seen.
+            if viewer == .staff {
+                try await repository.markRead(conversationID)
+            }
         } catch {
             state = .failed(error as? AppError ?? .unknown)
         }
@@ -149,12 +166,12 @@ final class ChatViewModel {
     func send() async {
         let text = draft
         draft = ""
-        try? await repository.send(text, attachment: nil, in: conversationID)
+        try? await repository.send(text, attachment: nil, in: conversationID, from: viewer)
         await reloadThread()
     }
 
     func sendAttachment(_ attachment: ChatAttachment) async {
-        try? await repository.send("", attachment: attachment, in: conversationID)
+        try? await repository.send("", attachment: attachment, in: conversationID, from: viewer)
         await reloadThread()
     }
 
