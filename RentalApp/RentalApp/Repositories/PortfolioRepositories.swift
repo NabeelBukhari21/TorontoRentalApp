@@ -688,9 +688,13 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
 final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
 
     private let cache: RepositoryCache
+    /// Rent collected comes from the same source as the rent roll, so the
+    /// two never disagree.
+    private let payments: PaymentRepositoryProtocol
     private var completedTaskIDs: Set<UUID> = []
 
-    init(cache: RepositoryCache = .shared) {
+    init(payments: PaymentRepositoryProtocol, cache: RepositoryCache = .shared) {
+        self.payments = payments
         self.cache = cache
     }
 
@@ -711,10 +715,22 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             return copy
         }
 
+        let roll = try await payments.rentRoll(for: .now, forceRefresh: forceRefresh)
+        let stats = cached.stats.map { stat in
+            guard stat.title == Self.rentCollectedTitle else { return stat }
+            return DashboardStat(
+                title: stat.title,
+                value: roll.collectionRate.formatted(.percent.precision(.fractionLength(0))),
+                icon: stat.icon, gradient: stat.gradient,
+                trend: roll.owingCount == 0 ? "All paid" : "\(roll.owingCount) owing",
+                trendKind: roll.owingCount == 0 ? .success : .warning
+            )
+        }
+
         return DashboardSnapshot(
             portfolio: cached.portfolio,
             revenue: cached.revenue,
-            stats: cached.stats,
+            stats: stats,
             insights: cached.insights,
             maintenanceCounts: cached.maintenanceCounts,
             activity: cached.activity,
@@ -729,6 +745,8 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             completedTaskIDs.insert(id)
         }
     }
+
+    private static let rentCollectedTitle = "Rent Collected"
 
     private static func build() -> DashboardSnapshot {
         let summary = Projections.portfolioSummary()
@@ -745,7 +763,8 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
                           icon: DS.Icons.maintenance, gradient: DS.Gradients.warm,
                           trend: urgent > 0 ? "\(urgent) urgent" : "None urgent",
                           trendKind: urgent > 0 ? .danger : .success),
-            DashboardStat(title: "Rent Collected", value: "96%",
+            // Filled in from the rent roll on every read.
+            DashboardStat(title: rentCollectedTitle, value: "—",
                           icon: DS.Icons.payment, gradient: DS.Gradients.success,
                           trend: "This month", trendKind: .info),
             DashboardStat(title: "Active Tenants", value: "\(tenantCount)",

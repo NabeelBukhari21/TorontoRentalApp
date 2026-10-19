@@ -41,6 +41,11 @@ enum DeepLink {
         url(host: MessagesNavigation.deepLinkHost, path: [id])
     }
 
+    /// rentos://rent, or rentos://rent/<tenant id> for one tenant's payments
+    static func rent(tenantID: String? = nil) -> URL? {
+        url(host: PaymentsNavigation.deepLinkHost, path: tenantID.map { [$0] } ?? [])
+    }
+
     /// rentos://documents
     static var documents: URL? {
         url(host: DocumentNavigation.deepLinkHost)

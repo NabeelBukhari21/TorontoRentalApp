@@ -203,6 +203,8 @@ final class AppRouter {
             return (.dashboard, [.assistant])
         case "search":
             return (.search, [])
+        case PaymentsNavigation.deepLinkHost:
+            return PaymentsNavigation.resolve(path)
         case PropertyNavigation.deepLinkHost:
             return PropertyNavigation.resolve(path)
         case TenantNavigation.deepLinkHost:

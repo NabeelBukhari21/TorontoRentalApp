@@ -44,6 +44,8 @@ struct RouteDestinationView: View {
             PropertyNavigation.destination(for: route)
         case .tenants, .tenantDetail:
             TenantNavigation.destination(for: route)
+        case .rentCollection, .tenantLedger:
+            PaymentsNavigation.destination(for: route)
         case .maintenanceDetail:
             MaintenanceNavigation.destination(for: route)
         case .conversation:

@@ -133,8 +133,9 @@ colourful, for students, on a white background.
   1. New maintenance request form — done
   2. Lease renewal and move to another unit (Ontario rules in
      `OntarioTenancyRules`) — done
-  3. Rent collection and payments — next
-  4. Tenant portal, 5. vendor experience, 6. push/widgets/Live
+  3. Rent collection and payments — done (records received rent; no
+     money movement; Ontario: no late fees, $20 NSF cap, N4 guidance)
+  4. Tenant portal — next. 5. vendor experience, 6. push/widgets/Live
      Activities/Siri
 - Earlier plan, step by step:
   1. Fix the loading screen.

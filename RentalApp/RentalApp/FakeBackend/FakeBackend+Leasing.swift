@@ -233,17 +233,23 @@ extension FakeBackend {
                 )
             )
 
-            // Late fee follows an unpaid charge, as it would in practice.
+            // A returned cheque or debit can carry an NSF charge — capped
+            // at $20 in Ontario. A payment that simply never arrived can't:
+            // Ontario doesn't allow late fees on rent. (The chance and id are drawn
+            // either way so the rest of the seed stays the same.)
+            let isReturned = failureReason != nil && failureReason != "Payment not received"
             if status == .failed && rng.chance(0.5) {
+                let feeID = Domain.Identifier<Domain.Payment>(rng.uuid())
+                guard isReturned else { continue }
                 result.append(
                     Domain.Payment(
-                        id: .init(rng.uuid()),
+                        id: feeID,
                         organizationID: orgID,
                         leaseID: lease.id,
                         tenantID: tenantID,
                         propertyID: propertyID,
-                        amount: .init(75),
-                        kind: .lateFee,
+                        amount: .init(OntarioTenancyRules.maximumNSFCharge),
+                        kind: .nsfFee,
                         method: method,
                         status: .scheduled,
                         dueOn: calendar.date(byAdding: .day, value: 5, to: dueOn) ?? dueOn,

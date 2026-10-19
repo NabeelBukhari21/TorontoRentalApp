@@ -144,6 +144,12 @@ struct DashboardView: View {
                 await viewModel.refresh()
             }
         }
+        .liveUpdates(container.sync) {
+            // Leases and the payments against them: rent collected.
+            LiveList.reloadSubscription(topic: .leases) {
+                await viewModel.refresh()
+            }
+        }
         .navigationTitle("Home")
         .navigationSubtitle(viewModel.greeting)
         .toolbar {
@@ -174,6 +180,10 @@ struct DashboardView: View {
                     }
                     Button("New message", systemImage: AppSymbol.messages.rawValue) {
                         router.select(.messages)
+                    }
+                    Divider()
+                    Button("Rent", systemImage: AppSymbol.rent.rawValue) {
+                        router.push(.rentCollection)
                     }
                 }
             }
@@ -208,7 +218,7 @@ struct DashboardView: View {
                 title: "Collect",
                 gradient: DS.Gradients.success,
                 iconForeground: DS.Colors.textOnAccent
-            ) { router.present(.quickActions) }
+            ) { router.push(.rentCollection) }
         ]
     }
 }

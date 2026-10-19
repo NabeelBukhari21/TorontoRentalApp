@@ -48,6 +48,11 @@ the same device (inbox, Home) refresh after a sheet saves.
   - summary (expected, collected, outstanding)
 - A "Rent" screen opens from Home's Collect action, and from the toolbar
   menu.
+- Also: rent still owing from earlier months on the roll; tenant
+  ledger with running balance and shareable receipts (RTA s. 109); share
+  sheet for reminders when there's no message thread; Home's "Rent
+  Collected" reads the same roll. Late fees replaced with the Ontario
+  NSF charge (max $20) — see `20261019000100_nsf_fee.sql`.
 - Recording a payment is manual reconciliation. Real money movement needs a
   payment processor and a server, which is out of scope. The UI never claims
   money was moved.

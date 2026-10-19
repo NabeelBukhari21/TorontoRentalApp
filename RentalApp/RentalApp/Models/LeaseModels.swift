@@ -76,6 +76,14 @@ enum OntarioTenancyRules {
         2026: 2.1
     ]
 
+    /// The most a landlord can charge for a returned cheque or debit, on top
+    /// of the bank's own charges.
+    static let maximumNSFCharge: Decimal = 20
+
+    /// Days between serving Form N4 (unpaid rent) and the earliest
+    /// termination date it can give, for a monthly tenancy.
+    static let n4NoticeDays = 14
+
     /// Written notice (Form N1) needed before a rent increase.
     static let increaseNoticeDays = 90
 

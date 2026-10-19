@@ -68,6 +68,33 @@ enum TenantNavigation {
     }
 }
 
+// MARK: - Payments Navigation
+
+enum PaymentsNavigation {
+
+    static let deepLinkHost = "rent"
+
+    @MainActor
+    @ViewBuilder
+    static func destination(for route: AppRoute) -> some View {
+        switch route {
+        case .rentCollection:
+            RentCollectionRoot()
+        case .tenantLedger(let tenantID):
+            TenantLedgerRoot(tenantID: tenantID)
+        default:
+            EmptyView()
+        }
+    }
+
+    /// rent → this month's rent roll · rent/<tenant id> → their payments
+    static func resolve(_ path: [String]) -> (tab: AppTab, stack: [AppRoute])? {
+        path.isEmpty
+            ? (.dashboard, [.rentCollection])
+            : (.dashboard, [.rentCollection, .tenantLedger(tenantID: path[0])])
+    }
+}
+
 // MARK: - Maintenance Navigation
 
 enum MaintenanceNavigation {

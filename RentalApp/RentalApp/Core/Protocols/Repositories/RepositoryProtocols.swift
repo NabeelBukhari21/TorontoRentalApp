@@ -357,6 +357,24 @@ protocol TenantRepositoryProtocol: AnyObject {
     func moveTenant(id: String, with draft: UnitTransferDraft) async throws -> LeaseSummary
 }
 
+// MARK: - Payments
+
+/// Rent owed and received. Records payments a landlord has received;
+/// moving money needs a payment processor and a server, so nothing here
+/// charges anyone.
+@MainActor
+protocol PaymentRepositoryProtocol: AnyObject {
+    /// Every current lease's rent for the month containing `month`.
+    func rentRoll(for month: Date, forceRefresh: Bool) async throws -> RentRoll
+    func ledger(forTenantID id: String) async throws -> TenantLedger
+
+    /// Records a payment received against one month's rent.
+    @discardableResult
+    func record(_ draft: PaymentDraft) async throws -> LedgerEntry
+    /// Notes that a reminder went out for a month, so the roll can say so.
+    func noteReminder(forTenantID id: String, month: Date) async throws
+}
+
 // MARK: - Maintenance
 
 /// Counts for the maintenance stats strip.

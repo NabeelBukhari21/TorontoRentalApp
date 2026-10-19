@@ -103,7 +103,11 @@ final class DashboardViewModel {
             state = .loaded(try await dashboard.snapshot(forceRefresh: forceRefresh))
             unreadNotifications = (try? await notifications.unreadCount()) ?? 0
         } catch is CancellationError {
-            return
+            // The view went away mid-load (e.g. the app reopened onto a
+            // screen pushed over Home). Without a value to show, go back
+            // to idle so the next appearance loads again instead of
+            // showing the skeleton forever.
+            if case .loading = state { state = .idle }
         } catch {
             state = .failed(error as? AppError ?? .unknown)
         }

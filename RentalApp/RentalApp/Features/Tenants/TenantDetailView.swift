@@ -115,6 +115,10 @@ struct TenantDetailView: View {
                     Menu("Lease", systemImage: AppSymbol.lease.rawValue) {
                         Button("Renew Lease", systemImage: "arrow.clockwise") { leaseSheet = .renew }
                         Button("Move to Another Unit", systemImage: "arrow.left.arrow.right") { leaseSheet = .move }
+                        Divider()
+                        Button("Payments", systemImage: AppSymbol.rent.rawValue) {
+                            router.push(.tenantLedger(tenantID: tenantID))
+                        }
                     }
                 }
             }

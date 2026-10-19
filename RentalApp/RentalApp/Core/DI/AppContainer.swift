@@ -23,6 +23,7 @@ final class AppContainer {
 
     let properties: PropertyRepositoryProtocol
     let tenants: TenantRepositoryProtocol
+    let payments: PaymentRepositoryProtocol
     let maintenance: MaintenanceRepositoryProtocol
     let messages: MessageRepositoryProtocol
     let documents: DocumentRepositoryProtocol
@@ -113,6 +114,7 @@ final class AppContainer {
     init(
         properties: PropertyRepositoryProtocol,
         tenants: TenantRepositoryProtocol,
+        payments: PaymentRepositoryProtocol,
         maintenance: MaintenanceRepositoryProtocol,
         messages: MessageRepositoryProtocol,
         documents: DocumentRepositoryProtocol,
@@ -150,6 +152,7 @@ final class AppContainer {
     ) {
         self.properties = properties
         self.tenants = tenants
+        self.payments = payments
         self.maintenance = maintenance
         self.messages = messages
         self.documents = documents
@@ -360,17 +363,19 @@ final class AppContainer {
         )
         pushBox.attach(PushService(sink: coordinator))
 
+        let payments = InMemoryPaymentRepository()
         return AppContainer(
             // ── Ported to Supabase ──────────────────────────────────
             properties: SupabasePropertyRepository(client: client, offline: offlineGate),
 
             // ── Still in-memory; each is one file away ──────────────
             tenants: InMemoryTenantRepository(),
+            payments: payments,
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationRepo,
-            dashboard: InMemoryDashboardRepository(),
+            dashboard: InMemoryDashboardRepository(payments: payments),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),
@@ -422,14 +427,16 @@ final class AppContainer {
             connectivity: inertSync.connectivity, outbox: inertSync.outbox
         )
 
+        let payments = InMemoryPaymentRepository()
         return AppContainer(
             properties: InMemoryPropertyRepository(),
             tenants: InMemoryTenantRepository(),
+            payments: payments,
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationsRepo,
-            dashboard: InMemoryDashboardRepository(),
+            dashboard: InMemoryDashboardRepository(payments: payments),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),
@@ -555,14 +562,16 @@ final class AppContainer {
             connectivity: inertSync.connectivity, outbox: inertSync.outbox
         )
 
+        let payments = InMemoryPaymentRepository()
         return AppContainer(
             properties: InMemoryPropertyRepository(),
             tenants: InMemoryTenantRepository(),
+            payments: payments,
             maintenance: InMemoryMaintenanceRepository(),
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationsRepo,
-            dashboard: InMemoryDashboardRepository(),
+            dashboard: InMemoryDashboardRepository(payments: payments),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),

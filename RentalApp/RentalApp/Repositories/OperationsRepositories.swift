@@ -274,6 +274,11 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
             text: trimmed, isMine: true, time: "Now",
             status: .sending, attachment: attachment
         )
+        // Sending into a thread nobody has opened yet (a rent reminder
+        // from the rent roll) must keep its history, not replace it.
+        if threads[conversationID] == nil {
+            threads[conversationID] = Projections.messages(forConversationID: conversationID)
+        }
         threads[conversationID, default: []].append(message)
 
         Task { await simulateDelivery(of: message.id, in: conversationID) }

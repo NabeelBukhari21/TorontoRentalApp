@@ -70,7 +70,7 @@ extension Projections {
     }
 
     /// "Unit 101 · Tower A" where the property has several buildings.
-    private static func label(for unit: Domain.Unit) -> String {
+    static func label(for unit: Domain.Unit) -> String {
         let buildings = backend.buildings.filter { $0.propertyID == unit.propertyID }
         guard buildings.count > 1,
               let building = buildings.first(where: { $0.id == unit.buildingID }) else { return unit.label }

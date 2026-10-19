@@ -367,7 +367,12 @@ extension Domain {
         enum Kind: String, FallbackDecodable, CaseIterable {
             case rent
             case deposit
+            /// Kept so old rows still decode. Ontario landlords can't charge
+            /// late fees on rent (RTA s. 134); never create one.
             case lateFee = "late_fee"
+            /// Administration charge for a returned cheque or debit. Ontario
+            /// caps it at $20 plus the bank's own charges.
+            case nsfFee = "nsf_fee"
             case utilities
             case parking
             case repairChargeback = "repair_chargeback"

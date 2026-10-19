@@ -62,6 +62,8 @@ enum AppRoute: Hashable, Codable {
     case unitDetail(unitID: String)
     case tenants
     case tenantDetail(tenantID: String)
+    case rentCollection
+    case tenantLedger(tenantID: String)
     case maintenanceDetail(requestID: String)
     case conversation(conversationID: String)
     case documents
@@ -78,6 +80,8 @@ enum AppRoute: Hashable, Codable {
         case .unitDetail: "Unit"
         case .tenants: "Tenants"
         case .tenantDetail: "Tenant"
+        case .rentCollection: "Rent"
+        case .tenantLedger: "Payments"
         case .maintenanceDetail: "Request"
         case .conversation: "Conversation"
         case .documents: "Documents"
@@ -95,6 +99,7 @@ enum AppRoute: Hashable, Codable {
         case .units, .unitDetail: DS.Icons.unit
         case .tenants: DS.Icons.tenants
         case .tenantDetail: DS.Icons.tenant
+        case .rentCollection, .tenantLedger: AppSymbol.rent.rawValue
         case .maintenanceDetail: DS.Icons.maintenance
         case .conversation: DS.Icons.messages
         case .documents: DS.Icons.documents
