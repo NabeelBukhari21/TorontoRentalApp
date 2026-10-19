@@ -27,8 +27,9 @@ the same device (inbox, Home) refresh after a sheet saves.
 ## 2. Lease renewal and move
 - `LeaseRenewalDraft`: new end date, new rent and term kind (fixed or
   month-to-month).
-  - Shows the Ontario rent-increase guideline (2.5% for 2025 and 2026) and
-    warns when the increase exceeds it.
+  - Shows the Ontario rent-increase guideline (2.5% for 2024 and 2025,
+    2.1% for 2026) and warns when the increase exceeds it. For a year the
+    table doesn't cover, it says so instead of guessing.
   - The guideline applies to units first occupied before 15 Nov 2018; newer
     units are exempt, so this is a warning, never a block.
 - `UnitTransferDraft`: target unit, move date and rent.

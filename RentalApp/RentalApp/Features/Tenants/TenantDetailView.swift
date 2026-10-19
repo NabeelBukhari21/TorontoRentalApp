@@ -55,9 +55,17 @@ struct TenantDetailView: View {
         ))
     }
 
+    /// The lease forms this screen presents.
+    private enum LeaseSheet: String, Identifiable {
+        case renew, move
+        var id: String { rawValue }
+    }
+
     @Environment(AppRouter.self) private var router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.container) private var container
     @State private var viewModel: TenantDetailViewModel
+    @State private var leaseSheet: LeaseSheet?
     @State private var selectedTab: TenantDetailTab = .overview
     @State private var movesForward = true
     @Namespace private var tabNamespace
@@ -101,6 +109,28 @@ struct TenantDetailView: View {
         .task(id: selectedTab) { await viewModel.loadTab(selectedTab) }
         .navigationTitle(tenant?.name ?? "Tenant")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if tenant != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("Lease", systemImage: AppSymbol.lease.rawValue) {
+                        Button("Renew Lease", systemImage: "arrow.clockwise") { leaseSheet = .renew }
+                        Button("Move to Another Unit", systemImage: "arrow.left.arrow.right") { leaseSheet = .move }
+                    }
+                }
+            }
+        }
+        .sheet(item: $leaseSheet) { sheet in
+            switch sheet {
+            case .renew:
+                RenewLeaseView(tenantID: tenantID, container: container) { _ in
+                    Task { await viewModel.refresh() }
+                }
+            case .move:
+                MoveTenantView(tenantID: tenantID, container: container) { _ in
+                    Task { await viewModel.refresh() }
+                }
+            }
+        }
     }
 
     // MARK: Profile Header
@@ -245,6 +275,14 @@ struct TenantDetailView: View {
         VStack(spacing: DS.Spacing.lg) {
             TenantLeaseCard(tenant: tenant)
                 .dsEntrance(index: 0)
+
+            // Near the end of the term (the "Renewal soon" badge): offer the next step.
+            if tenant.leaseProgress > 0.85 {
+                Button("Renew Lease", systemImage: "arrow.clockwise") { leaseSheet = .renew }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+            }
 
             DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {

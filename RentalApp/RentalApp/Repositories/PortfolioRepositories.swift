@@ -357,6 +357,17 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     private let cache: RepositoryCache
     private var created: [Tenant] = []
 
+    // MARK: Leasing overlay
+    //
+    // Renewals and moves are held on top of the seeded graph, like the
+    // property overlay: the current lease per tenant, the units taken and
+    // freed by moves, and the events they add to each timeline.
+
+    private var leaseOverrides: [String: LeaseSummary] = [:]
+    private var occupiedUnitIDs: Set<String> = []
+    private var freedUnits: [String: VacantUnit] = [:]
+    private var addedEvents: [String: [TenantEvent]] = [:]
+
     init(cache: RepositoryCache = .shared) {
         self.cache = cache
     }
@@ -394,7 +405,7 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
 
     func timeline(forTenantID id: String) async throws -> [TenantEvent] {
         try await SimulatedLatency.wait(.detail)
-        return Projections.timeline(forTenantID: id)
+        return (addedEvents[id] ?? []) + Projections.timeline(forTenantID: id)
     }
 
     func documents(forTenantID id: String) async throws -> [PropertyDocRow] {
@@ -444,16 +455,199 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
             ),
             at: 0
         )
+
+        // Keep the agreement too, so a tenant added here can be renewed
+        // or moved like any other.
+        let id = draft.email.lowercased()
+        let propertyID = Projections.properties().first { $0.name == draft.propertyName }?.id ?? ""
+        leaseOverrides[id] = LeaseSummary(
+            leaseID: "lease-\(UUID().uuidString.lowercased())",
+            tenantID: id,
+            propertyID: propertyID,
+            propertyName: draft.propertyName,
+            unitID: "unit-\(id)",
+            unitName: draft.unit.hasPrefix("Unit") ? draft.unit : "Unit \(draft.unit)",
+            start: draft.leaseStart,
+            end: draft.leaseEnd,
+            kind: .fixedTerm,
+            rent: draft.rent,
+            deposit: draft.rent,
+            isRentControlExempt: Projections.isRentControlExempt(propertyID: propertyID)
+        )
         cache.invalidate(prefix: Self.namespace)
     }
 
+    // MARK: Leasing
+
+    func lease(forTenantID id: String) async throws -> LeaseSummary {
+        try await SimulatedLatency.wait(.detail)
+        guard let lease = currentLease(forTenantID: id) else {
+            throw AppError.notFound("Lease")
+        }
+        return lease
+    }
+
+    func vacantUnits() async throws -> [VacantUnit] {
+        try await SimulatedLatency.wait(.detail)
+        let seeded = Projections.vacantUnits().filter { !occupiedUnitIDs.contains($0.id) }
+        let freed = freedUnits.values.filter { !occupiedUnitIDs.contains($0.id) }
+        return (seeded + freed).sorted { lhs, rhs in
+            lhs.propertyName != rhs.propertyName
+                ? lhs.propertyName < rhs.propertyName
+                : lhs.unitName.localizedStandardCompare(rhs.unitName) == .orderedAscending
+        }
+    }
+
+    func renewLease(forTenantID id: String, with draft: LeaseRenewalDraft) async throws -> LeaseSummary {
+        guard let current = currentLease(forTenantID: id) else {
+            throw AppError.notFound("Lease")
+        }
+        try Self.validate(draft, after: current)
+        try await SimulatedLatency.wait(.write)
+
+        let renewed = LeaseSummary(
+            leaseID: "lease-\(UUID().uuidString.lowercased())",
+            tenantID: id,
+            propertyID: current.propertyID,
+            propertyName: current.propertyName,
+            unitID: current.unitID,
+            unitName: current.unitName,
+            start: draft.start,
+            end: draft.kind == .fixedTerm ? draft.end : nil,
+            kind: draft.kind,
+            rent: draft.rent,
+            deposit: current.deposit,
+            isRentControlExempt: current.isRentControlExempt
+        )
+        leaseOverrides[id] = renewed
+
+        let change = draft.rent - current.rent
+        record(
+            TenantEvent(
+                icon: AppSymbol.lease.rawValue, kind: .success,
+                title: "Lease renewed",
+                detail: "\(renewed.termText) · \(Self.currency(draft.rent))/mo"
+                    + (change == 0 ? "" : " (\(change > 0 ? "+" : "−")\(Self.currency(abs(change))))"),
+                date: FakeDateFormat.monthDay(.now)
+            ),
+            forTenantID: id
+        )
+        cache.invalidate(prefix: Self.namespace)
+        return renewed
+    }
+
+    func moveTenant(id: String, with draft: UnitTransferDraft) async throws -> LeaseSummary {
+        guard let current = currentLease(forTenantID: id) else {
+            throw AppError.notFound("Lease")
+        }
+        let available = try await vacantUnits()
+        guard let target = available.first(where: { $0.id == draft.targetUnitID }) else {
+            throw AppError.validation("Choose a vacant unit to move to.")
+        }
+        guard draft.rent > 0 else {
+            throw AppError.validation("Enter the monthly rent for the new unit.")
+        }
+        guard draft.moveDate > current.start else {
+            throw AppError.validation("The move has to come after the current lease started.")
+        }
+        try await SimulatedLatency.wait(.write)
+
+        let moved = LeaseSummary(
+            leaseID: "lease-\(UUID().uuidString.lowercased())",
+            tenantID: id,
+            propertyID: target.propertyID,
+            propertyName: target.propertyName,
+            unitID: target.id,
+            unitName: target.unitName,
+            start: draft.moveDate,
+            end: Calendar.current.date(byAdding: DateComponents(year: 1, day: -1), to: draft.moveDate),
+            kind: .fixedTerm,
+            rent: draft.rent,
+            deposit: draft.carriesDeposit
+                ? OntarioTenancyRules.carriedDeposit(current.deposit, newRent: draft.rent).carried
+                : draft.rent,
+            isRentControlExempt: Projections.isRentControlExempt(propertyID: target.propertyID)
+        )
+        leaseOverrides[id] = moved
+        occupiedUnitIDs.insert(target.id)
+        occupiedUnitIDs.remove(current.unitID)
+        let freed = Projections.units(forPropertyID: current.propertyID).first { $0.id == current.unitID }
+        freedUnits[current.unitID] = VacantUnit(
+            id: current.unitID,
+            propertyID: current.propertyID,
+            propertyName: current.propertyName,
+            unitName: current.unitName,
+            bedrooms: freed?.beds ?? 1,
+            marketRent: freed?.rent ?? current.rent
+        )
+
+        record(
+            TenantEvent(
+                icon: "arrow.left.arrow.right", kind: .info,
+                title: "Moving to \(target.unitName)",
+                detail: "From \(current.unitName) on \(draft.moveDate.formatted(date: .abbreviated, time: .omitted))",
+                date: FakeDateFormat.monthDay(.now)
+            ),
+            forTenantID: id
+        )
+        cache.invalidate(prefix: Self.namespace)
+        return moved
+    }
+
     // MARK: Internals
+
+    private func currentLease(forTenantID id: String) -> LeaseSummary? {
+        leaseOverrides[id] ?? Projections.leaseSummary(forTenantID: id)
+    }
+
+    private func record(_ event: TenantEvent, forTenantID id: String) {
+        addedEvents[id, default: []].insert(event, at: 0)
+    }
+
+    /// The rules the `leases` table's CHECK constraints enforce.
+    private static func validate(_ draft: LeaseRenewalDraft, after current: LeaseSummary) throws {
+        guard draft.rent > 0 else {
+            throw AppError.validation("Enter the monthly rent.")
+        }
+        guard draft.start > current.start else {
+            throw AppError.validation("The renewal has to start after the current lease did.")
+        }
+        if draft.kind == .fixedTerm, draft.end <= draft.start {
+            throw AppError.validation("The end date has to be after the start date.")
+        }
+    }
+
+    private static func currency(_ dollars: Int) -> String {
+        dollars.formatted(.currency(code: "CAD").precision(.fractionLength(0)))
+    }
+
+    /// A tenant row with its lease replaced by a renewal or move.
+    private func applyingLease(to tenant: Tenant) -> Tenant {
+        guard let lease = leaseOverrides[tenant.id] else { return tenant }
+        let monthYear = Date.FormatStyle.dateTime.month(.abbreviated).year()
+        return Tenant(
+            id: tenant.id,
+            name: tenant.name,
+            email: tenant.email,
+            phone: tenant.phone,
+            propertyName: lease.propertyName,
+            unitName: lease.unitName,
+            rent: lease.rent,
+            deposit: lease.deposit,
+            leaseStart: lease.start.formatted(monthYear),
+            leaseEnd: lease.end?.formatted(monthYear) ?? "Month-to-month",
+            leaseProgress: lease.end.map { Domain.DateRange(start: lease.start, end: $0).progress() } ?? 0,
+            status: tenant.status == .notice ? .active : tenant.status,
+            isPremium: tenant.isPremium,
+            onTimeRate: tenant.onTimeRate
+        )
+    }
 
     private func cached(forceRefresh: Bool) async throws -> [Tenant] {
         let base = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
             Projections.tenants()
         }
-        return created + base
+        return (created + base).map(applyingLease)
     }
 
     static func apply(_ query: TenantQuery, to source: [Tenant]) -> [Tenant] {

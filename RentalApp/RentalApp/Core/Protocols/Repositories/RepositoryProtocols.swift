@@ -308,6 +308,27 @@ struct TenantSummary: Sendable, Equatable {
     static let empty = TenantSummary(total: 0, active: 0, overdue: 0, renewalsSoon: 0)
 }
 
+/// What the renewal form collects.
+struct LeaseRenewalDraft: Sendable, Equatable {
+    var kind: LeaseTermKind = .fixedTerm
+    var start: Date
+    /// Ignored for month-to-month.
+    var end: Date
+    /// Monthly rent, whole dollars.
+    var rent: Int
+}
+
+/// What the move form collects. A move ends the current lease the day
+/// before `moveDate` and starts a new one on the target unit.
+struct UnitTransferDraft: Sendable, Equatable {
+    var targetUnitID: String?
+    var moveDate: Date
+    /// Monthly rent on the new unit, whole dollars.
+    var rent: Int
+    /// Carry the last month's rent deposit over rather than refunding it.
+    var carriesDeposit = true
+}
+
 @MainActor
 protocol TenantRepositoryProtocol: AnyObject {
     func tenants(matching query: TenantQuery, forceRefresh: Bool) async throws -> Page<Tenant>
@@ -321,6 +342,19 @@ protocol TenantRepositoryProtocol: AnyObject {
 
     func create(_ draft: TenantDraft) async throws
     func propertyNames() async throws -> [String]
+
+    // MARK: Leasing
+
+    func lease(forTenantID id: String) async throws -> LeaseSummary
+    /// Vacant units across the portfolio, for a move.
+    func vacantUnits() async throws -> [VacantUnit]
+
+    /// Starts a new lease that follows the current one. Returns it.
+    @discardableResult
+    func renewLease(forTenantID id: String, with draft: LeaseRenewalDraft) async throws -> LeaseSummary
+    /// Ends the current lease and starts one on another unit. Returns it.
+    @discardableResult
+    func moveTenant(id: String, with draft: UnitTransferDraft) async throws -> LeaseSummary
 }
 
 // MARK: - Maintenance

@@ -129,7 +129,14 @@ colourful, for students, on a white background.
     after org setup) getting started → first property → aha + founder
     note → notification priming → 3-step trial paywall
   - user accent colours (`AccentStore`, `DS.Colors.brand` is computed)
-- Next, the user's plan, step by step:
+- Missing features, built step by step per `docs/FEATURES_PLAN.md`:
+  1. New maintenance request form — done
+  2. Lease renewal and move to another unit (Ontario rules in
+     `OntarioTenancyRules`) — done
+  3. Rent collection and payments — next
+  4. Tenant portal, 5. vendor experience, 6. push/widgets/Live
+     Activities/Siri
+- Earlier plan, step by step:
   1. Fix the loading screen.
   2. Fix the Home UI.
   3. Build new features.

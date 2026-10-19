@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 import Observation
 
 // MARK: - Directory
@@ -130,6 +131,19 @@ final class TenantDetailViewModel {
         state = .idle
         loadedTabs.removeAll()
         await load()
+    }
+
+    /// Refetches after a lease change, keeping the current tenant on
+    /// screen until the new one arrives.
+    func refresh() async {
+        do {
+            let tenant = try await repository.tenant(id: tenantID)
+            timelineEvents = try await repository.timeline(forTenantID: tenantID)
+            state = .loaded(tenant)
+            loadedTabs = [.overview, .timeline]
+        } catch {
+            AppLog.sync.failure("Tenant refresh failed", error: error)
+        }
     }
 
     func loadTab(_ tab: TenantDetailTab) async {

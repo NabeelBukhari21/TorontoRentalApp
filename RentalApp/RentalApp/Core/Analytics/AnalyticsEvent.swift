@@ -135,6 +135,8 @@ enum AnalyticsEvent: Sendable, Equatable {
     case unitCreated
     case tenantCreated
     case leaseCreated
+    case leaseRenewed(term: String, aboveGuideline: Bool)
+    case tenantMovedUnits
 
     // Operations
     case maintenanceTicketCreated(priority: String)
@@ -189,6 +191,8 @@ enum AnalyticsEvent: Sendable, Equatable {
         case .unitCreated:              "unit_created"
         case .tenantCreated:            "tenant_created"
         case .leaseCreated:             "lease_created"
+        case .leaseRenewed:             "lease_renewed"
+        case .tenantMovedUnits:         "tenant_moved_units"
         case .maintenanceTicketCreated: "maintenance_ticket_created"
         case .maintenanceStatusChanged: "maintenance_status_changed"
         case .documentUploaded:         "document_uploaded"
@@ -223,6 +227,8 @@ enum AnalyticsEvent: Sendable, Equatable {
             ["portfolio_size": .bucketed(portfolioSize)]
         case .memberInvited(let count):
             ["count": .bucketed(count)]
+        case .leaseRenewed(let term, let aboveGuideline):
+            ["term": .enumerated(term), "above_guideline": .flag(aboveGuideline)]
         case .maintenanceTicketCreated(let priority):
             ["priority": .enumerated(priority)]
         case .maintenanceStatusChanged(let status):
@@ -262,7 +268,7 @@ enum AnalyticsEvent: Sendable, Equatable {
             ["source": .enumerated(source)]
         case .signedOut, .mfaChallenged, .onboardingCompleted,
              .propertyCreated, .propertyUpdated, .propertyArchived,
-             .unitCreated, .tenantCreated, .leaseCreated,
+             .unitCreated, .tenantCreated, .leaseCreated, .tenantMovedUnits,
              .messageSent, .offlineWriteQueued:
             [:]
         }
