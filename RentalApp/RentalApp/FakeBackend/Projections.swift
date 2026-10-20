@@ -183,13 +183,16 @@ enum Projections {
 
     // MARK: - Tenants
 
-    static func tenants() -> [Tenant] {
+    /// - Parameter owing: tenants who owe rent, from the rent roll with
+    ///   recorded payments applied. Nil reads the seeded payment history.
+    static func tenants(owing: Set<String>? = nil) -> [Tenant] {
         backend.tenants.compactMap { tenant -> Tenant? in
             guard let lease = backend.activeLease(for: tenant.id),
                   let unit = backend.unitByID[lease.unitID],
                   let property = backend.propertyByID[unit.propertyID] else { return nil }
 
-            let overdue = backend.payments(for: lease.id).contains { $0.isOverdue() }
+            let overdue = owing.map { $0.contains(tenant.id.description) }
+                ?? backend.payments(for: lease.id).contains { $0.isOverdue() }
             let status: TenantStatus = {
                 if overdue { return .overdue }
                 if lease.status == .expiring { return .notice }

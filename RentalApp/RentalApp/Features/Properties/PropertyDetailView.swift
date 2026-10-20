@@ -164,7 +164,7 @@ struct PropertyDetailView: View {
 
     private func hero(for property: Property) -> some View {
         ZStack(alignment: .bottomLeading) {
-            PropertyHeroImage(property: property, height: 260)
+            PropertyHeroImage(property: property, height: 260, showsKind: false)
 
             LinearGradient(
                 colors: [.clear, DS.Colors.mediaBackground.opacity(0.6)],
@@ -174,7 +174,10 @@ struct PropertyDetailView: View {
 
             // Title block.
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-                PropertyOccupancyBadge(property: property)
+                HStack(spacing: DS.Spacing.sm) {
+                    PropertyKindChip(kind: property.kind)
+                    PropertyOccupancyBadge(property: property)
+                }
 
                 Text(property.name)
                     .font(.system(size: 28, weight: .bold, design: .rounded))

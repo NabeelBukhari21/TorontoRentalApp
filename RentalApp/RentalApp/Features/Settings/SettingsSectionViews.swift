@@ -96,9 +96,14 @@ struct SettingsProfilePage: View {
 struct SettingsOrganizationPage: View {
 
     @State private var viewModel: ProfileSettingsViewModel
+    @State private var portfolio: OrganizationPortfolioViewModel
 
     init(container: AppContainer = .shared) {
         _viewModel = State(initialValue: ProfileSettingsViewModel(repository: container.profile))
+        _portfolio = State(initialValue: OrganizationPortfolioViewModel(
+            properties: container.properties,
+            tenants: container.tenants
+        ))
     }
 
     var body: some View {
@@ -146,13 +151,17 @@ struct SettingsOrganizationPage: View {
             .dsEntrance(index: 1)
 
             SettingsSectionCard(title: "Portfolio") {
-                SettingsValueRow(icon: DS.Icons.properties, title: "Properties", value: "12")
+                SettingsValueRow(icon: DS.Icons.properties, title: "Properties",
+                                 value: portfolio.portfolio.map { "\($0.propertyCount)" } ?? "—")
                 SettingsRowDivider()
-                SettingsValueRow(icon: DS.Icons.unit, title: "Units", value: "48")
+                SettingsValueRow(icon: DS.Icons.unit, title: "Units",
+                                 value: portfolio.portfolio.map { "\($0.totalUnits)" } ?? "—")
                 SettingsRowDivider()
-                SettingsValueRow(icon: DS.Icons.tenants, title: "Active tenants", value: "45")
+                SettingsValueRow(icon: DS.Icons.tenants, title: "Tenants",
+                                 value: portfolio.tenantSummary.map { "\($0.total)" } ?? "—")
             }
             .dsEntrance(index: 2)
+            .task { await portfolio.load() }
 
             SettingsSaveButton(title: "Save Organization")
                 .dsEntrance(index: 3)

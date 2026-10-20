@@ -276,7 +276,7 @@ final class OnboardingFlowViewModel {
     private func build() async {
         let tasks = [
             OnboardingBuildTask(id: "answers", title: "Saving your answers"),
-            OnboardingBuildTask(id: "alerts", title: "Switching on your alerts"),
+            OnboardingBuildTask(id: "alerts", title: "Choosing your alert settings"),
             OnboardingBuildTask(id: "dashboard", title: "Preparing your dashboard")
         ]
         buildTasks = tasks

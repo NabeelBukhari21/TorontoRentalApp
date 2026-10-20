@@ -58,7 +58,9 @@ struct SettingsHubView: View {
                     SettingsSectionCard(title: "Intelligence") {
                         sectionRow(.aiPreferences)
                         SettingsRowDivider()
-                        sectionRow(.integrations, badge: "\(viewModel.connectedIntegrations) active")
+                        sectionRow(.integrations, badge: viewModel.connectedIntegrations > 0
+                            ? "\(viewModel.connectedIntegrations) active"
+                            : "Coming soon")
                     }
                     .dsEntrance(index: 3)
 

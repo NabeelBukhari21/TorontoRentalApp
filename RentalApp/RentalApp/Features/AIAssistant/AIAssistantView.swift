@@ -68,7 +68,7 @@ struct AIAssistantView: View {
                             .kerning(1.2)
                             .foregroundStyle(DS.Colors.textOnBrand)
 
-                        Text("Thursday, July 23")
+                        Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .foregroundStyle(DS.Colors.textOnBrand)
                     }

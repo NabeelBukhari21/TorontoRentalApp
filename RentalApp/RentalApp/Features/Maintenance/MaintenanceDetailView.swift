@@ -16,6 +16,7 @@ struct MaintenanceDetailView: View {
     @Environment(\.container) private var container
     @State private var viewModel: MaintenanceDetailViewModel
     @FocusState private var commentFocused: Bool
+    @State private var isSchedulingVisit = false
     
     init(ticketID: String, container: AppContainer = .shared) {
         self.ticketID = ticketID
@@ -80,6 +81,11 @@ struct MaintenanceDetailView: View {
         }
         .navigationTitle("Request")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isSchedulingVisit) {
+            if let ticket {
+                ScheduleVisitView(job: ticket, viewModel: viewModel)
+            }
+        }
     }
 
     // MARK: Header
@@ -156,7 +162,12 @@ struct MaintenanceDetailView: View {
                 }
 
                 TicketWorkflowView(currentStatus: ticket.status) { newStatus in
-                    Task { await viewModel.move(to: newStatus) }
+                    // Scheduled means a visit is booked, so it asks when.
+                    if newStatus == .scheduled {
+                        isSchedulingVisit = true
+                    } else {
+                        Task { await viewModel.move(to: newStatus) }
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -179,6 +190,10 @@ struct MaintenanceDetailView: View {
                 }
                 RepairVisitTrackingRows(ticket: ticket, tracker: viewModel.visitTracker)
                     .font(DS.Typography.subheadline)
+                Button("Change Time", systemImage: AppSymbol.calendar.rawValue) {
+                    isSchedulingVisit = true
+                }
+                .font(DS.Typography.subheadline)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

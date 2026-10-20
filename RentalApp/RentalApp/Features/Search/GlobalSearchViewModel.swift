@@ -67,6 +67,13 @@ final class GlobalSearchViewModel {
     // MARK: Derived
 
     var results: [SearchResult] { state.value ?? [] }
+
+    /// Every match, not just the page loaded so far, so the summary agrees
+    /// with the per-kind section headers.
+    var totalCount: Int {
+        let matching = scope.isEmpty ? Array(counts.values) : scope.compactMap { counts[$0] }
+        return max(matching.reduce(0, +), results.count)
+    }
     var isSearching: Bool { state.isLoading }
     var error: AppError? { state.error }
 

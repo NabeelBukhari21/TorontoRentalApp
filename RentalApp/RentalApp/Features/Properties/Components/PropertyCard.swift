@@ -17,6 +17,9 @@ struct PropertyHeroImage: View {
 
     let property: Property
     var height: CGFloat = 148
+    /// The type chip in the corner. Off where the hero carries its own
+    /// title block, which the chip would sit under.
+    var showsKind = true
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -58,22 +61,34 @@ struct PropertyHeroImage: View {
                 endPoint: .bottom
             )
 
-            // Kind chip.
-            HStack(spacing: DS.Spacing.xs) {
-                Image(systemName: property.kind.icon)
-                    .font(.system(size: 10, weight: .bold))
-                Text(property.kind.rawValue)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+            if showsKind {
+                PropertyKindChip(kind: property.kind)
+                    .padding(DS.Spacing.md)
             }
-            .foregroundStyle(DS.Colors.textPrimary)
-            .padding(.horizontal, DS.Spacing.sm + 2)
-            .padding(.vertical, DS.Spacing.xs + 1)
-            .background(DS.Colors.surfaceRaised, in: Capsule())
-            .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
-            .padding(DS.Spacing.md)
         }
         .frame(height: height)
         .clipped()
+    }
+}
+
+// MARK: - Kind Chip
+
+struct PropertyKindChip: View {
+
+    let kind: PropertyKind
+
+    var body: some View {
+        HStack(spacing: DS.Spacing.xs) {
+            Image(systemName: kind.icon)
+                .font(.system(size: 10, weight: .bold))
+            Text(kind.rawValue)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(DS.Colors.textPrimary)
+        .padding(.horizontal, DS.Spacing.sm + 2)
+        .padding(.vertical, DS.Spacing.xs + 1)
+        .background(DS.Colors.surfaceRaised, in: Capsule())
+        .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
     }
 }
 
@@ -133,19 +148,24 @@ struct PropertyCard: View {
                         height: 6
                     )
 
-                    // Stats row.
+                    // Stats row. Labels drop before anything wraps: a narrow
+                    // card with an urgent count shows icons and values only.
                     HStack(spacing: DS.Spacing.lg) {
-                        stat(icon: DS.Icons.unit, value: "\(property.unitCount)", label: "units")
-                        stat(icon: DS.Icons.occupancy, value: "\(Int(property.occupancyRate * 100))%", label: "occupied")
-                        stat(icon: DS.Icons.payment, value: "$\(String(format: "%.1f", property.monthlyRevenue))K", label: "/mo")
+                        ViewThatFits(in: .horizontal) {
+                            stats(labelled: true)
+                            stats(labelled: false)
+                        }
 
                         Spacer(minLength: 0)
 
-                        if property.urgentRequests > 0 {
-                            DSStatusLabel(text: "\(property.urgentRequests) urgent", kind: .danger, pulses: true)
-                        } else if property.openRequests > 0 {
-                            DSStatusLabel(text: "\(property.openRequests) open", kind: .info)
+                        Group {
+                            if property.urgentRequests > 0 {
+                                DSStatusLabel(text: "\(property.urgentRequests) urgent", kind: .danger, pulses: true)
+                            } else if property.openRequests > 0 {
+                                DSStatusLabel(text: "\(property.openRequests) open", kind: .info)
+                            }
                         }
+                        .fixedSize()
 
                         Image(systemName: DS.Icons.chevronRight)
                             .font(.system(size: 13, weight: .semibold))
@@ -165,7 +185,15 @@ struct PropertyCard: View {
         .buttonStyle(DSPressStyle())
     }
 
-    private func stat(icon: String, value: String, label: String) -> some View {
+    private func stats(labelled: Bool) -> some View {
+        HStack(spacing: labelled ? DS.Spacing.lg : DS.Spacing.md) {
+            stat(icon: DS.Icons.unit, value: "\(property.unitCount)", label: labelled ? "units" : nil)
+            stat(icon: DS.Icons.occupancy, value: "\(Int(property.occupancyRate * 100))%", label: labelled ? "occupied" : nil)
+            stat(icon: DS.Icons.payment, value: "$\(String(format: "%.1f", property.monthlyRevenue))K", label: "/mo")
+        }
+    }
+
+    private func stat(icon: String, value: String, label: String?) -> some View {
         HStack(spacing: DS.Spacing.xs) {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
@@ -175,10 +203,14 @@ struct PropertyCard: View {
                 .font(DS.Typography.caption.monospacedDigit())
                 .foregroundStyle(DS.Colors.textPrimary)
 
-            Text(label)
-                .font(DS.Typography.caption)
-                .foregroundStyle(DS.Colors.textTertiary)
+            if let label {
+                Text(label)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.textTertiary)
+            }
         }
+        .lineLimit(1)
+        .fixedSize()
     }
 }
 

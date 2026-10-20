@@ -56,8 +56,11 @@ final class InMemoryCopilotRepository: CopilotRepositoryProtocol {
         let overdue = Projections.tenants().filter { $0.status == .overdue }.count
         let renewals = Projections.tenants().filter { $0.leaseProgress > 0.85 }.count
 
+        let hour = Calendar.current.component(.hour, from: .now)
+        let greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
+
         return """
-        Good morning. Portfolio occupancy is \(Int(summary.occupancyRate * 100))% across \
+        \(greeting). Portfolio occupancy is \(Int(summary.occupancyRate * 100))% across \
         \(summary.propertyCount) properties and \(summary.unitCount) units. \
         There are \(open) open maintenance requests, \(urgent) of them urgent. \
         \(overdue) tenant\(overdue == 1 ? " is" : "s are") behind on rent, and \

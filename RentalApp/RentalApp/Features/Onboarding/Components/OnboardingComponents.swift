@@ -147,7 +147,7 @@ struct OnboardingProgressView: View {
 
             Section {
                 OnboardingChecklistRow(task: .init(id: "a", title: "Saving your answers", state: .done))
-                OnboardingChecklistRow(task: .init(id: "b", title: "Switching on your alerts", state: .running))
+                OnboardingChecklistRow(task: .init(id: "b", title: "Choosing your alert settings", state: .running))
                 OnboardingChecklistRow(task: .init(id: "c", title: "Preparing your dashboard"))
             }
         }

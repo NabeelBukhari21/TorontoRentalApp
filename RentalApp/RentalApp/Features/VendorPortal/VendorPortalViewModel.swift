@@ -14,7 +14,7 @@ import OSLog
 
 @MainActor
 @Observable
-final class VendorPortalViewModel {
+final class VendorPortalViewModel: VisitScheduling {
 
     enum Phase: Equatable {
         case loading

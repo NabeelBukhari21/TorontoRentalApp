@@ -187,13 +187,16 @@ enum OnboardingHeadache: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 
     /// What the answer switches on. Shown on the "unlocked" screen.
+    ///
+    /// Only features that exist today: alerts are chosen in onboarding but
+    /// can't be delivered until push ships, so nothing here promises them.
     var unlock: OnboardingUnlock {
         switch self {
         case .lateRent:
             OnboardingUnlock(
                 icon: "bell.badge.fill", tint: .green,
-                title: "Payment alerts are on",
-                detail: "You'll hear when rent lands, and when it's late."
+                title: "Late rent, flagged",
+                detail: "Who owes and since when, with Ontario's N4 rules built in."
             )
         case .repairs:
             OnboardingUnlock(
@@ -205,7 +208,7 @@ enum OnboardingHeadache: String, Codable, CaseIterable, Identifiable, Sendable {
             OnboardingUnlock(
                 icon: "bubble.left.and.bubble.right.fill", tint: .blue,
                 title: "Every tenant chat in one place",
-                detail: "Real-time messages, with alerts switched on."
+                detail: "Tenants and vendors, in one inbox."
             )
         case .paperwork:
             OnboardingUnlock(
@@ -268,7 +271,7 @@ enum OnboardingGoal: String, Codable, CaseIterable, Identifiable, Sendable {
     var outcome: String {
         switch self {
         case .saveTime:       "Spend minutes, not evenings, on your rentals"
-        case .getPaidOnTime:  "See who's paid and who hasn't, the moment it happens"
+        case .getPaidOnTime:  "See who's paid and who hasn't, at a glance"
         case .fewerVacancies: "Spot empty units early and keep them full"
         }
     }
@@ -284,8 +287,8 @@ enum OnboardingGoal: String, Codable, CaseIterable, Identifiable, Sendable {
         case .getPaidOnTime:
             OnboardingUnlock(
                 icon: "creditcard.fill", tint: .green,
-                title: "Rent collected, live",
-                detail: "This month's collection on your Home screen."
+                title: "Rent collected, at a glance",
+                detail: "This month's collection on Home and in a widget."
             )
         case .fewerVacancies:
             OnboardingUnlock(

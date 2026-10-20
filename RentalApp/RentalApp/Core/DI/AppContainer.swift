@@ -374,20 +374,24 @@ final class AppContainer {
         pushBox.attach(PushService(sink: coordinator))
 
         let payments = InMemoryPaymentRepository()
+        let properties = SupabasePropertyRepository(client: client, offline: offlineGate)
+        let maintenance = InMemoryMaintenanceRepository()
         return AppContainer(
             // ── Ported to Supabase ──────────────────────────────────
-            properties: SupabasePropertyRepository(client: client, offline: offlineGate),
+            properties: properties,
 
             // ── Still in-memory; each is one file away ──────────────
-            tenants: InMemoryTenantRepository(),
+            tenants: InMemoryTenantRepository(payments: payments),
             payments: payments,
             tenantPortal: InMemoryTenantPortalRepository(),
             vendorPortal: InMemoryVendorPortalRepository(),
-            maintenance: InMemoryMaintenanceRepository(),
+            maintenance: maintenance,
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationRepo,
-            dashboard: InMemoryDashboardRepository(payments: payments),
+            dashboard: InMemoryDashboardRepository(
+                payments: payments, properties: properties, maintenance: maintenance
+            ),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),
@@ -440,17 +444,21 @@ final class AppContainer {
         )
 
         let payments = InMemoryPaymentRepository()
+        let properties = InMemoryPropertyRepository()
+        let maintenance = InMemoryMaintenanceRepository()
         return AppContainer(
-            properties: InMemoryPropertyRepository(),
-            tenants: InMemoryTenantRepository(),
+            properties: properties,
+            tenants: InMemoryTenantRepository(payments: payments),
             payments: payments,
             tenantPortal: InMemoryTenantPortalRepository(),
             vendorPortal: InMemoryVendorPortalRepository(),
-            maintenance: InMemoryMaintenanceRepository(),
+            maintenance: maintenance,
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationsRepo,
-            dashboard: InMemoryDashboardRepository(payments: payments),
+            dashboard: InMemoryDashboardRepository(
+                payments: payments, properties: properties, maintenance: maintenance
+            ),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),
@@ -577,17 +585,21 @@ final class AppContainer {
         )
 
         let payments = InMemoryPaymentRepository()
+        let properties = InMemoryPropertyRepository()
+        let maintenance = InMemoryMaintenanceRepository()
         return AppContainer(
-            properties: InMemoryPropertyRepository(),
-            tenants: InMemoryTenantRepository(),
+            properties: properties,
+            tenants: InMemoryTenantRepository(payments: payments),
             payments: payments,
             tenantPortal: InMemoryTenantPortalRepository(),
             vendorPortal: InMemoryVendorPortalRepository(),
-            maintenance: InMemoryMaintenanceRepository(),
+            maintenance: maintenance,
             messages: InMemoryMessageRepository(),
             documents: InMemoryDocumentRepository(),
             notifications: notificationsRepo,
-            dashboard: InMemoryDashboardRepository(payments: payments),
+            dashboard: InMemoryDashboardRepository(
+                payments: payments, properties: properties, maintenance: maintenance
+            ),
             profile: InMemoryProfileRepository(),
             preferences: InMemoryPreferencesRepository(),
             billing: InMemoryBillingRepository(),

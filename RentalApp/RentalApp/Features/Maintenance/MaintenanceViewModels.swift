@@ -38,7 +38,9 @@ final class MaintenanceInboxViewModel {
     private let repository: MaintenanceRepositoryProtocol
     private let notifications: NotificationRepositoryProtocol
 
-    var mode: MaintenanceViewMode = .list
+    var mode: MaintenanceViewMode = .list {
+        didSet { if mode == .board { Task { await loadAllPages() } } }
+    }
 
     var searchText = "" {
         didSet { guard oldValue != searchText else { return }; scheduleReload(debounced: true) }
@@ -88,7 +90,9 @@ final class MaintenanceInboxViewModel {
     var unassignedCount: Int { summary.unassigned }
     var averageResolutionText: String { summary.averageResolutionText }
 
-    /// Kanban grouping over the already-loaded page.
+    /// Kanban grouping. The board has no scroll-to-load, so it loads every
+    /// page first (see `loadAllPages`); otherwise a column would only show
+    /// what happened to sort into the first page.
     func columnTickets(_ status: TicketStatus) -> [MaintenanceTicket] {
         list.items.filter { $0.status == status }
     }
@@ -97,12 +101,23 @@ final class MaintenanceInboxViewModel {
 
     func load() async {
         await list.load()
+        if mode == .board { await loadAllPages() }
         unreadNotifications = (try? await notifications.unreadCount()) ?? 0
     }
 
     func refresh() async {
         await list.refresh()
+        if mode == .board { await loadAllPages() }
         unreadNotifications = (try? await notifications.unreadCount()) ?? 0
+    }
+
+    private func loadAllPages() async {
+        while list.hasMore, !Task.isCancelled {
+            let before = list.items.count
+            await list.loadMore()
+            // A failed page leaves the count unchanged; stop rather than spin.
+            if list.items.count == before { break }
+        }
     }
 
     func retry() async { await list.retry() }
@@ -116,6 +131,7 @@ final class MaintenanceInboxViewModel {
     func move(_ ticketID: String, to status: TicketStatus) async {
         try? await repository.move(ticketID, to: status)
         await list.reload()
+        if mode == .board { await loadAllPages() }
     }
 
     private func scheduleReload(debounced: Bool = false) {
@@ -126,6 +142,7 @@ final class MaintenanceInboxViewModel {
                 guard !Task.isCancelled else { return }
             }
             await self?.list.reload()
+            if self?.mode == .board { await self?.loadAllPages() }
         }
     }
 }
@@ -134,7 +151,7 @@ final class MaintenanceInboxViewModel {
 
 @MainActor
 @Observable
-final class MaintenanceDetailViewModel {
+final class MaintenanceDetailViewModel: VisitScheduling {
 
     private let repository: MaintenanceRepositoryProtocol
     let visitTracker: RepairVisitTracker
@@ -144,6 +161,10 @@ final class MaintenanceDetailViewModel {
     private(set) var vendors: [Vendor] = []
     private(set) var timelineEvents: [TenantEvent] = []
     private(set) var isSubmitting = false
+    /// Why the last visit booking failed. Kept apart from `state`, so a
+    /// rejected time leaves the request on screen behind the sheet.
+    private(set) var errorMessage: String?
+    var isWorking: Bool { isSubmitting }
 
     var commentText = ""
 
@@ -240,6 +261,23 @@ final class MaintenanceDetailViewModel {
 
     func move(to status: TicketStatus) async {
         await mutate { try await $0.move(self.ticketID, to: status) }
+    }
+
+    /// Scheduling needs a time: the staff screen asks for one with the
+    /// same sheet the vendor uses, then books it here.
+    func schedule(_ job: MaintenanceTicket, at date: Date, note: String) async -> Bool {
+        isSubmitting = true
+        defer { isSubmitting = false }
+        errorMessage = nil
+        do {
+            try await repository.bookVisit(job.id, at: date, note: note)
+            await refresh()
+            if let updated = ticket { await visitTracker.jobChanged(updated) }
+            return true
+        } catch {
+            errorMessage = (error as? AppError ?? .unknown).errorDescription
+            return false
+        }
     }
 
     func assign(_ vendor: Vendor) async {

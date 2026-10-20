@@ -51,7 +51,7 @@ struct DashboardMascotBrief: View {
             return (.concerned, "\(urgentTasks) urgent \(plural("task", urgentTasks)) \(urgentTasks == 1 ? "needs" : "need") you today. Let's knock \(urgentTasks == 1 ? "it" : "them") out first!")
         }
         if openRequests > 0 {
-            return (.thinking, "\(openRequests) maintenance \(plural("request", openRequests)) in progress. I'm keeping an eye on \(openRequests == 1 ? "it" : "them").")
+            return (.thinking, "\(openRequests) maintenance \(plural("request", openRequests)) open. I'm keeping an eye on \(openRequests == 1 ? "it" : "them").")
         }
         if openTasks > 0 {
             return (.happy, "You've got \(openTasks) \(plural("task", openTasks)) lined up today. You've got this!")

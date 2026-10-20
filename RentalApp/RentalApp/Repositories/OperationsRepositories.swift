@@ -150,6 +150,12 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
         try await mutate(ticketID) { $0.replySent = true }
     }
 
+    func bookVisit(_ ticketID: String, at date: Date, note: String) async throws {
+        try await setVisit(ticketID, at: date, note: note) { text in
+            TicketComment(author: "You", isManager: true, text: text, time: "Just now")
+        }
+    }
+
     // MARK: Vendor Actions
 
     func accept(_ ticketID: String, by vendorName: String) async throws {
@@ -173,6 +179,17 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
     }
 
     func scheduleVisit(_ ticketID: String, at date: Date, by vendorName: String, note: String) async throws {
+        try await setVisit(ticketID, at: date, note: note) { Self.vendorComment(vendorName, $0) }
+    }
+
+    /// Sets the visit, moves the job to scheduled and leaves an update in
+    /// the author's name. Shared by the vendor and the organization.
+    private func setVisit(
+        _ ticketID: String,
+        at date: Date,
+        note: String,
+        comment: @escaping (String) -> TicketComment
+    ) async throws {
         guard date > .now else {
             throw AppError.validation("Choose a time in the future.")
         }
@@ -182,8 +199,8 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
             ticket.scheduledVisit = date
             ticket.status = .scheduled
             let when = date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute())
-            ticket.comments.append(Self.vendorComment(
-                vendorName, "\(rebooked ? "Rebooked" : "Booked") a visit for \(when)." + (note.isEmpty ? "" : " \(note)")
+            ticket.comments.append(comment(
+                "\(rebooked ? "Rebooked" : "Booked") a visit for \(when)." + (note.isEmpty ? "" : " \(note)")
             ))
         }
     }

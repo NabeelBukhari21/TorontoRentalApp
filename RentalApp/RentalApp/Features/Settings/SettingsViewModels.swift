@@ -10,6 +10,31 @@
 import SwiftUI
 import Observation
 
+// MARK: - Organization Portfolio
+
+/// The portfolio totals on the Organization page, from the same summaries
+/// the Properties and Tenants screens show.
+@MainActor
+@Observable
+final class OrganizationPortfolioViewModel {
+
+    private let properties: PropertyRepositoryProtocol
+    private let tenants: TenantRepositoryProtocol
+
+    private(set) var portfolio: PropertyPortfolioSummary?
+    private(set) var tenantSummary: TenantSummary?
+
+    init(properties: PropertyRepositoryProtocol, tenants: TenantRepositoryProtocol) {
+        self.properties = properties
+        self.tenants = tenants
+    }
+
+    func load() async {
+        portfolio = try? await properties.portfolioSummary(forceRefresh: false)
+        tenantSummary = try? await tenants.summary(forceRefresh: false)
+    }
+}
+
 // MARK: - Hub
 
 @MainActor
@@ -204,8 +229,4 @@ final class IntegrationsSettingsViewModel {
 
     var integrations: [IntegrationItem] { repo.integrations }
     var connectedCount: Int { integrations.filter(\.isConnected).count }
-
-    func toggle(_ id: String) {
-        repo.toggleIntegration(id)
-    }
 }

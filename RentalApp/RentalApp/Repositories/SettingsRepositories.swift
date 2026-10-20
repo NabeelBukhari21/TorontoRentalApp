@@ -135,11 +135,12 @@ final class InMemoryBillingRepository: BillingRepositoryProtocol {
 @Observable
 final class InMemoryIntegrationsRepository: IntegrationsRepositoryProtocol {
 
+    // Nothing is connected: these are planned, not built.
     private(set) var integrations: [IntegrationItem] = [
         IntegrationItem(id: "quickbooks", name: "QuickBooks", icon: "book.closed.fill",
-                        detail: "Sync rent payments & expenses", isConnected: true),
+                        detail: "Sync rent payments & expenses", isConnected: false),
         IntegrationItem(id: "interac", name: "Interac e-Transfer", icon: DS.Icons.payment,
-                        detail: "Automatic rent collection", isConnected: true),
+                        detail: "Match e-Transfers to tenants", isConnected: false),
         IntegrationItem(id: "gcal", name: "Google Calendar", icon: "calendar",
                         detail: "Vendor visits & inspections", isConnected: false),
         IntegrationItem(id: "docusign", name: "DocuSign", icon: "signature",
@@ -147,11 +148,4 @@ final class InMemoryIntegrationsRepository: IntegrationsRepositoryProtocol {
         IntegrationItem(id: "slack", name: "Slack", icon: "bubble.left.and.bubble.right.fill",
                         detail: "Team alerts channel", isConnected: false)
     ]
-
-    func toggleIntegration(_ id: String) {
-        guard let index = integrations.firstIndex(where: { $0.id == id }) else { return }
-        withAnimation(DS.Motion.bouncy) {
-            integrations[index].isConnected.toggle()
-        }
-    }
 }

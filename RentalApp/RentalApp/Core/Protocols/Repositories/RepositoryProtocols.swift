@@ -478,6 +478,9 @@ protocol MaintenanceRepositoryProtocol: AnyObject {
     func assign(_ vendorID: String, to ticketID: String) async throws
     func addComment(_ text: String, to ticketID: String) async throws
     func markReplySent(_ ticketID: String) async throws
+    /// Books (or rebooks) the visit on the vendor's behalf, from the
+    /// organization's side.
+    func bookVisit(_ ticketID: String, at date: Date, note: String) async throws
 
     // MARK: Vendor actions
     //
@@ -719,6 +722,7 @@ protocol BillingRepositoryProtocol: AnyObject {
 
 @MainActor
 protocol IntegrationsRepositoryProtocol: AnyObject {
+    /// The integrations planned, with whether each is connected. None can
+    /// be connected from the app yet.
     var integrations: [IntegrationItem] { get }
-    func toggleIntegration(_ id: String)
 }

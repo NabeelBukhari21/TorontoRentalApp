@@ -40,12 +40,13 @@ extension Projections {
                 return SearchResult(
                     kind: .unit,
                     entityID: unit.id.description,
-                    title: "\(property.name) · \(unit.label)",
+                    title: "\(property.name) · \(label(for: unit))",
                     subtitle: "\(unit.bedrooms) bd · \(bathrooms) ba",
                     headline: "«\(unit.status == .turnover ? "Turnover" : "Vacant")» · \(wholeDollars(unit.marketRent))/mo",
                     status: unit.status.rawValue,
                     updatedAt: unit.updatedAt,
-                    rank: 0
+                    rank: 0,
+                    parentID: property.id.description
                 )
             }
             .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
@@ -103,12 +104,13 @@ extension Projections {
                 return SearchResult(
                     kind: .lease,
                     entityID: lease.id.description,
-                    title: "\(tenant) — \(unit?.label ?? "Unit")",
+                    title: "\(tenant) — \(unit.map(label(for:)) ?? "Unit")",
                     subtitle: "\(property) to \(FakeDateFormat.monthYear(lease.term.end))",
                     headline: endsInText(days: lease.daysRemaining(asOf: today)),
                     status: lease.status.rawValue,
                     updatedAt: lease.updatedAt,
-                    rank: 0
+                    rank: 0,
+                    parentID: lease.primaryTenantID.description
                 )
             }
     }
@@ -142,7 +144,7 @@ extension Projections {
                 kind: .tenant,
                 entityID: tenant.id.description,
                 title: tenant.fullName,
-                subtitle: "\(property) · \(unit?.label ?? "Unit")",
+                subtitle: "\(property) · \(unit.map(label(for:)) ?? "Unit")",
                 headline: "«\(wholeDollars(total)) overdue» · \(daysLate) \(daysLate == 1 ? "day" : "days") late",
                 status: TenantStatus.overdue.rawValue,
                 updatedAt: tenant.updatedAt,
@@ -159,7 +161,8 @@ private extension SearchResult {
     func ranked(_ rank: Double) -> SearchResult {
         SearchResult(
             kind: kind, entityID: entityID, title: title, subtitle: subtitle,
-            headline: headline, status: status, updatedAt: updatedAt, rank: rank
+            headline: headline, status: status, updatedAt: updatedAt, rank: rank,
+            parentID: parentID
         )
     }
 }

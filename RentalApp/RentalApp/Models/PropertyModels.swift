@@ -61,7 +61,8 @@ struct Property: Identifiable, Hashable, Sendable, Codable {
 
     var vacantCount: Int { unitCount - occupiedCount }
 
-    var isFull: Bool { vacantCount == 0 }
+    /// A property with no units yet is empty, not full.
+    var isFull: Bool { unitCount > 0 && vacantCount == 0 }
 }
 
 struct PropertyUnit: Identifiable, Sendable, Codable {

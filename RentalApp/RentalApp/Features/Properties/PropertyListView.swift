@@ -180,6 +180,10 @@ struct PropertyListView: View {
                         Button("Archived properties", systemImage: AppSymbol.archive.rawValue) {
                             sheet = .archived
                         }
+                        Divider()
+                        Button("All Tenants", systemImage: AppSymbol.tenants.rawValue) {
+                            router.push(.tenants)
+                        }
                     }
                 }
                 ToolbarSpacer(.fixed, placement: .topBarTrailing)

@@ -32,6 +32,7 @@ struct SearchTabRoot: View {
 struct GlobalSearchView: View {
 
     @State private var viewModel: GlobalSearchViewModel
+    @Environment(AppRouter.self) private var router
 
     init(container: AppContainer) {
         _viewModel = State(initialValue: GlobalSearchViewModel(
@@ -58,13 +59,11 @@ struct GlobalSearchView: View {
         .navigationTitle("Search")
         .navigationSubtitle(resultSummary)
         .searchable(text: $viewModel.text, prompt: "Properties, tenants, requests")
-        .searchScopes(scope, activation: .onSearchPresentation) {
-            Text("All").tag(SearchKind?.none)
-            ForEach(SearchKind.allCases.filter { (viewModel.counts[$0] ?? 0) > 0 }) { kind in
-                Text(kind.label).tag(SearchKind?.some(kind))
-            }
-        }
         .onSubmit(of: .search) { viewModel.commitToRecents() }
+        // Opening a result counts as using the query.
+        .onChange(of: router.paths[.search]?.count ?? 0) { old, new in
+            if new > old, old == 0 { viewModel.commitToRecents() }
+        }
         .toolbar {
             if viewModel.presentation == .results {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -104,7 +103,7 @@ struct GlobalSearchView: View {
 
     private var resultSummary: String {
         guard viewModel.presentation == .results else { return "" }
-        let count = viewModel.results.count
+        let count = viewModel.totalCount
         return count == 1 ? "1 result" : "\(count) results"
     }
 
@@ -167,8 +166,58 @@ struct GlobalSearchView: View {
 
     // MARK: Results
 
+    /// Kinds with at least one match, in display order.
+    private var matchedKinds: [SearchKind] {
+        SearchKind.allCases
+            .filter { (viewModel.counts[$0] ?? 0) > 0 }
+            .sorted { $0.sortIndex < $1.sortIndex }
+    }
+
+    /// Scrolling scope buttons. The system scope bar squeezes five or more
+    /// kinds into unreadable segments on iPhone; these keep their labels
+    /// and counts at any number.
+    @ViewBuilder
+    private var scopeBar: some View {
+        if matchedKinds.count > 1 || !viewModel.scope.isEmpty {
+            Section {
+                ScrollView(.horizontal) {
+                    HStack(spacing: 8) {
+                        scopeButton("All", count: nil, kind: nil)
+                        ForEach(matchedKinds) { kind in
+                            scopeButton(kind.label, count: viewModel.counts[kind], kind: kind)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .scrollIndicators(.hidden)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func scopeButton(_ title: String, count: Int?, kind: SearchKind?) -> some View {
+        let isSelected = scope.wrappedValue == kind
+        let label = Text(count.map { "\(title) \($0)" } ?? title)
+        Group {
+            if isSelected {
+                Button { scope.wrappedValue = kind } label: { label }
+                    .buttonStyle(.borderedProminent)
+            } else {
+                Button { scope.wrappedValue = kind } label: { label }
+                    .buttonStyle(.bordered)
+            }
+        }
+        .buttonBorderShape(.capsule)
+        .controlSize(.small)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
     @ViewBuilder
     private var resultSections: some View {
+        scopeBar
+
         ForEach(viewModel.groups, id: \.kind) { group in
             Section {
                 ForEach(group.results) { result in
@@ -213,8 +262,10 @@ struct GlobalSearchView: View {
         }
 
         if let route = result.route {
+            // A tap gesture here, even a simultaneous one, swallows the
+            // link's own tap inside a List. Opening a result is recorded
+            // from the stack instead (see `body`).
             NavigationLink(value: route) { label }
-                .simultaneousGesture(TapGesture().onEnded { viewModel.commitToRecents() })
         } else {
             // No screen for this kind yet: shown, but not a dead link.
             label

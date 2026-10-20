@@ -172,8 +172,8 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
 
             for unit in Projections.units(forPropertyID: property.id) {
                 entries.append(Entry(
-                    kind: .unit, entityID: unit.id,
-                    title: "\(property.name) · \(unit.name)",
+                    kind: .unit, entityID: unit.id, parentID: property.id,
+                    title: "\(property.name) · \(unit.displayName)",
                     subtitle: "\(unit.beds) bd · \(unit.baths) ba",
                     body: unit.tenantName ?? "vacant",
                     status: unit.status.rawValue, updatedAt: Date()
@@ -199,6 +199,7 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
     private struct Entry: Codable, Sendable {
         let kind: SearchKind
         let entityID: String
+        var parentID: String? = nil
         let title: String
         let subtitle: String?
         let body: String
@@ -216,7 +217,8 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
                 headline: Self.headline(for: body.isEmpty ? title : body, term: term),
                 status: status,
                 updatedAt: updatedAt,
-                rank: 0
+                rank: 0,
+                parentID: parentID
             )
         }
 

@@ -468,7 +468,7 @@ struct SettingsIntegrationsPage: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
-            SettingsSectionCard(title: "Connected · \(viewModel.integrations.filter(\.isConnected).count)") {
+            SettingsSectionCard(title: "Planned") {
                 ForEach(Array(viewModel.integrations.enumerated()), id: \.element.id) { index, integration in
                     HStack(spacing: DS.Spacing.md) {
                         SettingsIconTile(
@@ -488,14 +488,12 @@ struct SettingsIntegrationsPage: View {
 
                         Spacer()
 
-                        DSButton(
-                            title: integration.isConnected ? "Connected" : "Connect",
-                            icon: integration.isConnected ? "checkmark" : nil,
-                            variant: integration.isConnected ? .secondary : .primary,
-                            size: .small
-                        ) {
-                            viewModel.toggle(integration.id)
-                        }
+                        // No integration can be connected yet, so there's no
+                        // button to press: just where each one stands.
+                        DSBadge(
+                            text: integration.isConnected ? "Connected" : "Coming soon",
+                            kind: integration.isConnected ? .success : .neutral
+                        )
                     }
                     .padding(DS.Spacing.md + 2)
 
@@ -508,11 +506,11 @@ struct SettingsIntegrationsPage: View {
 
             DSCard(style: .raised) {
                 HStack(spacing: DS.Spacing.md) {
-                    Image(systemName: DS.Icons.ai)
+                    Image(systemName: "info.circle")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(DS.Gradients.ai)
+                        .foregroundStyle(DS.Colors.textSecondary)
 
-                    Text("More integrations arrive monthly — accounting, screening, and smart-home partners are next.")
+                    Text("Integrations aren't available yet. These are the first ones planned.")
                         .font(DS.Typography.footnote)
                         .foregroundStyle(DS.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)

@@ -198,10 +198,14 @@ private struct SearchRow: Decodable {
     let entityUpdatedAt: Date
     let rank: Double
     let totalCount: Int
+    /// Optional until the search functions return it; without it, unit and
+    /// lease rows show but don't open.
+    let parentID: String?
 
     enum CodingKeys: String, CodingKey {
         case kind, title, subtitle, headline, status, rank
         case entityID        = "entity_id"
+        case parentID        = "parent_id"
         case entityUpdatedAt = "entity_updated_at"
         case totalCount      = "total_count"
     }
@@ -218,7 +222,8 @@ private struct SearchRow: Decodable {
             headline: headline ?? subtitle ?? title,
             status: status,
             updatedAt: entityUpdatedAt,
-            rank: rank
+            rank: rank,
+            parentID: parentID
         )
     }
 }

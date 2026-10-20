@@ -75,6 +75,8 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
     private var deletedIDs: Set<String> = []
     private var unitOverlay: [String: [PropertyUnit]] = [:]
     private var deletedUnitIDs: Set<String> = []
+    /// Seeded units removed per property, so its unit count follows.
+    private var removedSeededUnits: [String: Int] = [:]
 
     func properties(matching query: PropertyQuery, forceRefresh: Bool) async throws -> Page<Property> {
         try await SimulatedLatency.wait(.list)
@@ -111,9 +113,10 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
 
     func units(forPropertyID id: String) async throws -> [PropertyUnit] {
         try await SimulatedLatency.wait(.detail)
-        let seeded = Projections.units(forPropertyID: id)
-        return (seeded + (unitOverlay[id] ?? []))
-            .filter { !deletedUnitIDs.contains($0.id) }
+        // Hidden seeded units are filtered before the overlay joins, since
+        // an edited unit's overlay copy keeps the seeded ID.
+        let seeded = Projections.units(forPropertyID: id).filter { !deletedUnitIDs.contains($0.id) }
+        return seeded + (unitOverlay[id] ?? [])
     }
 
     func tenantRows(forPropertyID id: String) async throws -> [PropertyTenantRow] {
@@ -238,34 +241,57 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
     func updateUnit(id: String, with draft: UnitDraft) async throws -> PropertyUnit {
         try await SimulatedLatency.wait(.write)
 
-        let replacement = PropertyUnit(
-            id: id,
-            name: draft.label,
-            beds: draft.bedrooms,
-            baths: Int(truncating: draft.bathrooms as NSDecimalNumber),
-            sqft: draft.squareFeet ?? 0,
-            rent: Int(truncating: draft.marketRent as NSDecimalNumber),
-            tenantName: nil,
-            status: .vacant
-        )
+        // Editing a unit's details doesn't change who lives there.
+        func replacing(_ original: PropertyUnit?) -> PropertyUnit {
+            PropertyUnit(
+                id: id,
+                name: draft.label,
+                beds: draft.bedrooms,
+                baths: Int(truncating: draft.bathrooms as NSDecimalNumber),
+                sqft: draft.squareFeet ?? 0,
+                rent: Int(truncating: draft.marketRent as NSDecimalNumber),
+                tenantName: original?.tenantName,
+                status: original?.status ?? .vacant,
+                building: original?.building
+            )
+        }
         for (propertyID, units) in unitOverlay {
             if let index = units.firstIndex(where: { $0.id == id }) {
+                let replacement = replacing(units[index])
                 unitOverlay[propertyID]?[index] = replacement
                 return replacement
             }
         }
-        // A seeded unit: record it as an overlay entry keyed by the
-        // property it belongs to, and hide the original.
+        // A seeded unit: hide the original and hold the edited copy in the
+        // overlay under the property it belongs to.
+        guard let (propertyID, original) = await seededUnit(id: id) else {
+            throw AppError.notFound("Unit")
+        }
+        let replacement = replacing(original)
         deletedUnitIDs.insert(id)
+        unitOverlay[propertyID, default: []].append(replacement)
         return replacement
     }
 
     func deleteUnit(id: String) async throws {
         try await SimulatedLatency.wait(.write)
-        deletedUnitIDs.insert(id)
-        for (propertyID, units) in unitOverlay {
-            unitOverlay[propertyID] = units.filter { $0.id != id }
+        if let propertyID = unitOverlay.first(where: { $0.value.contains { $0.id == id } })?.key {
+            unitOverlay[propertyID]?.removeAll { $0.id == id }
+        } else if let (propertyID, _) = await seededUnit(id: id) {
+            deletedUnitIDs.insert(id)
+            removedSeededUnits[propertyID, default: 0] += 1
         }
+    }
+
+    /// The seeded unit with this ID and the property it belongs to.
+    private func seededUnit(id: String) async -> (propertyID: String, unit: PropertyUnit)? {
+        let seeded = await cache.fetch(key: Self.namespace) { Projections.properties() }
+        for property in seeded {
+            if let unit = Projections.units(forPropertyID: property.id).first(where: { $0.id == id }) {
+                return (property.id, unit)
+            }
+        }
+        return nil
     }
 
     /// The same field rules the database enforces with CHECK constraints,
@@ -295,6 +321,33 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
         (seeded + created)
             .filter { !archivedIDs.contains($0.id) && !deletedIDs.contains($0.id) }
             .map(applyingEdit)
+            .map(applyingUnitChanges)
+    }
+
+    /// Unit counts that follow units added to or removed from a property.
+    /// Added units start vacant, so occupancy only changes when an
+    /// occupied unit is removed.
+    private func applyingUnitChanges(_ property: Property) -> Property {
+        // Edited seeded units sit in the overlay under their original ID
+        // and replace a unit already counted; only new units add to it.
+        let added = unitOverlay[property.id]?.filter { !deletedUnitIDs.contains($0.id) }.count ?? 0
+        let removed = removedSeededUnits[property.id] ?? 0
+        guard added != 0 || removed != 0 else { return property }
+        let unitCount = max(0, property.unitCount + added - removed)
+        return Property(
+            id: property.id,
+            name: property.name,
+            neighborhood: property.neighborhood,
+            address: property.address,
+            kind: property.kind,
+            unitCount: unitCount,
+            occupiedCount: min(property.occupiedCount, unitCount),
+            monthlyRevenue: property.monthlyRevenue,
+            openRequests: property.openRequests,
+            urgentRequests: property.urgentRequests,
+            yearBuilt: property.yearBuilt,
+            paletteIndex: property.paletteIndex
+        )
     }
 
     private func applyingEdit(_ property: Property) -> Property {
@@ -355,6 +408,9 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
 final class InMemoryTenantRepository: TenantRepositoryProtocol {
 
     private let cache: RepositoryCache
+    /// Who owes rent comes from the rent roll, so recording a payment
+    /// clears a tenant's overdue status everywhere at once.
+    private let payments: PaymentRepositoryProtocol
     private var created: [Tenant] = []
 
     // MARK: Leasing overlay
@@ -368,7 +424,8 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     private var freedUnits: [String: VacantUnit] = [:]
     private var addedEvents: [String: [TenantEvent]] = [:]
 
-    init(cache: RepositoryCache = .shared) {
+    init(payments: PaymentRepositoryProtocol, cache: RepositoryCache = .shared) {
+        self.payments = payments
         self.cache = cache
     }
 
@@ -644,9 +701,11 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     }
 
     private func cached(forceRefresh: Bool) async throws -> [Tenant] {
-        let base = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
-            Projections.tenants()
-        }
+        let roll = try await payments.rentRoll(for: .now, forceRefresh: forceRefresh)
+        let owing = Set(roll.rows.filter(\.isOwing).map(\.tenantID))
+        // Not cached: standing changes with every recorded payment, and
+        // the projection is a single pass over the tenants.
+        let base = Projections.tenants(owing: owing)
         return (created + base).map(applyingLease)
     }
 
@@ -691,10 +750,21 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
     /// Rent collected comes from the same source as the rent roll, so the
     /// two never disagree.
     private let payments: PaymentRepositoryProtocol
+    /// Property and maintenance counts come from their own repositories,
+    /// so Home agrees with the Properties and Maintenance tabs after edits.
+    private let properties: PropertyRepositoryProtocol
+    private let maintenance: MaintenanceRepositoryProtocol
     private var completedTaskIDs: Set<UUID> = []
 
-    init(payments: PaymentRepositoryProtocol, cache: RepositoryCache = .shared) {
+    init(
+        payments: PaymentRepositoryProtocol,
+        properties: PropertyRepositoryProtocol,
+        maintenance: MaintenanceRepositoryProtocol,
+        cache: RepositoryCache = .shared
+    ) {
         self.payments = payments
+        self.properties = properties
+        self.maintenance = maintenance
         self.cache = cache
     }
 
@@ -715,24 +785,83 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             return copy
         }
 
+        // Live figures from the repositories each tab reads, layered over
+        // the cached snapshot, so Home never disagrees with them.
         let roll = try await payments.rentRoll(for: .now, forceRefresh: forceRefresh)
-        let stats = cached.stats.map { stat in
-            guard stat.title == Self.rentCollectedTitle else { return stat }
-            return DashboardStat(
-                title: stat.title,
-                value: roll.collectionRate.formatted(.percent.precision(.fractionLength(0))),
-                icon: stat.icon, gradient: stat.gradient,
-                trend: roll.owingCount == 0 ? "All paid" : "\(roll.owingCount) owing",
-                trendKind: roll.owingCount == 0 ? .success : .warning
-            )
+        let portfolio = try await properties.portfolioSummary(forceRefresh: forceRefresh)
+        let tickets = try await maintenance.tickets(
+            matching: MaintenanceQuery(
+                filter: MaintenanceFilter(),
+                sort: SortOrder(.priority),
+                page: PageRequest(page: 0, size: 1_000)
+            ),
+            forceRefresh: forceRefresh
+        ).items
+        let open = tickets.filter { $0.status != .done }
+        let urgent = open.filter { $0.priority == .urgent }.count
+
+        let stats = cached.stats.map { stat -> DashboardStat in
+            switch stat.title {
+            case Self.rentCollectedTitle:
+                DashboardStat(
+                    title: stat.title,
+                    value: roll.collectionRate.formatted(.percent.precision(.fractionLength(0))),
+                    icon: stat.icon, gradient: stat.gradient,
+                    trend: roll.owingCount == 0 ? "All paid" : "\(roll.owingCount) owing",
+                    trendKind: roll.owingCount == 0 ? .success : .warning
+                )
+            case Self.occupancyTitle:
+                DashboardStat(
+                    title: stat.title,
+                    value: portfolio.occupancyRate.formatted(.percent.precision(.fractionLength(0))),
+                    icon: stat.icon, gradient: stat.gradient,
+                    trend: "\(portfolio.totalUnits - portfolio.occupiedUnits) vacant",
+                    trendKind: .info
+                )
+            case Self.openRequestsTitle:
+                DashboardStat(
+                    title: stat.title,
+                    value: "\(open.count)",
+                    icon: stat.icon, gradient: stat.gradient,
+                    trend: urgent > 0 ? "\(urgent) urgent" : "None urgent",
+                    trendKind: urgent > 0 ? .danger : .success
+                )
+            default:
+                stat
+            }
         }
 
+        let summary = cached.portfolio
+        let turnover = min(summary.turnoverUnits, portfolio.totalUnits - portfolio.occupiedUnits)
+        let livePortfolio = PortfolioSummary(
+            greetingName: summary.greetingName,
+            portfolioValue: summary.portfolioValue,
+            monthlyRevenue: summary.monthlyRevenue,
+            revenueTrend: summary.revenueTrend,
+            propertyCount: portfolio.propertyCount,
+            unitCount: portfolio.totalUnits,
+            occupancyRate: portfolio.occupancyRate,
+            occupiedUnits: portfolio.occupiedUnits,
+            vacantUnits: portfolio.totalUnits - portfolio.occupiedUnits - turnover,
+            turnoverUnits: turnover
+        )
+
+        // Same buckets as the board's columns. "Done this week" needs a
+        // resolution date the ticket model doesn't carry, so it stays seeded.
+        let doneThisWeek = cached.maintenanceCounts.first { $0.kind == .success }?.count ?? 0
+        let maintenanceCounts: [MaintenanceStatusCount] = [
+            .init(label: "New", count: open.filter { $0.status == .new }.count, kind: .info),
+            .init(label: "In Progress", count: open.filter { $0.status == .inProgress }.count, kind: .warning),
+            .init(label: "Scheduled", count: open.filter { $0.status == .scheduled }.count, kind: .neutral),
+            .init(label: "Done this week", count: doneThisWeek, kind: .success)
+        ]
+
         return DashboardSnapshot(
-            portfolio: cached.portfolio,
+            portfolio: livePortfolio,
             revenue: cached.revenue,
             stats: stats,
             insights: cached.insights,
-            maintenanceCounts: cached.maintenanceCounts,
+            maintenanceCounts: maintenanceCounts,
             activity: cached.activity,
             tasks: tasks
         )
@@ -747,19 +876,24 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
     }
 
     private static let rentCollectedTitle = "Rent Collected"
+    private static let occupancyTitle = "Occupancy"
+    private static let openRequestsTitle = "Open Requests"
 
     private static func build() -> DashboardSnapshot {
         let summary = Projections.portfolioSummary()
         let counts = Projections.maintenanceCounts()
         let open = counts.filter { $0.kind != .success }.reduce(0) { $0 + $1.count }
         let urgent = Projections.tickets().filter { $0.priority == .urgent && $0.status != .done }.count
-        let tenantCount = Projections.tenants().count
+        let tenants = Projections.tenants()
+        let tenantCount = tenants.count
+        // The Tenants screen's "renewals soon": leases more than 85% through.
+        let renewals = tenants.filter { $0.leaseProgress > 0.85 }.count
 
         let stats = [
-            DashboardStat(title: "Occupancy", value: "\(Int(summary.occupancyRate * 100))%",
+            DashboardStat(title: occupancyTitle, value: "\(Int(summary.occupancyRate * 100))%",
                           icon: DS.Icons.occupancy, gradient: DS.Gradients.brand,
                           trend: "+2.1%", trendKind: .success),
-            DashboardStat(title: "Open Requests", value: "\(open)",
+            DashboardStat(title: openRequestsTitle, value: "\(open)",
                           icon: DS.Icons.maintenance, gradient: DS.Gradients.warm,
                           trend: urgent > 0 ? "\(urgent) urgent" : "None urgent",
                           trendKind: urgent > 0 ? .danger : .success),
@@ -767,9 +901,11 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             DashboardStat(title: rentCollectedTitle, value: "—",
                           icon: DS.Icons.payment, gradient: DS.Gradients.success,
                           trend: "This month", trendKind: .info),
-            DashboardStat(title: "Active Tenants", value: "\(tenantCount)",
+            // Every tenant on a current lease, as the Tenants screen counts
+            // them. "Active" there means in good standing, a subset.
+            DashboardStat(title: "Tenants", value: "\(tenantCount)",
                           icon: DS.Icons.tenants, gradient: DS.Gradients.ai,
-                          trend: "+3", trendKind: .success)
+                          trend: "\(renewals) renewing", trendKind: .info)
         ]
 
         return DashboardSnapshot(

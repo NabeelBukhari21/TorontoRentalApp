@@ -165,8 +165,10 @@ struct DashboardView: View {
                 .badge(viewModel.unreadNotifications)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Profile", systemImage: AppSymbol.person.rawValue) {
-                    router.push(.profile)
+                // The account button opens Settings: profile is its first
+                // row and Sign Out its last, as in the system apps.
+                Button("Account and Settings", systemImage: AppSymbol.person.rawValue) {
+                    router.push(.settings)
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
@@ -181,9 +183,16 @@ struct DashboardView: View {
                     Button("New message", systemImage: AppSymbol.messages.rawValue) {
                         router.select(.messages)
                     }
-                    Divider()
-                    Button("Rent", systemImage: AppSymbol.rent.rawValue) {
-                        router.push(.rentCollection)
+                    Section("Go to") {
+                        Button("Rent", systemImage: AppSymbol.rent.rawValue) {
+                            router.push(.rentCollection)
+                        }
+                        Button("Tenants", systemImage: AppSymbol.tenants.rawValue) {
+                            router.push(.tenants)
+                        }
+                        Button("Documents", systemImage: AppSymbol.documents.rawValue) {
+                            router.push(.documents)
+                        }
                     }
                 }
             }

@@ -32,7 +32,7 @@ struct TenantListView: View {
                             divider
                             summaryItem(value: "\(viewModel.activeCount)", label: "Active")
                             divider
-                            summaryItem(value: "\(viewModel.renewalsSoonCount)", label: "Renewals soon")
+                            summaryItem(value: "\(viewModel.renewalsSoonCount)", label: "Renewing")
                             divider
                             summaryItem(
                                 value: "\(viewModel.overdueCount)",

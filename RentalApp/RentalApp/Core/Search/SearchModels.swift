@@ -117,6 +117,9 @@ struct SearchResult: Identifiable, Sendable, Equatable {
     let status: String?
     let updatedAt: Date
     let rank: Double
+    /// The record that owns this one, for kinds without a screen of their
+    /// own: a unit's property, a lease's primary tenant.
+    var parentID: String? = nil
 
     var id: String { "\(kind.rawValue):\(entityID)" }
 
@@ -128,13 +131,14 @@ struct SearchResult: Identifiable, Sendable, Equatable {
     var route: AppRoute? {
         switch kind {
         case .property:           .propertyDetail(propertyID: entityID)
-        case .unit:               .unitDetail(unitID: entityID)
+        // A unit opens its property, where its units are listed.
+        case .unit:               parentID.map { .propertyDetail(propertyID: $0) }
         case .tenant:             .tenantDetail(tenantID: entityID)
         case .maintenanceRequest: .maintenanceDetail(requestID: entityID)
         case .message:            .conversation(conversationID: entityID)
         case .document:           .documents
         // A lease opens its tenant, and a vendor has no screen yet.
-        case .lease:              nil
+        case .lease:              parentID.map { .tenantDetail(tenantID: $0) }
         case .vendor:             nil
         }
     }
