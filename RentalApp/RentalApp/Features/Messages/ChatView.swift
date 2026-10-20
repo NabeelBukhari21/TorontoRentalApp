@@ -42,7 +42,8 @@ struct ChatView: View {
         _viewModel = State(initialValue: ChatViewModel(
             conversationID: conversationID,
             repository: container.messages,
-            viewer: viewer
+            viewer: viewer,
+            sync: container.sync
         ))
     }
 
@@ -148,11 +149,6 @@ struct ChatView: View {
             }
 
             Spacer()
-
-            if !isCounterpart {
-                DSIconButton(icon: "phone.fill", diameter: 36) {}
-                DSIconButton(icon: DS.Icons.more, diameter: 36) {}
-            }
         }
         .padding(.horizontal, DS.Spacing.lg)
         .padding(.vertical, DS.Spacing.md)

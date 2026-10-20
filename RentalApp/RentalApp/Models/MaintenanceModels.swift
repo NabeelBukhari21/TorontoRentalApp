@@ -221,6 +221,8 @@ struct MaintenanceTicket: Identifiable, Sendable {
     var scheduledVisit: Date? = nil
     /// Street address, for whoever is going there.
     var propertyAddress: String? = nil
+    /// Who reported it, when it was a tenant. Opens their conversation.
+    var tenantID: String? = nil
 }
 
 // MARK: - Mock Data

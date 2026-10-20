@@ -41,6 +41,20 @@ struct Tenant: Identifiable, Hashable, Sendable, Codable {
     /// High-value tenancy — gets the gold treatment.
     let isPremium: Bool
     let onTimeRate: Int // % of on-time payments
+    /// A current lease with 60 days or fewer left: time to renew. One
+    /// definition, so every screen counts renewals the same way.
+    var isRenewalDue: Bool = false
+}
+
+extension Tenant {
+    /// The renewal window, in days before a fixed term ends.
+    static let renewalWindowDays = 60
+
+    static func isRenewalDue(leaseEnd: Date?, asOf date: Date = .now) -> Bool {
+        guard let leaseEnd else { return false }
+        let days = Calendar.current.dateComponents([.day], from: date, to: leaseEnd).day ?? .max
+        return (0...renewalWindowDays).contains(days)
+    }
 }
 
 struct TenantEvent: Identifiable {
@@ -197,7 +211,7 @@ enum TenantMockData {
                 status: "Resolved", kind: .success, time: "Mar 9"
             )
         ]
-        if tenant.status == .overdue || tenant.leaseProgress > 0.85 {
+        if tenant.status == .overdue || tenant.isRenewalDue {
             rows.insert(
                 PropertyRequestRow(
                     title: "Kitchen faucet leak", unit: tenant.unitName,

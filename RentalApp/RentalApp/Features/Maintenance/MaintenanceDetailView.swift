@@ -23,15 +23,13 @@ struct MaintenanceDetailView: View {
         _viewModel = State(initialValue: MaintenanceDetailViewModel(
             ticketID: ticketID,
             repository: container.maintenance,
+            messages: container.messages,
             visitTracker: .shared
         ))
     }
 
     private var ticket: MaintenanceTicket? { viewModel.ticket }
 
-    private func conversationID(for ticket: MaintenanceTicket) -> String {
-        viewModel.conversationID(for: ticket)
-    }
 
     var body: some View {
         ZStack {
@@ -141,8 +139,16 @@ struct MaintenanceDetailView: View {
 
                     Spacer()
 
-                    DSIconButton(icon: DS.Icons.messages, diameter: 36) {
-                        router.push(.conversation(conversationID: conversationID(for: ticket)))
+                    // Only a tenant's own report has someone to message.
+                    if ticket.tenantID != nil {
+                        DSIconButton(icon: DS.Icons.messages, diameter: 36) {
+                            Task {
+                                if let id = await viewModel.conversationID(for: ticket) {
+                                    router.push(.conversation(conversationID: id))
+                                }
+                            }
+                        }
+                        .accessibilityLabel("Message \(ticket.tenantName)")
                     }
                 }
             }

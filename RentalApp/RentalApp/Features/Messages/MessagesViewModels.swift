@@ -104,6 +104,9 @@ final class ConversationListViewModel {
 final class ChatViewModel {
 
     private let repository: MessageRepositoryProtocol
+    /// Tells the conversation list a message went out, so its preview and
+    /// order update without waiting for the server's echo.
+    private let sync: SyncEngine?
     let conversationID: String
     /// Who is reading and writing: staff in the management app, the
     /// tenant in the portal.
@@ -114,10 +117,16 @@ final class ChatViewModel {
 
     var draft = ""
 
-    init(conversationID: String, repository: MessageRepositoryProtocol, viewer: MessageSender = .staff) {
+    init(
+        conversationID: String,
+        repository: MessageRepositoryProtocol,
+        viewer: MessageSender = .staff,
+        sync: SyncEngine? = nil
+    ) {
         self.conversationID = conversationID
         self.repository = repository
         self.viewer = viewer
+        self.sync = sync
     }
 
     /// The thread from the viewer's side: their own messages are "mine".
@@ -167,11 +176,13 @@ final class ChatViewModel {
         let text = draft
         draft = ""
         try? await repository.send(text, attachment: nil, in: conversationID, from: viewer)
+        await sync?.publishLocalChange(.conversations)
         await reloadThread()
     }
 
     func sendAttachment(_ attachment: ChatAttachment) async {
         try? await repository.send("", attachment: attachment, in: conversationID, from: viewer)
+        await sync?.publishLocalChange(.conversations)
         await reloadThread()
     }
 
@@ -181,7 +192,10 @@ final class ChatViewModel {
             try? await Task.sleep(for: .milliseconds(600))
             guard let latest = try? await repository.messages(forConversationID: conversationID, forceRefresh: false)
             else { continue }
+            let replied = latest.count > (state.value?.count ?? 0)
             state = .loaded(latest)
+            // A reply moves the conversation's preview too.
+            if replied { await sync?.publishLocalChange(.conversations) }
         }
     }
 }

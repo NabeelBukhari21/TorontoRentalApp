@@ -344,7 +344,6 @@ protocol TenantRepositoryProtocol: AnyObject {
     func timeline(forTenantID id: String) async throws -> [TenantEvent]
     func documents(forTenantID id: String) async throws -> [PropertyDocRow]
     func maintenanceHistory(forTenantID id: String) async throws -> [PropertyRequestRow]
-    func messages(forTenantID id: String) async throws -> [TenantMessagePreview]
 
     func create(_ draft: TenantDraft) async throws
     func propertyNames() async throws -> [String]
@@ -512,6 +511,9 @@ protocol MessageRepositoryProtocol: AnyObject {
 
     func markRead(_ conversationID: String) async throws
     func send(_ text: String, attachment: ChatAttachment?, in conversationID: String, from sender: MessageSender) async throws
+    /// The organization's conversation with a tenant, started empty when
+    /// there isn't one yet. It joins the inbox once a message is sent.
+    func conversationID(forTenantID id: String) async throws -> String
 }
 
 extension MessageRepositoryProtocol {

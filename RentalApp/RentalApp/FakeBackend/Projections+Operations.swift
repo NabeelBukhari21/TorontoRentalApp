@@ -65,7 +65,8 @@ extension Projections {
                 comments: comments,
                 unitID: request.unitID?.description,
                 scheduledVisit: request.status == .scheduled ? request.scheduledFor : nil,
-                propertyAddress: property.map { "\($0.address.line1), \($0.address.city)" }
+                propertyAddress: property.map { "\($0.address.line1), \($0.address.city)" },
+                tenantID: tenant?.id.description
             )
         }
     }
@@ -190,6 +191,23 @@ extension Projections {
                 isPinned: false
             )
         }
+    }
+
+    /// The seeded conversation with this tenant, if there is one.
+    static func conversationID(forTenantID id: String) -> String? {
+        backend.conversations
+            .first { $0.participants.contains { $0.id.description == id } }?
+            .id.description
+    }
+
+    /// Who a new conversation with this tenant is with: their name and
+    /// where they live.
+    static func chatContact(forTenantID id: String) -> (name: String, context: String)? {
+        guard let tenant = backend.tenants.first(where: { $0.id.description == id }) else { return nil }
+        let context = backend.activeLease(for: tenant.id)
+            .flatMap { backend.unitByID[$0.unitID] }
+            .flatMap { unit in backend.propertyByID[unit.propertyID].map { "\(unit.label) · \($0.name)" } }
+        return (tenant.fullName, context ?? "Tenant")
     }
 
     static func messages(forConversationID id: String) -> [ChatMessage] {

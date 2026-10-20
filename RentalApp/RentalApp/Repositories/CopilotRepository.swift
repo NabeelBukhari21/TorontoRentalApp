@@ -54,7 +54,7 @@ final class InMemoryCopilotRepository: CopilotRepositoryProtocol {
         let open = counts.filter { $0.kind != .success }.reduce(0) { $0 + $1.count }
         let urgent = Projections.tickets().filter { $0.priority == .urgent && $0.status != .done }.count
         let overdue = Projections.tenants().filter { $0.status == .overdue }.count
-        let renewals = Projections.tenants().filter { $0.leaseProgress > 0.85 }.count
+        let renewals = Projections.tenants().filter { $0.isRenewalDue }.count
 
         let hour = Calendar.current.component(.hour, from: .now)
         let greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
@@ -91,7 +91,7 @@ final class InMemoryCopilotRepository: CopilotRepositoryProtocol {
             ))
         }
 
-        if let renewal = Projections.tenants().first(where: { $0.leaseProgress > 0.85 }) {
+        if let renewal = Projections.tenants().first(where: { $0.isRenewalDue }) {
             result.append(.init(
                 icon: DS.Icons.lease, kind: .info,
                 title: "Start renewal — \(renewal.name)",
@@ -141,7 +141,7 @@ final class InMemoryCopilotRepository: CopilotRepositoryProtocol {
 
     private static func leaseInsights() -> [AIInsightRow] {
         let tenants = Projections.tenants()
-        let renewals = tenants.filter { $0.leaseProgress > 0.85 }
+        let renewals = tenants.filter { $0.isRenewalDue }
         let premium = tenants.filter { $0.isPremium }
 
         return [

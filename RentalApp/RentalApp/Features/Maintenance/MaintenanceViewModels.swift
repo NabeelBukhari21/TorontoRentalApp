@@ -154,6 +154,7 @@ final class MaintenanceInboxViewModel {
 final class MaintenanceDetailViewModel: VisitScheduling {
 
     private let repository: MaintenanceRepositoryProtocol
+    private let messages: MessageRepositoryProtocol
     let visitTracker: RepairVisitTracker
     let ticketID: String
 
@@ -168,9 +169,15 @@ final class MaintenanceDetailViewModel: VisitScheduling {
 
     var commentText = ""
 
-    init(ticketID: String, repository: MaintenanceRepositoryProtocol, visitTracker: RepairVisitTracker) {
+    init(
+        ticketID: String,
+        repository: MaintenanceRepositoryProtocol,
+        messages: MessageRepositoryProtocol,
+        visitTracker: RepairVisitTracker
+    ) {
         self.ticketID = ticketID
         self.repository = repository
+        self.messages = messages
         self.visitTracker = visitTracker
     }
 
@@ -249,12 +256,11 @@ final class MaintenanceDetailViewModel: VisitScheduling {
         return matching.isEmpty ? vendors : matching
     }
 
-    /// Conversations are keyed by person — derive the slug from the tenant.
-    func conversationID(for ticket: MaintenanceTicket) -> String {
-        ticket.tenantName
-            .lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-            .filter { $0.isLetter || $0 == "-" }
+    /// The conversation with whoever reported it. Nil for a request staff
+    /// reported themselves.
+    func conversationID(for ticket: MaintenanceTicket) async -> String? {
+        guard let tenantID = ticket.tenantID else { return nil }
+        return try? await messages.conversationID(forTenantID: tenantID)
     }
 
     // MARK: Intents

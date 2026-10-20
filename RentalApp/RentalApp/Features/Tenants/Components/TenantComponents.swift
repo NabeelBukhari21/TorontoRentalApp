@@ -48,7 +48,7 @@ struct TenantRow: View {
                     HStack(spacing: DS.Spacing.sm) {
                         DSProgressBar(
                             value: tenant.leaseProgress,
-                            gradient: tenant.leaseProgress > 0.85 ? DS.Gradients.warm : DS.Gradients.brand,
+                            gradient: tenant.isRenewalDue ? DS.Gradients.warm : DS.Gradients.brand,
                             height: 3
                         )
                         .frame(width: 72)

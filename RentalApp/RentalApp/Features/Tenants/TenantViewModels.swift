@@ -94,6 +94,7 @@ final class TenantListViewModel {
 final class TenantDetailViewModel {
 
     private let repository: TenantRepositoryProtocol
+    private let messages: MessageRepositoryProtocol
     let tenantID: String
 
     private(set) var state: LoadState<Tenant> = .idle
@@ -104,9 +105,15 @@ final class TenantDetailViewModel {
 
     private var loadedTabs: Set<TenantDetailTab> = []
 
-    init(tenantID: String, repository: TenantRepositoryProtocol) {
+    init(tenantID: String, repository: TenantRepositoryProtocol, messages: MessageRepositoryProtocol) {
         self.tenantID = tenantID
         self.repository = repository
+        self.messages = messages
+    }
+
+    /// The conversation with this tenant, for the Message buttons.
+    func conversationID() async -> String? {
+        try? await messages.conversationID(forTenantID: tenantID)
     }
 
     var tenant: Tenant? { state.value }
@@ -159,7 +166,15 @@ final class TenantDetailViewModel {
             case .documents:
                 documentRows = try await repository.documents(forTenantID: tenantID)
             case .messages:
-                messagePreviews = try await repository.messages(forTenantID: tenantID)
+                // The last few messages of the real thread, so anything
+                // sent from Messages shows here too.
+                let id = try await messages.conversationID(forTenantID: tenantID)
+                let thread = try await messages.messages(forConversationID: id, forceRefresh: false)
+                messagePreviews = thread.suffix(3).map {
+                    TenantMessagePreview(text: $0.text, time: $0.time, isFromTenant: !$0.isMine)
+                }
+                // Reload on return, after a message may have been sent.
+                loadedTabs.remove(.messages)
             }
         } catch {
             loadedTabs.remove(tab)

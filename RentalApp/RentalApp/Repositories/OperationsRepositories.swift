@@ -306,6 +306,11 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
     private let cache: RepositoryCache
     private var threads: [String: [ChatMessage]] = [:]
     private var readConversationIDs: Set<String> = []
+    /// Conversations with a message sent or received this session, most
+    /// recent last, so the list shows them first with their new preview.
+    private var activeConversationIDs: [String] = []
+    /// Conversations started in the app with tenants who had none.
+    private var started: [Conversation] = []
     private(set) var typingIn: Set<String> = []
 
     init(cache: RepositoryCache = .shared) {
@@ -324,14 +329,32 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
 
     func conversation(id: String) async throws -> Conversation {
         let all = try await cached(forceRefresh: false)
-        guard let match = all.first(where: { $0.id == id }) else {
+        guard let match = all.first(where: { $0.id == id }) ?? started.first(where: { $0.id == id }) else {
             throw AppError.notFound("Conversation")
         }
         return match
     }
 
+    func conversationID(forTenantID id: String) async throws -> String {
+        if let seeded = Projections.conversationID(forTenantID: id) { return seeded }
+        let conversationID = "conv-tenant-\(id)"
+        if !started.contains(where: { $0.id == conversationID }) {
+            guard let contact = Projections.chatContact(forTenantID: id) else {
+                throw AppError.notFound("Tenant")
+            }
+            started.append(Conversation(
+                id: conversationID, name: contact.name, role: .tenant, context: contact.context,
+                lastMessage: "", lastTime: "", unreadCount: 0, isOnline: false, isPinned: false
+            ))
+            threads[conversationID] = []
+        }
+        return conversationID
+    }
+
     func messages(forConversationID id: String, forceRefresh: Bool) async throws -> [ChatMessage] {
-        if let existing = threads[id], !forceRefresh { return existing }
+        if let existing = threads[id], !forceRefresh || started.contains(where: { $0.id == id }) {
+            return existing
+        }
         try await SimulatedLatency.wait(.detail)
         let generated = Projections.messages(forConversationID: id)
         threads[id] = generated
@@ -364,6 +387,7 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
             threads[conversationID] = Projections.messages(forConversationID: conversationID)
         }
         threads[conversationID, default: []].append(message)
+        markActive(conversationID)
 
         Task { await simulateDelivery(of: message.id, in: conversationID, from: sender) }
     }
@@ -393,6 +417,13 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
                 ChatMessage(text: reply, isMine: false, time: "Now")
             )
         }
+        markActive(conversationID)
+    }
+
+    private func markActive(_ conversationID: String) {
+        activeConversationIDs.removeAll { $0 == conversationID }
+        activeConversationIDs.append(conversationID)
+        cache.invalidate(prefix: Self.namespace)
     }
 
     private func setStatus(_ status: MessageStatus, for messageID: UUID, in conversationID: String) {
@@ -420,14 +451,38 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
     // MARK: Internals
 
     private func cached(forceRefresh: Bool) async throws -> [Conversation] {
-        let base = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
+        let seeded = await cache.fetch(key: Self.namespace, forceRefresh: forceRefresh) {
             Projections.conversations()
         }
-        guard !readConversationIDs.isEmpty else { return base }
-        return base.map { conversation in
+        // A started conversation joins the inbox with its first message.
+        let base = seeded + started.filter { activeConversationIDs.contains($0.id) }
+        guard !readConversationIDs.isEmpty || !activeConversationIDs.isEmpty else { return base }
+        let updated = base.map { conversation in
             var copy = conversation
             if readConversationIDs.contains(conversation.id) { copy.unreadCount = 0 }
+            // The preview follows the thread once it has a message from
+            // this session.
+            if activeConversationIDs.contains(conversation.id),
+               let last = threads[conversation.id]?.last {
+                copy.lastMessage = last.isMine ? "You: \(Self.preview(of: last))" : Self.preview(of: last)
+                copy.lastTime = last.time
+            }
             return copy
+        }
+        // Most recently active first, then the seeded order.
+        return updated.sorted { lhs, rhs in
+            let l = activeConversationIDs.lastIndex(of: lhs.id) ?? -1
+            let r = activeConversationIDs.lastIndex(of: rhs.id) ?? -1
+            return l > r
+        }
+    }
+
+    private static func preview(of message: ChatMessage) -> String {
+        if !message.text.isEmpty { return message.text }
+        switch message.attachment {
+        case .photo: return "Photo"
+        case .document(let name, _): return name
+        case nil: return ""
         }
     }
 
@@ -444,7 +499,8 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
             result = result.filter { $0.unreadCount > 0 }
         }
 
-        return result.sorted { $0.isPinned && !$1.isPinned }
+        // Pinned first; otherwise keep the incoming (most recent) order.
+        return result.filter(\.isPinned) + result.filter { !$0.isPinned }
     }
 }
 

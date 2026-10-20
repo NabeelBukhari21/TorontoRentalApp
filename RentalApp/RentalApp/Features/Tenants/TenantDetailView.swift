@@ -51,7 +51,8 @@ struct TenantDetailView: View {
         self.tenantID = tenantID
         _viewModel = State(initialValue: TenantDetailViewModel(
             tenantID: tenantID,
-            repository: container.tenants
+            repository: container.tenants,
+            messages: container.messages
         ))
     }
 
@@ -63,6 +64,7 @@ struct TenantDetailView: View {
 
     @Environment(AppRouter.self) private var router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @Environment(\.container) private var container
     @State private var viewModel: TenantDetailViewModel
     @State private var leaseSheet: LeaseSheet?
@@ -171,7 +173,7 @@ struct TenantDetailView: View {
                 HStack(spacing: DS.Spacing.sm) {
                     DSBadge(text: tenant.status.rawValue, kind: tenant.status.kind)
                     DSBadge(text: "\(tenant.onTimeRate)% on-time", kind: tenant.onTimeRate >= 95 ? .success : .warning)
-                    if tenant.leaseProgress > 0.85 {
+                    if tenant.isRenewalDue {
                         DSBadge(text: "Renewal soon", kind: .warning, icon: "clock.fill")
                     }
                 }
@@ -179,10 +181,15 @@ struct TenantDetailView: View {
                 // Quick actions.
                 HStack(spacing: DS.Spacing.xl) {
                     quickAction(icon: DS.Icons.messages, label: "Message") {
-                        router.push(.conversation(conversationID: tenant.id))
+                        openConversation()
                     }
-                    quickAction(icon: "phone.fill", label: "Call") {}
-                    quickAction(icon: "envelope.fill", label: "Email") {}
+                    quickAction(icon: "phone.fill", label: "Call") {
+                        let digits = tenant.phone.filter { $0.isNumber || $0 == "+" }
+                        if !digits.isEmpty, let url = URL(string: "tel:\(digits)") { openURL(url) }
+                    }
+                    quickAction(icon: "envelope.fill", label: "Email") {
+                        if let url = URL(string: "mailto:\(tenant.email)") { openURL(url) }
+                    }
                     quickAction(icon: DS.Icons.lease, label: "Lease") {
                         movesForward = true
                         withAnimation(DS.Motion.smooth) { selectedTab = .documents }
@@ -190,6 +197,14 @@ struct TenantDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func openConversation() {
+        Task {
+            if let id = await viewModel.conversationID() {
+                router.push(.conversation(conversationID: id))
+            }
         }
     }
 
@@ -281,7 +296,7 @@ struct TenantDetailView: View {
                 .dsEntrance(index: 0)
 
             // Near the end of the term (the "Renewal soon" badge): offer the next step.
-            if tenant.leaseProgress > 0.85 {
+            if tenant.isRenewalDue {
                 Button("Renew Lease", systemImage: "arrow.clockwise") { leaseSheet = .renew }
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
@@ -448,12 +463,18 @@ struct TenantDetailView: View {
         VStack(spacing: DS.Spacing.lg) {
             DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                    Text("Latest Thread").dsOverline()
+                    Text("Latest Messages").dsOverline()
 
-                    VStack(spacing: DS.Spacing.sm) {
-                        ForEach(Array(viewModel.messagePreviews.enumerated()), id: \.element.id) { index, message in
-                            messageBubble(message, tenant: tenant)
-                                .dsEntrance(index: index)
+                    if viewModel.messagePreviews.isEmpty {
+                        Text("No messages with \(tenant.name.split(separator: " ").first.map(String.init) ?? tenant.name) yet.")
+                            .font(DS.Typography.footnote)
+                            .foregroundStyle(DS.Colors.textSecondary)
+                    } else {
+                        VStack(spacing: DS.Spacing.sm) {
+                            ForEach(Array(viewModel.messagePreviews.enumerated()), id: \.element.id) { index, message in
+                                messageBubble(message, tenant: tenant)
+                                    .dsEntrance(index: index)
+                            }
                         }
                     }
                 }
@@ -467,7 +488,7 @@ struct TenantDetailView: View {
                 size: .large,
                 isFullWidth: true
             ) {
-                router.push(.conversation(conversationID: tenant.id))
+                openConversation()
             }
             .dsEntrance(index: 4)
         }

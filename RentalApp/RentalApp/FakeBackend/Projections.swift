@@ -213,7 +213,8 @@ enum Projections {
                 leaseProgress: lease.progress(),
                 status: status,
                 isPremium: tenant.isPriority,
-                onTimeRate: tenant.onTimePaymentRate
+                onTimeRate: tenant.onTimePaymentRate,
+                isRenewalDue: lease.isRenewalDue()
             )
         }
         .sorted { $0.name < $1.name }
@@ -310,23 +311,6 @@ enum Projections {
                     time: FakeDateFormat.monthDay(request.createdAt)
                 )
             }
-    }
-
-    static func messagePreviews(forTenantID id: String) -> [TenantMessagePreview] {
-        guard let tenant = backend.tenants.first(where: { $0.id.description == id }) else { return [] }
-
-        let conversation = backend.conversations.first { conversation in
-            conversation.participants.contains { $0.id == tenant.id.rawValue }
-        }
-        guard let conversation else { return [] }
-
-        return backend.messages(in: conversation.id).suffix(3).map { message in
-            TenantMessagePreview(
-                text: message.body,
-                time: FakeDateFormat.dayTime(message.createdAt),
-                isFromTenant: message.senderRole == .tenant
-            )
-        }
     }
 
     // MARK: - Shared Helpers

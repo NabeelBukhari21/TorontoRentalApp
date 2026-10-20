@@ -454,7 +454,7 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
             total: all.count,
             active: all.filter { $0.status == .active }.count,
             overdue: all.filter { $0.status == .overdue }.count,
-            renewalsSoon: all.filter { $0.leaseProgress > 0.85 }.count
+            renewalsSoon: all.filter { $0.isRenewalDue }.count
         )
     }
 
@@ -473,11 +473,6 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     func maintenanceHistory(forTenantID id: String) async throws -> [PropertyRequestRow] {
         try await SimulatedLatency.wait(.detail)
         return Projections.maintenanceHistory(forTenantID: id)
-    }
-
-    func messages(forTenantID id: String) async throws -> [TenantMessagePreview] {
-        try await SimulatedLatency.wait(.detail)
-        return Projections.messagePreviews(forTenantID: id)
     }
 
     func propertyNames() async throws -> [String] {
@@ -508,7 +503,8 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
                 leaseProgress: 0,
                 status: .active,
                 isPremium: false,
-                onTimeRate: 100
+                onTimeRate: 100,
+                isRenewalDue: Tenant.isRenewalDue(leaseEnd: draft.leaseEnd)
             ),
             at: 0
         )
@@ -696,7 +692,8 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
             leaseProgress: lease.end.map { Domain.DateRange(start: lease.start, end: $0).progress() } ?? 0,
             status: tenant.status == .notice ? .active : tenant.status,
             isPremium: tenant.isPremium,
-            onTimeRate: tenant.onTimeRate
+            onTimeRate: tenant.onTimeRate,
+            isRenewalDue: Tenant.isRenewalDue(leaseEnd: lease.end)
         )
     }
 
@@ -886,8 +883,8 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
         let urgent = Projections.tickets().filter { $0.priority == .urgent && $0.status != .done }.count
         let tenants = Projections.tenants()
         let tenantCount = tenants.count
-        // The Tenants screen's "renewals soon": leases more than 85% through.
-        let renewals = tenants.filter { $0.leaseProgress > 0.85 }.count
+        // The Tenants screen's "renewing": 60 days or fewer left.
+        let renewals = tenants.filter { $0.isRenewalDue }.count
 
         let stats = [
             DashboardStat(title: occupancyTitle, value: "\(Int(summary.occupancyRate * 100))%",

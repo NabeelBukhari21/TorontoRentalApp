@@ -208,8 +208,10 @@ extension FakeBackend {
             )
         }
 
-        // Money in.
-        for payment in payments.filter({ $0.status == .paid && $0.kind == .rent })
+        // Money in. Only payments already received: the seed dates some
+        // pre-authorized debits ahead, and those can't have notified yet.
+        let now = Date.now
+        for payment in payments.filter({ $0.status == .paid && $0.kind == .rent && ($0.paidAt ?? $0.dueOn) <= now })
             .sorted(by: { ($0.paidAt ?? .distantPast) > ($1.paidAt ?? .distantPast) })
             .prefix(5) {
             let tenantName = tenantByID[payment.tenantID]?.fullName ?? "Tenant"
