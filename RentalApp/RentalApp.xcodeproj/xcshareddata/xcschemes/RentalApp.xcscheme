@@ -17,6 +17,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "84061CDE3012E7C8009DC134"
                BuildableName = "RentalApp.app"
+               BlueprintName = "RentalApp"
                ReferencedContainer = "container:RentalApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,6 +47,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "84061CDE3012E7C8009DC134"
             BuildableName = "RentalApp.app"
+            BlueprintName = "RentalApp"
             ReferencedContainer = "container:RentalApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,6 +64,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "84061CDE3012E7C8009DC134"
             BuildableName = "RentalApp.app"
+            BlueprintName = "RentalApp"
             ReferencedContainer = "container:RentalApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

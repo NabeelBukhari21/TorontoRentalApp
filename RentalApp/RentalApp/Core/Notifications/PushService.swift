@@ -242,6 +242,12 @@ extension PushService: UNUserNotificationCenterDelegate {
         let userInfo = notification.request.content.userInfo
         let priority = userInfo["priority"] as? String ?? "normal"
 
+        // A reminder this device scheduled (a repair visit in an hour) was
+        // asked for by the person holding the phone: always show it.
+        if !(notification.request.trigger is UNPushNotificationTrigger) {
+            return [.banner, .sound, .list]
+        }
+
         await MainActor.run {
             if let payload = PushPayload(userInfo: userInfo) {
                 sink.didReceiveForeground(payload)
@@ -258,7 +264,14 @@ extension PushService: UNUserNotificationCenterDelegate {
     ) async {
 
         let userInfo = response.notification.request.content.userInfo
-        guard let payload = PushPayload(userInfo: userInfo) else { return }
+        guard let payload = PushPayload(userInfo: userInfo) else {
+            // Local reminders carry only a link to where they're about.
+            if response.actionIdentifier == UNNotificationDefaultActionIdentifier,
+               let link = userInfo["deep_link"] as? String, let url = URL(string: link) {
+                await MainActor.run { _ = router.open(url) }
+            }
+            return
+        }
 
         await MainActor.run {
             switch response.actionIdentifier {

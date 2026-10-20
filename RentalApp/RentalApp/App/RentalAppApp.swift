@@ -58,6 +58,8 @@ struct RentalAppApp: App {
                     // up offline sat until the user happened to reopen the
                     // app, which is the one moment it did not need to.
                     backgroundRefresh.scheduleDrainIfNeeded()
+                    // Leave the widgets showing the latest numbers.
+                    Task { await container.widgetSnapshots.publish() }
                 }
         }
     }

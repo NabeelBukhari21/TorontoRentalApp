@@ -55,7 +55,7 @@ struct TenantRequestsView: View {
 
     private func link(for ticket: MaintenanceTicket) -> some View {
         NavigationLink {
-            TenantRequestDetailView(ticket: ticket)
+            TenantRequestDetailView(ticket: ticket, tracker: viewModel.visitTracker)
         } label: {
             TenantRequestRow(ticket: ticket)
         }
@@ -88,6 +88,7 @@ struct TenantRequestRow: View {
 struct TenantRequestDetailView: View {
 
     let ticket: MaintenanceTicket
+    let tracker: RepairVisitTracker
 
     var body: some View {
         List {
@@ -118,6 +119,15 @@ struct TenantRequestDetailView: View {
                 }
             } footer: {
                 Text(ticket.status.tenantExplanation)
+            }
+
+            if RepairVisitTrackingRows.applies(to: ticket) {
+                Section("Visit") {
+                    LabeledContent("When") {
+                        Text(ticket.scheduledVisit ?? .now, format: .dateTime.weekday(.wide).month(.abbreviated).day().hour().minute())
+                    }
+                    RepairVisitTrackingRows(ticket: ticket, tracker: tracker)
+                }
             }
 
             if !ticket.comments.isEmpty {

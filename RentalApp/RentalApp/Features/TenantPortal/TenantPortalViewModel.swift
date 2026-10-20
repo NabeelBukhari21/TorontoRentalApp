@@ -32,6 +32,7 @@ final class TenantPortalViewModel {
     private let tenants: TenantRepositoryProtocol
     private let payments: PaymentRepositoryProtocol
     private let maintenance: MaintenanceRepositoryProtocol
+    let visitTracker: RepairVisitTracker
     let session: AuthSession
 
     // MARK: State
@@ -47,8 +48,10 @@ final class TenantPortalViewModel {
         portal: TenantPortalRepositoryProtocol,
         tenants: TenantRepositoryProtocol,
         payments: PaymentRepositoryProtocol,
-        maintenance: MaintenanceRepositoryProtocol
+        maintenance: MaintenanceRepositoryProtocol,
+        visitTracker: RepairVisitTracker
     ) {
+        self.visitTracker = visitTracker
         self.session = session
         self.portal = portal
         self.tenants = tenants
@@ -72,6 +75,8 @@ final class TenantPortalViewModel {
             self.ledger = try await ledger
             self.requests = try await loadRequests(unitID: loadedLease.unitID)
             phase = .ready
+            for request in requests { await visitTracker.jobChanged(request) }
+            await visitTracker.refresh()
         } catch is CancellationError {
             // The view went away mid-load; the next appearance tries again.
         } catch {

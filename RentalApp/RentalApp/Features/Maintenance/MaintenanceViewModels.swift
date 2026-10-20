@@ -137,6 +137,7 @@ final class MaintenanceInboxViewModel {
 final class MaintenanceDetailViewModel {
 
     private let repository: MaintenanceRepositoryProtocol
+    let visitTracker: RepairVisitTracker
     let ticketID: String
 
     private(set) var state: LoadState<MaintenanceTicket> = .idle
@@ -146,9 +147,10 @@ final class MaintenanceDetailViewModel {
 
     var commentText = ""
 
-    init(ticketID: String, repository: MaintenanceRepositoryProtocol) {
+    init(ticketID: String, repository: MaintenanceRepositoryProtocol, visitTracker: RepairVisitTracker) {
         self.ticketID = ticketID
         self.repository = repository
+        self.visitTracker = visitTracker
     }
 
     var ticket: MaintenanceTicket? { state.value }
@@ -164,6 +166,7 @@ final class MaintenanceDetailViewModel {
             state = .loaded(try await repository.ticket(id: ticketID))
             vendors = try await repository.vendors()
             timelineEvents = try await repository.timeline(forTicketID: ticketID)
+            await visitTracker.refresh()
         } catch {
             state = .failed(error as? AppError ?? .unknown)
         }
@@ -263,8 +266,11 @@ final class MaintenanceDetailViewModel {
         defer { isSubmitting = false }
         do {
             try await work(repository)
-            state = .loaded(try await repository.ticket(id: ticketID))
+            let updated = try await repository.ticket(id: ticketID)
+            state = .loaded(updated)
             timelineEvents = try await repository.timeline(forTicketID: ticketID)
+            // A moved or finished job updates its Lock Screen visit.
+            await visitTracker.jobChanged(updated)
         } catch {
             state = .failed(error as? AppError ?? .unknown)
         }

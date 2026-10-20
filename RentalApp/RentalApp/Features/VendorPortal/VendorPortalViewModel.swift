@@ -29,6 +29,7 @@ final class VendorPortalViewModel {
     private let portal: VendorPortalRepositoryProtocol
     private let maintenance: MaintenanceRepositoryProtocol
     private let sync: SyncEngine
+    let visitTracker: RepairVisitTracker
     let session: AuthSession
 
     // MARK: State
@@ -43,12 +44,14 @@ final class VendorPortalViewModel {
         session: AuthSession,
         portal: VendorPortalRepositoryProtocol,
         maintenance: MaintenanceRepositoryProtocol,
-        sync: SyncEngine
+        sync: SyncEngine,
+        visitTracker: RepairVisitTracker
     ) {
         self.session = session
         self.portal = portal
         self.maintenance = maintenance
         self.sync = sync
+        self.visitTracker = visitTracker
     }
 
     // MARK: Loading
@@ -67,6 +70,9 @@ final class VendorPortalViewModel {
             )
             jobs = try await maintenance.tickets(matching: query, forceRefresh: true).items
             phase = .ready
+            // Keep any Lock Screen visit in step: rebooked, or done.
+            for job in jobs { await visitTracker.jobChanged(job) }
+            await visitTracker.refresh()
         } catch is CancellationError {
             // The view went away mid-load; the next appearance tries again.
         } catch {
@@ -111,7 +117,12 @@ final class VendorPortalViewModel {
     }
 
     func decline(_ job: MaintenanceTicket, reason: String) async -> Bool {
-        await perform { try await $0.decline(job.id, by: self.vendorName, reason: reason) }
+        let declined = await perform { try await $0.decline(job.id, by: self.vendorName, reason: reason) }
+        if declined {
+            await visitTracker.stopTracking(job.id)
+            await visitTracker.cancelReminder(job.id)
+        }
+        return declined
     }
 
     func schedule(_ job: MaintenanceTicket, at date: Date, note: String) async -> Bool {

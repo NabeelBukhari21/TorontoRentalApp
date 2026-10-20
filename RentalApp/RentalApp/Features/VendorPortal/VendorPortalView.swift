@@ -21,7 +21,8 @@ struct VendorPortalView: View {
             session: session,
             portal: container.vendorPortal,
             maintenance: container.maintenance,
-            sync: container.sync
+            sync: container.sync,
+            visitTracker: .shared
         ))
     }
 

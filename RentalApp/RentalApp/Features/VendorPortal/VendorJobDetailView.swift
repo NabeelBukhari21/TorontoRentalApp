@@ -72,6 +72,12 @@ struct VendorJobDetailView: View {
 
             locationSection(job)
 
+            if RepairVisitTrackingRows.applies(to: job) {
+                Section("Visit") {
+                    RepairVisitTrackingRows(ticket: job, tracker: viewModel.visitTracker)
+                }
+            }
+
             if !job.comments.isEmpty {
                 Section("Updates") {
                     ForEach(job.comments) { comment in

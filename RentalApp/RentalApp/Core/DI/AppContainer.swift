@@ -26,6 +26,9 @@ final class AppContainer {
     let payments: PaymentRepositoryProtocol
     let tenantPortal: TenantPortalRepositoryProtocol
     let vendorPortal: VendorPortalRepositoryProtocol
+    /// Keeps the Home Screen and Lock Screen widgets current. Derived from
+    /// payments and maintenance, so it's built here rather than passed in.
+    let widgetSnapshots: WidgetSnapshotPublisher
     let maintenance: MaintenanceRepositoryProtocol
     let messages: MessageRepositoryProtocol
     let documents: DocumentRepositoryProtocol
@@ -186,6 +189,7 @@ final class AppContainer {
         self.offline = offline
         self.conflicts = conflicts
         self.toasts = toasts
+        self.widgetSnapshots = WidgetSnapshotPublisher(payments: payments, maintenance: maintenance, sync: sync)
 
         // MARK: Release infrastructure
         //

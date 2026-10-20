@@ -21,7 +21,8 @@ struct MaintenanceDetailView: View {
         self.ticketID = ticketID
         _viewModel = State(initialValue: MaintenanceDetailViewModel(
             ticketID: ticketID,
-            repository: container.maintenance
+            repository: container.maintenance,
+            visitTracker: .shared
         ))
     }
 
@@ -40,6 +41,10 @@ struct MaintenanceDetailView: View {
                     VStack(spacing: DS.Spacing.lg) {
                         headerCard(ticket).dsEntrance(index: 0)
                         workflowCard(ticket).dsEntrance(index: 1)
+
+                        if RepairVisitTrackingRows.applies(to: ticket) {
+                            visitCard(ticket).dsEntrance(index: 1)
+                        }
                         if let ai = ticket.ai {
                             aiPanel(ticket, ai: ai).dsEntrance(index: 2)
                         }
@@ -153,6 +158,27 @@ struct MaintenanceDetailView: View {
                 TicketWorkflowView(currentStatus: ticket.status) { newStatus in
                     Task { await viewModel.move(to: newStatus) }
                 }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    // MARK: Visit
+
+    private func visitCard(_ ticket: MaintenanceTicket) -> some View {
+        DSCard(style: .raised) {
+            VStack(alignment: .leading, spacing: DS.Spacing.md) {
+                HStack {
+                    Text("Visit").dsOverline()
+                    Spacer()
+                    if let visit = ticket.scheduledVisit {
+                        Text(visit, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute())
+                            .font(DS.Typography.caption)
+                            .foregroundStyle(DS.Colors.textSecondary)
+                    }
+                }
+                RepairVisitTrackingRows(ticket: ticket, tracker: viewModel.visitTracker)
+                    .font(DS.Typography.subheadline)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

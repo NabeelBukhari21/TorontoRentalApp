@@ -84,6 +84,8 @@ struct RootNavigation: View {
         .dsConflictResolution(container.conflicts)
         // The session check runs while the launch background shows.
         .task { await session.bootstrap() }
+        // Widgets follow the session: a staff account's numbers, or nothing.
+        .task(id: session.state) { await updateWidgets() }
         // Deep links land on the shared router; one that arrives during
         // the launch flow has its destination set before Main appears.
         .onOpenURL { url in
@@ -154,6 +156,17 @@ struct RootNavigation: View {
         case .authenticated:
             MainTabNavigation()
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))
+        }
+    }
+
+    private func updateWidgets() async {
+        switch session.state {
+        case .authenticated(let account):
+            await container.widgetSnapshots.update(for: account)
+        case .unauthenticated, .onboarding:
+            container.widgetSnapshots.stop()
+        case .checking, .awaitingMFA, .needsOrganization, .gettingStarted:
+            break
         }
     }
 

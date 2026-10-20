@@ -88,7 +88,7 @@ struct TenantHomeView: View {
             } else {
                 ForEach(viewModel.openRequests.prefix(3)) { ticket in
                     NavigationLink {
-                        TenantRequestDetailView(ticket: ticket)
+                        TenantRequestDetailView(ticket: ticket, tracker: viewModel.visitTracker)
                     } label: {
                         TenantRequestRow(ticket: ticket)
                     }

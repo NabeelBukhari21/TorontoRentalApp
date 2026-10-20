@@ -8,16 +8,75 @@
 
 /* Begin PBXBuildFile section */
 		84061D013100000000000003 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84061D013100000000000002 /* Supabase */; };
+		842FDD463086A1E200D3780E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 842FDD453086A1E200D3780E /* WidgetKit.framework */; };
+		842FDD483086A1E200D3780E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 842FDD473086A1E200D3780E /* SwiftUI.framework */; };
+		842FDD553086A1E400D3780E /* PurrpertyWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 842FDD433086A1E200D3780E /* PurrpertyWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		842FDD533086A1E400D3780E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 84061CD73012E7C8009DC134 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 842FDD423086A1E200D3780E;
+			remoteInfo = PurrpertyWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		842FDD5A3086A1E400D3780E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				842FDD553086A1E400D3780E /* PurrpertyWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		84061CDF3012E7C8009DC134 /* RentalApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RentalApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		842FDD433086A1E200D3780E /* PurrpertyWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PurrpertyWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		842FDD453086A1E200D3780E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		842FDD473086A1E200D3780E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		842FDD5B3086A50A00D3780E /* PurrpertyWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurrpertyWidgetsExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		842FDD563086A1E400D3780E /* Exceptions for "PurrpertyWidgets" folder in "PurrpertyWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 842FDD423086A1E200D3780E /* PurrpertyWidgetsExtension */;
+		};
+		842FDD673087C9DA00D3780E /* Exceptions for "RentalApp" folder in "PurrpertyWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/PurrpertyShared.swift,
+			);
+			target = 842FDD423086A1E200D3780E /* PurrpertyWidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		84061CE13012E7C8009DC134 /* RentalApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				842FDD673087C9DA00D3780E /* Exceptions for "RentalApp" folder in "PurrpertyWidgetsExtension" target */,
+			);
 			path = RentalApp;
+			sourceTree = "<group>";
+		};
+		842FDD493086A1E200D3780E /* PurrpertyWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				842FDD563086A1E400D3780E /* Exceptions for "PurrpertyWidgets" folder in "PurrpertyWidgetsExtension" target */,
+			);
+			path = PurrpertyWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -31,13 +90,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		842FDD403086A1E200D3780E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				842FDD483086A1E200D3780E /* SwiftUI.framework in Frameworks */,
+				842FDD463086A1E200D3780E /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		84061CD63012E7C8009DC134 = {
 			isa = PBXGroup;
 			children = (
+				842FDD5B3086A50A00D3780E /* PurrpertyWidgetsExtension.entitlements */,
 				84061CE13012E7C8009DC134 /* RentalApp */,
+				842FDD493086A1E200D3780E /* PurrpertyWidgets */,
+				842FDD443086A1E200D3780E /* Frameworks */,
 				84061CE03012E7C8009DC134 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,8 +117,18 @@
 			isa = PBXGroup;
 			children = (
 				84061CDF3012E7C8009DC134 /* RentalApp.app */,
+				842FDD433086A1E200D3780E /* PurrpertyWidgetsExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		842FDD443086A1E200D3780E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				842FDD453086A1E200D3780E /* WidgetKit.framework */,
+				842FDD473086A1E200D3780E /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,10 +141,12 @@
 				84061CDB3012E7C8009DC134 /* Sources */,
 				84061CDC3012E7C8009DC134 /* Frameworks */,
 				84061CDD3012E7C8009DC134 /* Resources */,
+				842FDD5A3086A1E400D3780E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				842FDD543086A1E400D3780E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				84061CE13012E7C8009DC134 /* RentalApp */,
@@ -76,6 +159,28 @@
 			productReference = 84061CDF3012E7C8009DC134 /* RentalApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		842FDD423086A1E200D3780E /* PurrpertyWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 842FDD573086A1E400D3780E /* Build configuration list for PBXNativeTarget "PurrpertyWidgetsExtension" */;
+			buildPhases = (
+				842FDD3F3086A1E200D3780E /* Sources */,
+				842FDD403086A1E200D3780E /* Frameworks */,
+				842FDD413086A1E200D3780E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				842FDD493086A1E200D3780E /* PurrpertyWidgets */,
+			);
+			name = PurrpertyWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = PurrpertyWidgetsExtension;
+			productReference = 842FDD433086A1E200D3780E /* PurrpertyWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -83,11 +188,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2640;
+				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					84061CDE3012E7C8009DC134 = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					842FDD423086A1E200D3780E = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -109,12 +217,20 @@
 			projectRoot = "";
 			targets = (
 				84061CDE3012E7C8009DC134 /* RentalApp */,
+				842FDD423086A1E200D3780E /* PurrpertyWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		84061CDD3012E7C8009DC134 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		842FDD413086A1E200D3780E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,7 +247,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		842FDD3F3086A1E200D3780E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		842FDD543086A1E400D3780E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 842FDD423086A1E200D3780E /* PurrpertyWidgetsExtension */;
+			targetProxy = 842FDD533086A1E400D3780E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		84061CEA3012E7CA009DC134 /* Debug */ = {
@@ -260,6 +391,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RentalApp/RentalApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 547Y88F9Z9;
@@ -267,6 +399,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "RentalApp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Purrperty;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -279,6 +412,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Seneca.Syed.RentalApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -294,6 +428,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RentalApp/RentalApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 547Y88F9Z9;
@@ -301,6 +436,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "RentalApp-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Purrperty;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -313,9 +449,76 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Seneca.Syed.RentalApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		842FDD583086A1E400D3780E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = PurrpertyWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 547Y88F9Z9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PurrpertyWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PurrpertyWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Seneca.Syed.RentalApp.PurrpertyWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		842FDD593086A1E400D3780E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = PurrpertyWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 547Y88F9Z9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PurrpertyWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PurrpertyWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Seneca.Syed.RentalApp.PurrpertyWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -340,6 +543,15 @@
 			buildConfigurations = (
 				84061CED3012E7CA009DC134 /* Debug */,
 				84061CEE3012E7CA009DC134 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		842FDD573086A1E400D3780E /* Build configuration list for PBXNativeTarget "PurrpertyWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				842FDD583086A1E400D3780E /* Debug */,
+				842FDD593086A1E400D3780E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -28,7 +28,8 @@ struct TenantPortalView: View {
             portal: container.tenantPortal,
             tenants: container.tenants,
             payments: container.payments,
-            maintenance: container.maintenance
+            maintenance: container.maintenance,
+            visitTracker: .shared
         ))
     }
 

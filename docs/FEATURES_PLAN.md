@@ -81,3 +81,21 @@ are given when we get there, because `project.pbxproj` is never edited by hand.
 - Live Activity: a maintenance visit in progress.
 - Siri and Shortcuts: App Intents for "New maintenance request",
   "Rent status" and "Record payment".
+
+Status:
+- Siri and Shortcuts — done (`Core/Intents`).
+- Widgets — done. `PurrpertyWidgets` target: Rent and Repairs widgets
+  (Home Screen small/medium, Lock Screen accessories). The app writes a
+  `PortfolioSnapshot` to the App Group (`Core/SystemSurfaces/
+  WidgetSnapshotPublisher`) for staff only and clears it on sign-out or
+  when a tenant/vendor signs in. Code shared by both targets lives in
+  `Shared/PurrpertyShared.swift`.
+- Live Activity — done. `RepairVisitAttributes`; a booked visit can be
+  shown on the Lock Screen and in the Dynamic Island from the staff,
+  tenant and vendor request screens. It updates when the time changes
+  and shows "Fixed" when the job is marked done.
+- Visit reminders — done, as local notifications one hour before a
+  booked visit (`RepairVisitTracker`), opening the request when tapped.
+- Remote push — blocked: the APNs capability needs a paid Apple
+  Developer Program team. The free Personal Team can't add it. The
+  client side (`PushService`) is already in place for when it can.
