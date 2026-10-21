@@ -160,7 +160,8 @@ colourful, for students, on a white background.
   - AI tasks aren't wired to any screens.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in
     DEBUG only. Needs real StoreKit products before release.
-  - Home still shows the seeded mock portfolio, not the new account's
-    property.
+  - Mock mode: a new account gets its own empty workspace, but what it
+    adds isn't persisted across relaunches, and in-memory edits carry
+    over between accounts within one run.
   - Supabase isn't configured.
   - The GitHub About description needs updating.
