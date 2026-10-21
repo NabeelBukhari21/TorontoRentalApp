@@ -66,8 +66,7 @@ enum Projections {
 
         return backend.units(in: property.id).map { unit in
             let lease = backend.activeLeaseByUnit[unit.id]
-            let tenantName = lease
-                .flatMap { backend.tenantByID[$0.primaryTenantID]?.fullName }
+            let tenant = lease.flatMap { backend.tenantByID[$0.primaryTenantID] }
 
             return PropertyUnit(
                 id: unit.id.description,
@@ -76,9 +75,10 @@ enum Projections {
                 baths: Int(truncating: unit.bathrooms as NSDecimalNumber),
                 sqft: unit.squareFeet ?? 700,
                 rent: Int(truncating: unit.marketRent.amount as NSDecimalNumber),
-                tenantName: tenantName,
+                tenantName: tenant?.fullName,
                 status: unitStatus(unit.status),
-                building: buildings.count > 1 ? buildingNames[unit.buildingID] : nil
+                building: buildings.count > 1 ? buildingNames[unit.buildingID] : nil,
+                tenantID: tenant?.id.description
             )
         }
     }
@@ -105,7 +105,8 @@ enum Projections {
                 unit: unit.label,
                 leaseEnds: FakeDateFormat.monthYear(lease.term.end),
                 rentStatus: overdue ? "Rent overdue" : "Paid",
-                rentKind: overdue ? .danger : .success
+                rentKind: overdue ? .danger : .success,
+                tenantID: tenant.id.description
             )
         }
     }
@@ -122,7 +123,8 @@ enum Projections {
                     unit: request.unitID.flatMap { backend.unitByID[$0]?.label } ?? "Common area",
                     status: statusLabel(request.status),
                     kind: statusKind(request.status, priority: request.priority),
-                    time: FakeDateFormat.relative(request.createdAt)
+                    time: FakeDateFormat.relative(request.createdAt),
+                    requestID: request.id.description
                 )
             }
     }

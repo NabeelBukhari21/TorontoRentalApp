@@ -119,6 +119,22 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
         return seeded + (unitOverlay[id] ?? [])
     }
 
+    func unit(id: String) async throws -> UnitDetail {
+        try await SimulatedLatency.wait(.detail)
+        let propertyID: String
+        let unit: PropertyUnit
+        if let (overlayPropertyID, units) = unitOverlay.first(where: { $0.value.contains { $0.id == id } }),
+           let match = units.first(where: { $0.id == id }) {
+            (propertyID, unit) = (overlayPropertyID, match)
+        } else if !deletedUnitIDs.contains(id), let seeded = await seededUnit(id: id) {
+            (propertyID, unit) = (seeded.propertyID, seeded.unit)
+        } else {
+            throw AppError.notFound("Unit")
+        }
+        let property = try await self.property(id: propertyID)
+        return UnitDetail(unit: unit, propertyID: propertyID, propertyName: property.name)
+    }
+
     func tenantRows(forPropertyID id: String) async throws -> [PropertyTenantRow] {
         try await SimulatedLatency.wait(.detail)
         return Projections.tenantRows(forPropertyID: id)

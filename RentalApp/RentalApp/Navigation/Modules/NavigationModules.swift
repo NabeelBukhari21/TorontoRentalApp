@@ -26,7 +26,9 @@ enum PropertyNavigation {
         switch route {
         case .propertyDetail(let propertyID):
             PropertyDetailView(propertyID: propertyID)
-        case .units, .unitDetail:
+        case .unitDetail(let unitID):
+            UnitDetailView(unitID: unitID)
+        case .units:
             NavigationComingSoonView(route: route)
         default:
             EmptyView()

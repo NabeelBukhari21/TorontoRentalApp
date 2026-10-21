@@ -201,6 +201,34 @@ final class SupabasePropertyRepository: PropertyRepositoryProtocol {
         }
     }
 
+    func unit(id: String) async throws -> UnitDetail {
+        do {
+            // Two small reads: the unit in the shape the units tab uses, and
+            // the property it belongs to.
+            let row: UnitRow = try await client
+                .from("units")
+                .select(Self.unitColumns)
+                .eq("id", value: id)
+                .single()
+                .execute()
+                .value
+            let owner: UnitOwnerRow = try await client
+                .from("units")
+                .select("property_id, properties(name)")
+                .eq("id", value: id)
+                .single()
+                .execute()
+                .value
+            return UnitDetail(
+                unit: Self.present(unit: row),
+                propertyID: owner.propertyID.uuidString,
+                propertyName: owner.properties?.name ?? "Property"
+            )
+        } catch {
+            throw SupabaseErrorMapper.map(error)
+        }
+    }
+
     func tenantRows(forPropertyID id: String) async throws -> [PropertyTenantRow] {
         do {
             let rows: [LeaseWithTenantRow] = try await client
@@ -219,7 +247,8 @@ final class SupabasePropertyRepository: PropertyRepositoryProtocol {
                     unit: $0.units?.label ?? "—",
                     leaseEnds: Self.monthYear($0.termEnd),
                     rentStatus: $0.status == "expiring" ? "Expiring" : "Current",
-                    rentKind: $0.status == "expiring" ? .warning : .success
+                    rentKind: $0.status == "expiring" ? .warning : .success,
+                    tenantID: $0.tenants?.id.uuidString
                 )
             }
         } catch {
@@ -245,7 +274,8 @@ final class SupabasePropertyRepository: PropertyRepositoryProtocol {
                     unit: $0.units?.label ?? "—",
                     status: Self.requestStatusLabel($0.status),
                     kind: Self.requestStatusKind($0.status, priority: $0.priority),
-                    time: Self.relative($0.createdAt)
+                    time: Self.relative($0.createdAt),
+                    requestID: $0.id.uuidString
                 )
             }
         } catch {
@@ -322,7 +352,8 @@ final class SupabasePropertyRepository: PropertyRepositoryProtocol {
             sqft: row.squareFeet ?? 0,
             rent: Int(truncating: row.marketRent as NSDecimalNumber),
             tenantName: row.activeLease?.tenants?.fullName,
-            status: unitStatus(row.status)
+            status: unitStatus(row.status),
+            tenantID: row.activeLease?.tenants?.id.uuidString
         )
     }
 
@@ -436,6 +467,20 @@ private struct LeaseWithTenantRow: Decodable, Sendable {
 
 private struct UnitLabelRow: Decodable, Sendable {
     let label: String
+}
+
+private struct UnitOwnerRow: Decodable, Sendable {
+    let propertyID: UUID
+    let properties: PropertyNameRow?
+
+    enum CodingKeys: String, CodingKey {
+        case properties
+        case propertyID = "property_id"
+    }
+}
+
+private struct PropertyNameRow: Decodable, Sendable {
+    let name: String
 }
 
 private struct MaintenanceWithUnitRow: Decodable, Sendable {

@@ -173,6 +173,7 @@ struct PropertyUnitsTab: View {
                         }
                     }
                 }
+                .opensRoute(.unitDetail(unitID: unit.id))
                 .contextMenu {
                     Button {
                         sheet = .edit(unit)
@@ -262,6 +263,7 @@ struct PropertyTenantsTab: View {
                             DSBadge(text: tenant.rentStatus, kind: tenant.rentKind)
                         }
                     }
+                    .opensRoute(tenant.tenantID.map { .tenantDetail(tenantID: $0) })
                     .dsEntrance(index: index)
                 }
             }
@@ -320,6 +322,7 @@ struct PropertyMaintenanceTab: View {
                             )
                         }
                     }
+                    .opensRoute(request.requestID.map { .maintenanceDetail(requestID: $0) })
                     .dsEntrance(index: index)
                 }
             }
@@ -511,5 +514,30 @@ struct PropertyAnalyticsTab: View {
         property.isFull
             ? "\(property.name) is fully leased with stable revenue. Comparable rents in \(property.neighborhood) suggest a 4–6% upside at renewal."
             : "\(property.vacantCount) vacant unit\(property.vacantCount == 1 ? "" : "s") at \(property.name). Listing mid-week with photos historically fills \(property.neighborhood) units 30% faster."
+    }
+}
+
+// MARK: - Row Navigation
+
+private struct OpensRoute: ViewModifier {
+    let route: AppRoute?
+    @Environment(AppRouter.self) private var router
+
+    func body(content: Content) -> some View {
+        if let route {
+            Button { router.push(route) } label: { content }
+                .buttonStyle(DSPressStyle())
+                .accessibilityElement(children: .combine)
+                .accessibilityHint("Opens details")
+        } else {
+            content
+        }
+    }
+}
+
+private extension View {
+    /// Makes a card open a screen when tapped, if it has one to open.
+    func opensRoute(_ route: AppRoute?) -> some View {
+        modifier(OpensRoute(route: route))
     }
 }

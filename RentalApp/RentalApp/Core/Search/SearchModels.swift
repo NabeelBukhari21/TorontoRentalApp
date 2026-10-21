@@ -131,8 +131,7 @@ struct SearchResult: Identifiable, Sendable, Equatable {
     var route: AppRoute? {
         switch kind {
         case .property:           .propertyDetail(propertyID: entityID)
-        // A unit opens its property, where its units are listed.
-        case .unit:               parentID.map { .propertyDetail(propertyID: $0) }
+        case .unit:               .unitDetail(unitID: entityID)
         case .tenant:             .tenantDetail(tenantID: entityID)
         case .maintenanceRequest: .maintenanceDetail(requestID: entityID)
         case .message:            .conversation(conversationID: entityID)

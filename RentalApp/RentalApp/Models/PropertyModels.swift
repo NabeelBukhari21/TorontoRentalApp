@@ -77,6 +77,8 @@ struct PropertyUnit: Identifiable, Sendable, Codable {
     /// Set only when the property has more than one building, where unit
     /// labels repeat ("Unit 101" in Tower A and in Tower B).
     var building: String? = nil
+    /// Who lives there, when someone does. Opens their profile.
+    var tenantID: String? = nil
 
     /// The label to show wherever units of one property are listed together.
     var displayName: String {
@@ -105,6 +107,7 @@ struct PropertyTenantRow: Identifiable {
     let leaseEnds: String
     let rentStatus: String
     let rentKind: DSStatusKind
+    var tenantID: String? = nil
 }
 
 struct PropertyRequestRow: Identifiable {
@@ -114,6 +117,7 @@ struct PropertyRequestRow: Identifiable {
     let status: String
     let kind: DSStatusKind
     let time: String
+    var requestID: String? = nil
 }
 
 struct PropertyDocRow: Identifiable {

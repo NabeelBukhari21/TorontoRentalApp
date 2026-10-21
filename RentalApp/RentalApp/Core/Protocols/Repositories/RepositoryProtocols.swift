@@ -239,6 +239,7 @@ protocol PropertyRepositoryProtocol: AnyObject {
     func portfolioSummary(forceRefresh: Bool) async throws -> PropertyPortfolioSummary
 
     func units(forPropertyID id: String) async throws -> [PropertyUnit]
+    func unit(id: String) async throws -> UnitDetail
     func tenantRows(forPropertyID id: String) async throws -> [PropertyTenantRow]
     func requestRows(forPropertyID id: String) async throws -> [PropertyRequestRow]
     func documents(forPropertyID id: String) async throws -> [PropertyDocRow]
@@ -276,6 +277,13 @@ protocol PropertyRepositoryProtocol: AnyObject {
 
 /// Aggregates shown in the properties header — computed by the source,
 /// not by summing a partially-loaded page in the view model.
+/// One unit with the property it belongs to, for the unit screen.
+struct UnitDetail: Sendable {
+    let unit: PropertyUnit
+    let propertyID: String
+    let propertyName: String
+}
+
 struct PropertyPortfolioSummary: Sendable, Equatable, Codable {
     let propertyCount: Int
     let totalUnits: Int
