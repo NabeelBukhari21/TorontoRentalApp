@@ -41,6 +41,9 @@ struct MockAccount: Sendable {
 /// can be reached without a backend.
 enum MockAccountDirectory {
 
+    /// The seeded portfolio's organization. Staff in it see the demo data.
+    static let demoOrganizationID = "org_0001"
+
     static let accounts: [MockAccount] = [
         MockAccount(
             userID: "usr_owner_0001",
@@ -48,7 +51,7 @@ enum MockAccountDirectory {
             password: "rentos",
             fullName: "Amara Okonkwo",
             role: .owner,
-            organizationID: "org_0001",
+            organizationID: demoOrganizationID,
             organizationName: "Harbourfront Residential"
         ),
         MockAccount(
@@ -57,7 +60,7 @@ enum MockAccountDirectory {
             password: "rentos",
             fullName: "Daniel Chen",
             role: .propertyManager,
-            organizationID: "org_0001",
+            organizationID: demoOrganizationID,
             organizationName: "Harbourfront Residential",
             mfaEnrolled: true
         ),

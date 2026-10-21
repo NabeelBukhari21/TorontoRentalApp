@@ -223,6 +223,8 @@ struct MaintenanceTicket: Identifiable, Sendable {
     var propertyAddress: String? = nil
     /// Who reported it, when it was a tenant. Opens their conversation.
     var tenantID: String? = nil
+    /// When it was reported.
+    var createdAt: Date? = nil
 }
 
 // MARK: - Mock Data

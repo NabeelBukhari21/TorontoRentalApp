@@ -44,7 +44,7 @@ extension Projections {
                 description: request.details,
                 propertyName: property?.name ?? "Property",
                 unitName: unit?.label ?? "Common area",
-                tenantName: tenant?.fullName ?? "Staff report",
+                tenantName: tenant?.fullName ?? (unit == nil ? "Staff report" : "Previous tenant"),
                 priority: priority(from: request.priority),
                 status: status(from: request.status),
                 category: category(from: request.category),
@@ -66,7 +66,8 @@ extension Projections {
                 unitID: request.unitID?.description,
                 scheduledVisit: request.status == .scheduled ? request.scheduledFor : nil,
                 propertyAddress: property.map { "\($0.address.line1), \($0.address.city)" },
-                tenantID: tenant?.id.description
+                tenantID: tenant?.id.description,
+                createdAt: request.createdAt
             )
         }
     }
@@ -309,9 +310,11 @@ extension Projections {
 
         return PortfolioSummary(
             greetingName: backend.users.first?.fullName.components(separatedBy: " ").first ?? "there",
-            portfolioValue: String(format: "$%.1fM", (value as NSDecimalNumber).doubleValue / 1_000_000),
+            portfolioValue: value > 0
+                ? String(format: "$%.1fM", (value as NSDecimalNumber).doubleValue / 1_000_000)
+                : "—",
             monthlyRevenue: (revenue as NSDecimalNumber).doubleValue / 1_000,
-            revenueTrend: "+$1.2K vs last month",
+            revenueTrend: revenueTrend(revenueSeries()),
             propertyCount: backend.properties.count,
             unitCount: units.count,
             occupancyRate: units.isEmpty ? 0 : Double(occupied.count) / Double(units.count),
@@ -321,10 +324,22 @@ extension Projections {
         )
     }
 
+    /// Read off the same series the chart draws, so the two always agree.
+    /// Empty when there's no earlier month to compare against.
+    private static func revenueTrend(_ series: [RevenuePoint]) -> String {
+        guard series.count >= 2 else { return "" }
+        let change = series[series.count - 1].amount - series[series.count - 2].amount
+        let sign = change < 0 ? "−" : "+"
+        return "\(sign)$\(String(format: "%.1f", abs(change)))K vs last month"
+    }
+
+    /// No rented units means no rent history: a new account gets an empty
+    /// chart, not an invented one.
     static func revenueSeries() -> [RevenuePoint] {
         let monthly = backend.units
             .filter { $0.status.countsAsOccupied }
             .reduce(Decimal(0)) { $0 + $1.marketRent.amount }
+        guard monthly > 0 else { return [] }
         let base = (monthly as NSDecimalNumber).doubleValue / 1_000
 
         return (0..<8).map { index in

@@ -41,7 +41,8 @@ struct DashboardView: View {
                             urgentTasks: viewModel.tasks.filter { $0.isUrgent && !$0.isDone }.count,
                             openRequests: viewModel.openRequestCount,
                             openTasks: viewModel.tasks.filter { !$0.isDone }.count,
-                            occupancyRate: viewModel.occupancyRate
+                            occupancyRate: viewModel.occupancyRate,
+                            unitCount: viewModel.unitCount
                         )
                         .dsEntrance(index: 0)
                     }

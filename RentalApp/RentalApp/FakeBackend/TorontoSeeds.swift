@@ -305,9 +305,19 @@ enum TorontoSeeds {
     ]
 
     // MARK: - Conversation Snippets
+    //
+    // Threads are built from question-and-answer pairs, so every reply
+    // answers the message before it.
 
-    /// Opening lines tenants actually send.
-    static let tenantOpeners = [
+    /// A tenant's message and the manager's answer to it.
+    static var tenantExchanges: [(String, String)] { Array(zip(tenantOpeners, managerReplies)) }
+
+    /// A vendor's message and the manager's answer to it.
+    static var vendorExchanges: [(String, String)] { Array(zip(vendorMessages, vendorReplies)) }
+
+    /// Opening lines tenants actually send. Paired by position with
+    /// `managerReplies`.
+    private static let tenantOpeners = [
         "Hi! Just wanted to check in about the repair — any update?",
         "Hello, is it still okay for the technician to come Thursday morning?",
         "Quick question about the rent receipt for last month — could you resend it?",
@@ -318,7 +328,7 @@ enum TorontoSeeds {
         "Hi there — the new appliance is working perfectly, thank you!"
     ]
 
-    static let managerReplies = [
+    private static let managerReplies = [
         "Thanks for flagging it — I've booked someone for tomorrow afternoon.",
         "Confirmed, they'll buzz your unit between 9 and 11.",
         "Just resent it to your email. Let me know if it doesn't arrive.",
@@ -329,7 +339,8 @@ enum TorontoSeeds {
         "Glad to hear it! Thanks for your patience while we sorted it out."
     ]
 
-    static let vendorMessages = [
+    /// Paired by position with `vendorReplies`.
+    private static let vendorMessages = [
         "On my way — should be there in about 20 minutes.",
         "Job's done. I've sent the invoice through.",
         "I'll need a part ordered; can be back Thursday to finish.",
@@ -339,4 +350,35 @@ enum TorontoSeeds {
         "Running about 30 minutes behind, apologies.",
         "Can you confirm someone will be home to let me in?"
     ]
+
+    private static let vendorReplies = [
+        "Thanks — the tenant knows to expect you.",
+        "Great, thanks. I'll process it this week.",
+        "Thursday works. I'll let the tenant know.",
+        "Perfect. The tenant has written notice for that window.",
+        "Yes please, send the revised quote before you start.",
+        "Thank you, appreciated.",
+        "No problem, I'll let the tenant know.",
+        "The tenant has agreed to entry, so you can let yourself in."
+    ]
+
+    /// What a vendor would say about a job at this stage. Nil before
+    /// anyone has taken it on.
+    static func vendorUpdates(for status: Domain.MaintenanceRequest.Status) -> [String]? {
+        switch status {
+        case .scheduled:
+            ["Confirmed for tomorrow between 2 and 4 PM.", "Can you confirm someone will be home to let me in?"]
+        case .inProgress:
+            ["On my way — should be there in about 20 minutes.",
+             "Running about 30 minutes behind, apologies.",
+             "Had a look — it's a bigger job than quoted, want me to write it up?"]
+        case .awaitingParts:
+            ["I'll need a part ordered; can be back Thursday to finish."]
+        case .completed:
+            ["Job's done. I've sent the invoice through.",
+             "All set. I've left the old parts in the utility room as requested."]
+        case .new, .triaged, .cancelled, .unknown:
+            nil
+        }
+    }
 }

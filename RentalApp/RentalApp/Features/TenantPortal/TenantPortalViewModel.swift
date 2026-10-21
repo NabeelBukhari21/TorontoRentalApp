@@ -73,7 +73,10 @@ final class TenantPortalViewModel {
             let loadedLease = try await lease
             self.lease = loadedLease
             self.ledger = try await ledger
+            // Only what was reported since they moved in: earlier requests
+            // belong to whoever lived there before.
             self.requests = try await loadRequests(unitID: loadedLease.unitID)
+                .filter { $0.createdAt.map { $0 >= loadedLease.start } ?? true }
             phase = .ready
             for request in requests { await visitTracker.jobChanged(request) }
             await visitTracker.refresh()

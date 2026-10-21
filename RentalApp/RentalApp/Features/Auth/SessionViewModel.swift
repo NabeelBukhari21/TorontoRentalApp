@@ -48,17 +48,20 @@ final class SessionViewModel {
     private let store: SessionStoring
     private let analytics: AnalyticsService
     private let onboarding: OnboardingProfileStore
+    private let workspace: WorkspaceActivating?
 
     init(
         auth: AuthServiceProtocol,
         store: SessionStoring,
         analytics: AnalyticsService,
-        onboarding: OnboardingProfileStore
+        onboarding: OnboardingProfileStore,
+        workspace: WorkspaceActivating? = nil
     ) {
         self.auth = auth
         self.store = store
         self.analytics = analytics
         self.onboarding = onboarding
+        self.workspace = workspace
     }
 
     // MARK: Derived
@@ -309,6 +312,9 @@ final class SessionViewModel {
 
     private func transition(to next: AuthState, animated: Bool = true) {
         guard next != state else { return }
+        // Before the new state renders, so its first screen reads the
+        // right account's data.
+        workspace?.activate(for: next.session)
         if animated {
             withAnimation(.easeInOut(duration: 0.55)) { state = next }
         } else {

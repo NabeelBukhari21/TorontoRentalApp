@@ -387,34 +387,43 @@ struct TenantDetailView: View {
     private func maintenanceTab(_ tenant: Tenant) -> some View {
         VStack(spacing: DS.Spacing.md) {
             ForEach(Array(viewModel.maintenanceRows.enumerated()), id: \.element.id) { index, request in
-                DSCard(style: .raised, padding: DS.Spacing.lg) {
-                    HStack(spacing: DS.Spacing.md) {
-                        ZStack {
-                            Circle()
-                                .fill(request.kind.tint)
-                                .frame(width: 38, height: 38)
+                Button {
+                    if let requestID = request.requestID {
+                        router.push(.maintenanceDetail(requestID: requestID))
+                    }
+                } label: {
+                    DSCard(style: .raised, padding: DS.Spacing.lg) {
+                        HStack(spacing: DS.Spacing.md) {
+                            ZStack {
+                                Circle()
+                                    .fill(request.kind.tint)
+                                    .frame(width: 38, height: 38)
 
-                            Image(systemName: DS.Icons.maintenance)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(request.kind.color)
+                                Image(systemName: DS.Icons.maintenance)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(request.kind.color)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(request.title)
+                                    .font(DS.Typography.headline)
+                                    .foregroundStyle(DS.Colors.textPrimary)
+                                    .lineLimit(1)
+
+                                Text("\(request.unit) · \(request.time)")
+                                    .font(DS.Typography.caption)
+                                    .foregroundStyle(DS.Colors.textSecondary)
+                            }
+
+                            Spacer()
+
+                            DSBadge(text: request.status, kind: request.kind)
                         }
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(request.title)
-                                .font(DS.Typography.headline)
-                                .foregroundStyle(DS.Colors.textPrimary)
-                                .lineLimit(1)
-
-                            Text("\(request.unit) · \(request.time)")
-                                .font(DS.Typography.caption)
-                                .foregroundStyle(DS.Colors.textSecondary)
-                        }
-
-                        Spacer()
-
-                        DSBadge(text: request.status, kind: request.kind)
                     }
                 }
+                .buttonStyle(DSPressStyle())
+                .disabled(request.requestID == nil)
+                .accessibilityHint("Opens the request")
                 .dsEntrance(index: index)
             }
         }

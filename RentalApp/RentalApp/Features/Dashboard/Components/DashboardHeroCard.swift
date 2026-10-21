@@ -36,9 +36,11 @@ struct DashboardHeroCard: View {
                             .foregroundStyle(DS.Colors.textPrimary)
                             .contentTransition(.numericText())
 
-                        Text(revenueTrend)
-                            .font(DS.Typography.caption)
-                            .foregroundStyle(DS.Colors.success)
+                        if !revenueTrend.isEmpty {
+                            Text(revenueTrend)
+                                .font(DS.Typography.caption)
+                                .foregroundStyle(revenueTrend.hasPrefix("+") ? DS.Colors.success : DS.Colors.textSecondary)
+                        }
                     }
 
                     Spacer()
@@ -50,22 +52,29 @@ struct DashboardHeroCard: View {
                             .font(DS.Typography.statValueSmall)
                             .foregroundStyle(DS.Colors.textPrimary)
 
-                        Text("\(propertyCount) properties · \(unitCount) units")
+                        Text("^[\(propertyCount) property](inflect: true) · ^[\(unitCount) unit](inflect: true)")
                             .font(DS.Typography.caption)
                             .foregroundStyle(DS.Colors.textTertiary)
                     }
                 }
 
-                // Chart with sweep reveal.
-                chart
-                    .frame(height: 140)
-                    .mask(
-                        GeometryReader { proxy in
-                            Rectangle()
-                                .frame(width: proxy.size.width * chartReveal)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    )
+                if revenue.isEmpty {
+                    Text("Your rent history appears here once a unit is rented.")
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    // Chart with sweep reveal.
+                    chart
+                        .frame(height: 140)
+                        .mask(
+                            GeometryReader { proxy in
+                                Rectangle()
+                                    .frame(width: proxy.size.width * chartReveal)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        )
+                }
             }
         }
         .onAppear {

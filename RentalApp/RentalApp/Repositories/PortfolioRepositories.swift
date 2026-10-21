@@ -818,10 +818,11 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             case Self.rentCollectedTitle:
                 DashboardStat(
                     title: stat.title,
-                    value: roll.collectionRate.formatted(.percent.precision(.fractionLength(0))),
+                    value: roll.expected == 0 ? "—" : roll.collectionRate.formatted(.percent.precision(.fractionLength(0))),
                     icon: stat.icon, gradient: stat.gradient,
-                    trend: roll.owingCount == 0 ? "All paid" : "\(roll.owingCount) owing",
-                    trendKind: roll.owingCount == 0 ? .success : .warning
+                    // Nothing due isn't the same as everything paid.
+                    trend: roll.expected == 0 ? "None due" : roll.owingCount == 0 ? "All paid" : "\(roll.owingCount) owing",
+                    trendKind: roll.expected == 0 ? .info : roll.owingCount == 0 ? .success : .warning
                 )
             case Self.occupancyTitle:
                 DashboardStat(

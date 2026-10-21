@@ -242,7 +242,7 @@ enum Projections {
             )
         }
 
-        for request in backend.requests.filter({ $0.unitID == lease.unitID }).prefix(3) {
+        for request in backend.requests.filter({ $0.reportedByTenantID == tenant.id }).prefix(3) {
             events.append(
                 TenantEvent(
                     icon: DS.Icons.maintenance,
@@ -301,19 +301,20 @@ enum Projections {
     }
 
     static func maintenanceHistory(forTenantID id: String) -> [PropertyRequestRow] {
-        guard let tenant = backend.tenants.first(where: { $0.id.description == id }),
-              let lease = backend.activeLease(for: tenant.id) else { return [] }
+        guard let tenant = backend.tenants.first(where: { $0.id.description == id }) else { return [] }
 
+        // What this tenant reported, wherever they lived at the time.
         return backend.requests
-            .filter { $0.unitID == lease.unitID }
+            .filter { $0.reportedByTenantID == tenant.id }
             .prefix(6)
             .map { request in
                 PropertyRequestRow(
                     title: request.title,
-                    unit: backend.unitByID[lease.unitID]?.label ?? "Unit",
+                    unit: request.unitID.flatMap { backend.unitByID[$0]?.label } ?? "Common area",
                     status: statusLabel(request.status),
                     kind: statusKind(request.status, priority: request.priority),
-                    time: FakeDateFormat.monthDay(request.createdAt)
+                    time: FakeDateFormat.monthDay(request.createdAt),
+                    requestID: request.id.description
                 )
             }
     }

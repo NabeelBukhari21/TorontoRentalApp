@@ -62,7 +62,8 @@ struct RootNavigation: View {
             auth: container.auth,
             store: container.sessionStore,
             analytics: container.analytics,
-            onboarding: container.onboardingProfile
+            onboarding: container.onboardingProfile,
+            workspace: container.workspace
         ))
     }
 
@@ -153,8 +154,8 @@ struct RootNavigation: View {
             VendorPortalView(session: account, container: container)
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))
 
-        case .authenticated:
-            MainTabNavigation()
+        case .authenticated(let account):
+            MainTabNavigation(accountID: account.userID)
                 .transition(.opacity.combined(with: .scale(scale: 1.02)))
         }
     }

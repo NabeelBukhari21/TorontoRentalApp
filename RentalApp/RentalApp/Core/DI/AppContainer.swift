@@ -86,6 +86,10 @@ final class AppContainer {
     /// instances of a "centre" is a contradiction in terms.
     let toasts: ToastCenter
 
+    /// Points the domains still served by the mock backend at the signed-
+    /// in account's workspace. Nil in previews, which always show the demo.
+    let workspace: WorkspaceActivating?
+
     /// Offline: persistent cache, the read/write gate, and the conflict queue.
     let offlineCache: OfflineCache
     let offline: OfflineGate
@@ -149,6 +153,7 @@ final class AppContainer {
         offline: OfflineGate,
         conflicts: ConflictCenter,
         toasts: ToastCenter,
+        workspace: WorkspaceActivating? = nil,
         // Release infrastructure. Only the pieces that genuinely differ
         // between backends are parameters; the rest are derived below
         // from `persistence`, because a second `ConsentStore` or a second
@@ -189,6 +194,7 @@ final class AppContainer {
         self.offline = offline
         self.conflicts = conflicts
         self.toasts = toasts
+        self.workspace = workspace
         self.widgetSnapshots = WidgetSnapshotPublisher(payments: payments, maintenance: maintenance, sync: sync)
 
         // MARK: Release infrastructure
@@ -414,7 +420,10 @@ final class AppContainer {
             offlineCache: offlineCache,
             offline: offlineGate,
             conflicts: ConflictCenter(toasts: toastCenter),
-            toasts: toastCenter
+            toasts: toastCenter,
+            // The unported domains still read the mock backend; a real
+            // organization must not see the demo portfolio in them.
+            workspace: MockWorkspace(cache: .shared)
         )
     }
 
@@ -480,7 +489,8 @@ final class AppContainer {
             offlineCache: mockOffline.cache,
             offline: mockOffline.gate,
             conflicts: ConflictCenter(toasts: sharedToasts),
-            toasts: sharedToasts
+            toasts: sharedToasts,
+            workspace: MockWorkspace(cache: .shared)
         )
     }
 

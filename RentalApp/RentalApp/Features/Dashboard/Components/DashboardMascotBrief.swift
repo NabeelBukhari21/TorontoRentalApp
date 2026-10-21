@@ -10,6 +10,7 @@
 //    urgent tasks      → concerned   ("needs you today")
 //    requests open     → thinking    ("keeping an eye on them")
 //    tasks lined up    → happy       ("you've got this")
+//    nothing rented    → happy       ("let's get started")
 //    nothing pending   → cool        ("running smoothly")
 //
 //  Tap the cat for a tip. Tips only describe features that exist today —
@@ -25,6 +26,8 @@ struct DashboardMascotBrief: View {
     let openTasks: Int
     /// Occupancy as a fraction (0…1). Values above 1 are read as percent.
     let occupancyRate: Double
+    /// Units in the portfolio. Zero means a brand-new account.
+    var unitCount: Int = 1
 
     @State private var tipIndex = 0
 
@@ -56,7 +59,13 @@ struct DashboardMascotBrief: View {
         if openTasks > 0 {
             return (.happy, "You've got \(openTasks) \(plural("task", openTasks)) lined up today. You've got this!")
         }
+        if unitCount == 0 {
+            return (.happy, "Add your first property with the + button and I'll keep track of it from here.")
+        }
         let percent = occupancyRate > 1 ? occupancyRate : occupancyRate * 100
+        if percent == 0 {
+            return (.happy, "No units rented yet. Add a tenant when you lease one and rent tracking starts.")
+        }
         return (.cool, "Everything's running smoothly — occupancy is at \(Int(percent.rounded()))%. Nice work!")
     }
 

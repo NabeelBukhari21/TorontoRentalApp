@@ -39,7 +39,6 @@ extension FakeBackend {
         for _ in 0..<130 {
             guard let unit = occupied.randomElement(using: &rng) else { break }
             let lease = leases.first { $0.unitID == unit.id && $0.status.isCurrent }
-            let tenant = lease.flatMap { tenantByID[$0.primaryTenantID] }
             let issue = rng.pick(TorontoSeeds.issues)
 
             // Recent tickets are more likely to still be open.
@@ -50,6 +49,10 @@ extension FakeBackend {
                 (rng.int(121...540), 2.0)
             ])
             let createdAt = rng.date(daysAgo: daysAgo...daysAgo)
+            // Reported by today's tenant only if they lived there then;
+            // anything older came from a previous occupant.
+            let tenant = lease
+                .flatMap { $0.term.start <= createdAt ? tenantByID[$0.primaryTenantID] : nil }
 
             let status: Domain.MaintenanceRequest.Status = {
                 if daysAgo > 30 { return rng.chance(0.94) ? .completed : .cancelled }
@@ -165,11 +168,13 @@ extension FakeBackend {
             ))
         }
 
-        if request.status != .new && rng.chance(0.7) {
+        // A vendor update only once there's a vendor, and one that fits
+        // where the job is.
+        if let vendor, let updates = TorontoSeeds.vendorUpdates(for: request.status), rng.chance(0.7) {
             result.append(.init(
                 organizationID: orgID, requestID: request.id,
-                authorVendorID: vendor?.id, kind: .comment,
-                body: rng.pick(TorontoSeeds.vendorMessages),
+                authorVendorID: vendor.id, kind: .comment,
+                body: rng.pick(updates),
                 createdAt: advance(rng.int(30...600))
             ))
         }
@@ -315,7 +320,9 @@ extension FakeBackend {
         )
     }
 
-    /// Builds an alternating thread that ends at a known time.
+    /// Builds a thread of question-and-answer exchanges that ends at a
+    /// known time. Some end on the counterpart's message, still waiting
+    /// for a reply.
     private static func makeThread(
         orgID: Domain.Identifier<Domain.Organization>,
         conversationID: Domain.Identifier<Domain.Conversation>,
@@ -325,16 +332,17 @@ extension FakeBackend {
         rng: inout SeededRandom
     ) -> [Domain.Message] {
 
-        let count = rng.int(2...8)
+        let pool = role == .tenant ? TorontoSeeds.tenantExchanges : TorontoSeeds.vendorExchanges
+        let exchanges = rng.sample(pool, count: rng.int(1...3))
+        var lines: [(body: String, fromCounterpart: Bool)] = exchanges.flatMap {
+            [($0.0, true), ($0.1, false)]
+        }
+        if rng.chance(0.4) { lines.removeLast() }
+
         var result: [Domain.Message] = []
-        var timestamp = endingAt.addingTimeInterval(-Double(count) * 900)
+        var timestamp = endingAt.addingTimeInterval(-Double(lines.count) * 900)
 
-        for index in 0..<count {
-            let fromCounterpart = index % 2 == 0
-            let body = fromCounterpart
-                ? (role == .tenant ? rng.pick(TorontoSeeds.tenantOpeners) : rng.pick(TorontoSeeds.vendorMessages))
-                : rng.pick(TorontoSeeds.managerReplies)
-
+        for (body, fromCounterpart) in lines {
             result.append(
                 Domain.Message(
                     id: .init(rng.uuid()),

@@ -27,6 +27,14 @@ struct RootNavigationView: View {
     /// standalone instead of trapping on a missing environment value.
     @Environment(SessionViewModel.self) private var providedSession: SessionViewModel?
 
+    /// - Parameter accountID: the signed-in account. Navigation restored
+    ///   from a different account is cleared before any stack is built.
+    init(accountID: String? = nil) {
+        if let accountID {
+            AppRouter.shared.adopt(accountID: accountID)
+        }
+    }
+
     var body: some View {
         TabView(selection: tabSelection) {
             Tab(AppTab.dashboard.title, systemImage: AppTab.dashboard.icon, value: AppTab.dashboard) {

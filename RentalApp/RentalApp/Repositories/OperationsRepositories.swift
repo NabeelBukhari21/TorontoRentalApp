@@ -104,7 +104,8 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
             comments: [],
             access: draft.access,
             photoData: draft.photos,
-            unitID: draft.unitID
+            unitID: draft.unitID,
+            createdAt: .now
         )
         created.insert((ticket, .now), at: 0)
         cache.invalidate(prefix: Self.namespace)
@@ -409,7 +410,7 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
         withAnimation(DS.Motion.smooth) { _ = typingIn.insert(conversationID) }
 
         try? await Task.sleep(for: .seconds(2.0))
-        withAnimation(DS.Motion.smooth) { typingIn.remove(conversationID) }
+        withAnimation(DS.Motion.smooth) { _ = typingIn.remove(conversationID) }
 
         let reply = replyText(for: conversationID)
         withAnimation(DS.Motion.bouncy) {

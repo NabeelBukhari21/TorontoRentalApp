@@ -45,6 +45,10 @@ final class AppRouter {
     /// Currently presented full-screen cover, if any.
     var activeFullScreen: DSFullScreenRoute?
 
+    /// The account the saved navigation belongs to. Another account's
+    /// stacks point at records this one can't see.
+    private var accountID: String?
+
     // MARK: Init
 
     /// - Parameter restoresState: pass `true` only for the app-wide instance;
@@ -128,6 +132,8 @@ final class AppRouter {
     private struct PersistedState: Codable {
         var selectedTab: AppTab
         var paths: [AppTab: [AppRoute]]
+        /// Absent in state saved before accounts were recorded.
+        var accountID: String?
     }
 
     private static let persistenceKey = "rentos.navigation.state.v1"
@@ -135,7 +141,7 @@ final class AppRouter {
 
     private func persist() {
         guard !isRestoring else { return }
-        let state = PersistedState(selectedTab: selectedTab, paths: paths)
+        let state = PersistedState(selectedTab: selectedTab, paths: paths, accountID: accountID)
         guard let data = try? JSONEncoder().encode(state) else { return }
         UserDefaults.standard.set(data, forKey: Self.persistenceKey)
     }
@@ -149,7 +155,22 @@ final class AppRouter {
         isRestoring = true
         selectedTab = state.selectedTab
         paths = state.paths
+        accountID = state.accountID
         isRestoring = false
+    }
+
+    /// Keeps restored navigation only for the account that left it. Safe
+    /// to call repeatedly: the same account changes nothing.
+    func adopt(accountID next: String) {
+        guard next != accountID else { return }
+        isRestoring = true
+        selectedTab = .dashboard
+        paths = [:]
+        activeSheet = nil
+        activeFullScreen = nil
+        isRestoring = false
+        accountID = next
+        persist()
     }
 
     /// Clears saved navigation state (e.g. on sign-out).

@@ -20,8 +20,38 @@ import Foundation
 @MainActor
 final class FakeBackend {
 
-    /// The shared dataset. Built once, on first access.
-    static let shared = FakeBackend()
+    /// The dataset in use: the seeded demo portfolio, or an empty
+    /// workspace for an account that set up its own organization. Every
+    /// reader goes through this, so swapping it swaps the whole world.
+    private(set) static var shared = demo
+
+    /// The demo portfolio. Built once, on first access, and kept so going
+    /// back to it never regenerates it.
+    private static let demo = FakeBackend()
+
+    /// Which world `shared` holds.
+    enum Workspace: Equatable {
+        case demo
+        /// A new organization with nothing in it yet.
+        case empty(organizationName: String, ownerName: String, ownerEmail: String)
+    }
+
+    private(set) static var workspace: Workspace = .demo
+
+    /// Switches the dataset. Returns whether anything changed, so callers
+    /// only drop caches when they need to.
+    @discardableResult
+    static func activate(_ next: Workspace) -> Bool {
+        guard next != workspace else { return false }
+        workspace = next
+        switch next {
+        case .demo:
+            shared = demo
+        case let .empty(organizationName, ownerName, ownerEmail):
+            shared = FakeBackend(emptyWorkspaceFor: organizationName, ownerName: ownerName, ownerEmail: ownerEmail)
+        }
+        return true
+    }
 
     // MARK: Tables
 
@@ -45,6 +75,25 @@ final class FakeBackend {
     private(set) var tasks: [Domain.Task] = []
 
     // MARK: Init
+
+    /// A workspace with only its organization and owner: no properties,
+    /// tenants or history until the account adds them.
+    private init(emptyWorkspaceFor organizationName: String, ownerName: String, ownerEmail: String) {
+        let organization = Domain.Organization(
+            name: organizationName,
+            slug: organizationName.lowercased()
+                .components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { !$0.isEmpty }
+                .joined(separator: "-")
+        )
+        self.organization = organization
+        users = [Domain.User(
+            organizationID: organization.id,
+            email: ownerEmail,
+            fullName: ownerName,
+            role: .owner
+        )]
+    }
 
     private init(seed: UInt64 = 0x52_65_6E_74_4F_53) { // "Purrperty"
         var rng = SeededRandom(seed: seed)
