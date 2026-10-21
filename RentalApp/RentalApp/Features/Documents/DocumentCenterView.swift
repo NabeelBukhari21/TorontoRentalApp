@@ -132,7 +132,7 @@ struct DocumentCenterView: View {
             }
         }
         .navigationTitle("Documents")
-        .navigationSubtitle("\(viewModel.files.count) files · \(viewModel.folders.count) folders")
+        .navigationSubtitle("\(viewModel.totalFileCount) files · \(viewModel.folders.count) folders")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

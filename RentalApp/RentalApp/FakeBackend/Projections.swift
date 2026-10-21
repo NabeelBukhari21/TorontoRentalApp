@@ -150,14 +150,17 @@ enum Projections {
         guard !units.isEmpty else { return [] }
         let current = Double(units.filter { $0.status.countsAsOccupied }.count) / Double(units.count)
 
-        // Twelve months trending toward today's real figure.
+        // Twelve months ending on today's real figure.
+        let wave: (Int) -> Double = { index in
+            sin(Double(index) * 0.9 + Double(property.name.count)) * 0.05 + Double(index) * 0.004
+        }
+        let offset = current - wave(11)
         return (0..<12).map { index in
             let monthsBack = 11 - index
             let date = Calendar.current.date(byAdding: .month, value: -monthsBack, to: .now) ?? .now
-            let drift = sin(Double(index) * 0.9 + Double(property.name.count)) * 0.05
             return OccupancyTrendPoint(
                 month: FakeDateFormat.monthYear(date).prefix(3).description,
-                rate: min(max(current - 0.04 + drift + Double(index) * 0.004, 0.55), 1.0)
+                rate: min(max(wave(index) + offset, 0), 1.0)
             )
         }
     }

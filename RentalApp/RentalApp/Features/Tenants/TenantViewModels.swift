@@ -193,13 +193,31 @@ final class CreateTenantViewModel {
     var name = ""
     var email = ""
     var phone = ""
-    var property: String?
-    var unit = ""
+    var property: String? {
+        didSet { if property != oldValue { unit = nil } }
+    }
+    var unit: VacantUnit? {
+        didSet {
+            // Start from the asking rent; it can be changed.
+            if let unit, unit != oldValue { rent = "\(unit.marketRent)" }
+        }
+    }
     var rent = ""
     var leaseStart = Date()
     var leaseEnd = Calendar.current.date(byAdding: .year, value: 1, to: Date()) ?? Date()
 
-    private(set) var propertyNames: [String] = []
+    private(set) var vacantUnits: [VacantUnit] = []
+
+    /// Properties with at least one vacant unit, in name order.
+    var propertyNames: [String] {
+        var seen = Set<String>()
+        return vacantUnits.map(\.propertyName).filter { seen.insert($0).inserted }
+    }
+
+    /// The vacant units in the chosen property.
+    var unitsInProperty: [VacantUnit] {
+        vacantUnits.filter { $0.propertyName == property }
+    }
     private(set) var isSaving = false
     private(set) var isSaved = false
     private(set) var saveError: AppError?
@@ -218,18 +236,17 @@ final class CreateTenantViewModel {
     var canSave: Bool {
         name.trimmingCharacters(in: .whitespaces).count >= 2
             && emailLooksValid
-            && property != nil
-            && !unit.isEmpty
+            && unit != nil
             && Int(rent) != nil
             && !isSaving
     }
 
     func load() async {
-        propertyNames = (try? await repository.propertyNames()) ?? []
+        vacantUnits = (try? await repository.vacantUnits()) ?? []
     }
 
     func save() async {
-        guard canSave, let property, let rentValue = Int(rent) else { return }
+        guard canSave, let unit, let rentValue = Int(rent) else { return }
 
         isSaving = true
         saveError = nil
@@ -237,7 +254,7 @@ final class CreateTenantViewModel {
 
         let draft = TenantDraft(
             name: name, email: email, phone: phone,
-            propertyName: property, unit: unit, rent: rentValue,
+            propertyName: unit.propertyName, unit: unit.unitName, unitID: unit.id, rent: rentValue,
             leaseStart: leaseStart, leaseEnd: leaseEnd
         )
 

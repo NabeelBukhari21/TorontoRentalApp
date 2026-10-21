@@ -82,22 +82,24 @@ struct CreateTenantView: View {
                     placeholder: "Choose a property"
                 ) { $0 }
 
-                HStack(spacing: DS.Spacing.md) {
-                    DSTextField(
-                        label: "Unit",
-                        placeholder: "e.g. 204",
-                        text: $viewModel.unit,
-                        icon: DS.Icons.unit
-                    )
-
-                    DSTextField(
-                        label: "Monthly rent",
-                        placeholder: "2200",
-                        text: $viewModel.rent,
-                        icon: DS.Icons.payment,
-                        keyboardType: .numberPad
-                    )
+                // Only vacant units: a tenant moves into an empty home.
+                DSDropdown(
+                    label: "Unit",
+                    options: viewModel.unitsInProperty,
+                    selection: $viewModel.unit,
+                    placeholder: viewModel.property == nil ? "Choose a property first" : "Choose a vacant unit"
+                ) { unit in
+                    "\(unit.unitName) · \(unit.bedrooms == 0 ? "Studio" : "\(unit.bedrooms) bd")"
                 }
+                .disabled(viewModel.property == nil)
+
+                DSTextField(
+                    label: "Monthly rent",
+                    placeholder: "Asking rent",
+                    text: $viewModel.rent,
+                    icon: DS.Icons.payment,
+                    keyboardType: .numberPad
+                )
 
                 // Lease term.
                 VStack(alignment: .leading, spacing: DS.Spacing.sm) {
@@ -109,6 +111,13 @@ struct CreateTenantView: View {
                         datePicker(label: "Starts", selection: $viewModel.leaseStart)
                         datePicker(label: "Ends", selection: $viewModel.leaseEnd)
                     }
+                }
+
+                if let error = viewModel.saveError {
+                    Label(error.errorDescription ?? "Couldn't add the tenant.", systemImage: "exclamationmark.triangle.fill")
+                        .font(DS.Typography.footnote)
+                        .foregroundStyle(DS.Colors.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 DSButton(
@@ -166,7 +175,7 @@ struct CreateTenantView: View {
                     .font(DS.Typography.title3)
                     .foregroundStyle(DS.Colors.textPrimary)
 
-                Text("Lease invite sent to \(viewModel.email)")
+                Text(viewModel.unit.map { "Moving into \($0.unitName), \($0.propertyName)" } ?? "")
                     .font(DS.Typography.footnote)
                     .foregroundStyle(DS.Colors.textSecondary)
             }

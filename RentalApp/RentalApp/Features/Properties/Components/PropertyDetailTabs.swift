@@ -379,12 +379,30 @@ struct PropertyAnalyticsTab: View {
 
     @State private var chartsRevealed = false
 
+    /// The occupancy scale, in percent: the data's range with room above
+    /// and below, in steps of 10 so the axis labels are round.
+    private var occupancyDomain: ClosedRange<Double> {
+        let rates = viewModel.occupancyTrend.map { $0.rate * 100 }
+        guard let low = rates.min(), let high = rates.max() else { return 0...100 }
+        let floor = max(0, ((low - 5) / 10).rounded(.down) * 10)
+        let ceiling = min(100, ((high + 5) / 10).rounded(.up) * 10)
+        return floor...max(ceiling, floor + 10)
+    }
+
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
             // Occupancy trend.
             DSCard(style: .raised) {
                 VStack(alignment: .leading, spacing: DS.Spacing.md) {
-                    Text("Occupancy · 12 months").dsOverline()
+                    HStack {
+                        Text("Occupancy · 12 months").dsOverline()
+                        Spacer()
+                        if let latest = viewModel.occupancyTrend.last {
+                            Text(latest.rate, format: .percent.precision(.fractionLength(0)))
+                                .font(DS.Typography.caption.monospacedDigit())
+                                .foregroundStyle(DS.Colors.textSecondary)
+                        }
+                    }
 
                     Chart(viewModel.occupancyTrend) { point in
                         LineMark(
@@ -395,9 +413,12 @@ struct PropertyAnalyticsTab: View {
                         .foregroundStyle(DS.Gradients.brand)
                         .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
 
+                        // From the bottom of the scale, not zero, so the fill
+                        // stays inside the chart.
                         AreaMark(
                             x: .value("Month", point.month),
-                            y: .value("Rate", point.rate * 100)
+                            yStart: .value("Floor", occupancyDomain.lowerBound),
+                            yEnd: .value("Rate", point.rate * 100)
                         )
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(
@@ -408,8 +429,19 @@ struct PropertyAnalyticsTab: View {
                             )
                         )
                     }
-                    .chartYScale(domain: 55...105)
-                    .chartYAxis(.hidden)
+                    .chartYScale(domain: occupancyDomain)
+                    .chartYAxis {
+                        AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
+                            AxisGridLine().foregroundStyle(DS.Colors.outline)
+                            AxisValueLabel {
+                                if let percent = value.as(Double.self) {
+                                    Text("\(Int(percent))%")
+                                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                                        .foregroundStyle(DS.Colors.textTertiary)
+                                }
+                            }
+                        }
+                    }
                     .chartXAxis {
                         AxisMarks { _ in
                             AxisValueLabel()

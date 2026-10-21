@@ -51,7 +51,7 @@ struct LeaseSummary: Sendable, Equatable {
 // MARK: - Unit Option
 
 /// A vacant unit a tenant could move into.
-struct VacantUnit: Identifiable, Sendable, Equatable {
+struct VacantUnit: Identifiable, Sendable, Hashable {
     let id: String
     let propertyID: String
     let propertyName: String

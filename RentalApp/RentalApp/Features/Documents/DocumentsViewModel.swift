@@ -68,6 +68,10 @@ final class DocumentsViewModel {
 
     func fileCount(in folderID: String) -> Int { folderCounts[folderID] ?? 0 }
 
+    /// Every file, not just the page loaded so far. Each file is in
+    /// exactly one folder, so the folder counts add up to it.
+    var totalFileCount: Int { max(folderCounts.values.reduce(0, +), files.count) }
+
     func load() async {
         folders = (try? await repository.folders()) ?? []
         allTags = (try? await repository.tags()) ?? []

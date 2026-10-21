@@ -299,6 +299,8 @@ struct TenantDraft: Sendable {
     var phone: String
     var propertyName: String
     var unit: String
+    /// The vacant unit they're moving into.
+    var unitID: String
     var rent: Int
     var leaseStart: Date
     var leaseEnd: Date
@@ -346,7 +348,6 @@ protocol TenantRepositoryProtocol: AnyObject {
     func maintenanceHistory(forTenantID id: String) async throws -> [PropertyRequestRow]
 
     func create(_ draft: TenantDraft) async throws
-    func propertyNames() async throws -> [String]
 
     // MARK: Leasing
 

@@ -475,15 +475,15 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
         return Projections.maintenanceHistory(forTenantID: id)
     }
 
-    func propertyNames() async throws -> [String] {
-        try await SimulatedLatency.wait(.detail)
-        return Projections.properties().map(\.name)
-    }
-
     // MARK: Writes
 
     func create(_ draft: TenantDraft) async throws {
         try await SimulatedLatency.wait(.write)
+        guard try await vacantUnits().contains(where: { $0.id == draft.unitID }) else {
+            throw AppError.validation("\(draft.unit) isn't vacant any more. Choose another unit.")
+        }
+        // The unit is taken from here on.
+        occupiedUnitIDs.insert(draft.unitID)
 
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM yyyy"
