@@ -33,7 +33,15 @@ final class FakeBackend {
     enum Workspace: Equatable {
         case demo
         /// A new organization with nothing in it yet.
-        case empty(organizationName: String, ownerName: String, ownerEmail: String)
+        case empty(organizationID: String, organizationName: String, ownerName: String, ownerEmail: String)
+
+        /// Stable identity, for state kept per workspace (see `WorkspaceLocal`).
+        var key: String {
+            switch self {
+            case .demo: "demo"
+            case .empty(let organizationID, _, _, _): "org:\(organizationID)"
+            }
+        }
     }
 
     private(set) static var workspace: Workspace = .demo
@@ -47,11 +55,21 @@ final class FakeBackend {
         switch next {
         case .demo:
             shared = demo
-        case let .empty(organizationName, ownerName, ownerEmail):
-            shared = FakeBackend(emptyWorkspaceFor: organizationName, ownerName: ownerName, ownerEmail: ownerEmail)
+        case let .empty(_, organizationName, ownerName, ownerEmail):
+            // Built once per organization, so its IDs stay put when an
+            // account signs out and back in during a run.
+            if let existing = empties[next.key] {
+                shared = existing
+            } else {
+                let backend = FakeBackend(emptyWorkspaceFor: organizationName, ownerName: ownerName, ownerEmail: ownerEmail)
+                empties[next.key] = backend
+                shared = backend
+            }
         }
         return true
     }
+
+    private static var empties: [String: FakeBackend] = [:]
 
     // MARK: Tables
 

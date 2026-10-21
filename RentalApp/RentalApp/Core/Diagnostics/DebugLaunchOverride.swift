@@ -19,6 +19,8 @@
 //                                       mock demo tenant
 //      -PurrpertyStartAt vendor         the vendor portal, signed in as the
 //                                       mock demo vendor
+//      -PurrpertyStartAt newOwner       Home for a brand-new owner with an
+//                                       empty organization (first-run states)
 //
 //  The override is non-destructive: the stored session and onboarding flag
 //  are left untouched, so removing the argument returns to normal launch.
@@ -37,6 +39,7 @@ enum DebugLaunchOverride: String, CaseIterable, Sendable {
     case home
     case tenant
     case vendor
+    case newOwner
 
     /// Launch arguments of the form `-Key value` land in the
     /// `UserDefaults` argument domain, so no parsing is needed.

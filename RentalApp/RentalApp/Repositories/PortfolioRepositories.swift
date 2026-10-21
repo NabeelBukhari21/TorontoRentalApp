@@ -69,14 +69,14 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
     // `.inMemory` get working buttons, not dead ones — without a second
     // source of truth for the seed data itself.
 
-    private var created: [Property] = []
-    private var edits: [String: PropertyDraft] = [:]
-    private var archivedIDs: Set<String> = []
-    private var deletedIDs: Set<String> = []
-    private var unitOverlay: [String: [PropertyUnit]] = [:]
-    private var deletedUnitIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal private var created: [Property] = []
+    @ObservationIgnored @WorkspaceLocal private var edits: [String: PropertyDraft] = [:]
+    @ObservationIgnored @WorkspaceLocal private var archivedIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal private var deletedIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal private var unitOverlay: [String: [PropertyUnit]] = [:]
+    @ObservationIgnored @WorkspaceLocal private var deletedUnitIDs: Set<String> = []
     /// Seeded units removed per property, so its unit count follows.
-    private var removedSeededUnits: [String: Int] = [:]
+    @ObservationIgnored @WorkspaceLocal private var removedSeededUnits: [String: Int] = [:]
 
     func properties(matching query: PropertyQuery, forceRefresh: Bool) async throws -> Page<Property> {
         try await SimulatedLatency.wait(.list)
@@ -105,7 +105,7 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
             propertyCount: all.count,
             totalUnits: units,
             occupiedUnits: occupied,
-            monthlyRevenueText: String(format: "$%.1fK", revenue)
+            monthlyRevenueText: revenue.cadThousands
         )
     }
 
@@ -427,7 +427,7 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     /// Who owes rent comes from the rent roll, so recording a payment
     /// clears a tenant's overdue status everywhere at once.
     private let payments: PaymentRepositoryProtocol
-    private var created: [Tenant] = []
+    @ObservationIgnored @WorkspaceLocal private var created: [Tenant] = []
 
     // MARK: Leasing overlay
     //
@@ -435,10 +435,10 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     // property overlay: the current lease per tenant, the units taken and
     // freed by moves, and the events they add to each timeline.
 
-    private var leaseOverrides: [String: LeaseSummary] = [:]
-    private var occupiedUnitIDs: Set<String> = []
-    private var freedUnits: [String: VacantUnit] = [:]
-    private var addedEvents: [String: [TenantEvent]] = [:]
+    @ObservationIgnored @WorkspaceLocal private var leaseOverrides: [String: LeaseSummary] = [:]
+    @ObservationIgnored @WorkspaceLocal private var occupiedUnitIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal private var freedUnits: [String: VacantUnit] = [:]
+    @ObservationIgnored @WorkspaceLocal private var addedEvents: [String: [TenantEvent]] = [:]
 
     init(payments: PaymentRepositoryProtocol, cache: RepositoryCache = .shared) {
         self.payments = payments
@@ -767,7 +767,7 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
     /// so Home agrees with the Properties and Maintenance tabs after edits.
     private let properties: PropertyRepositoryProtocol
     private let maintenance: MaintenanceRepositoryProtocol
-    private var completedTaskIDs: Set<UUID> = []
+    @ObservationIgnored @WorkspaceLocal private var completedTaskIDs: Set<UUID> = []
 
     init(
         payments: PaymentRepositoryProtocol,

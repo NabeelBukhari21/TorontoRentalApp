@@ -19,9 +19,9 @@ import Observation
 final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     private let cache: RepositoryCache
-    private var overrides: [String: MaintenanceTicket] = [:]
+    @ObservationIgnored @WorkspaceLocal private var overrides: [String: MaintenanceTicket] = [:]
     /// Requests created this session, newest first, with when they were made.
-    private var created: [(ticket: MaintenanceTicket, at: Date)] = []
+    @ObservationIgnored @WorkspaceLocal private var created: [(ticket: MaintenanceTicket, at: Date)] = []
 
     init(cache: RepositoryCache = .shared) {
         self.cache = cache
@@ -305,13 +305,13 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 final class InMemoryMessageRepository: MessageRepositoryProtocol {
 
     private let cache: RepositoryCache
-    private var threads: [String: [ChatMessage]] = [:]
-    private var readConversationIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal private var threads: [String: [ChatMessage]] = [:]
+    @ObservationIgnored @WorkspaceLocal private var readConversationIDs: Set<String> = []
     /// Conversations with a message sent or received this session, most
     /// recent last, so the list shows them first with their new preview.
-    private var activeConversationIDs: [String] = []
+    @ObservationIgnored @WorkspaceLocal private var activeConversationIDs: [String] = []
     /// Conversations started in the app with tenants who had none.
-    private var started: [Conversation] = []
+    @ObservationIgnored @WorkspaceLocal private var started: [Conversation] = []
     private(set) var typingIn: Set<String> = []
 
     init(cache: RepositoryCache = .shared) {
@@ -512,8 +512,8 @@ final class InMemoryMessageRepository: MessageRepositoryProtocol {
 final class InMemoryDocumentRepository: DocumentRepositoryProtocol {
 
     private let cache: RepositoryCache
-    private var favouriteOverrides: [UUID: Bool] = [:]
-    private var uploaded: [DocFile] = []
+    @ObservationIgnored @WorkspaceLocal private var favouriteOverrides: [UUID: Bool] = [:]
+    @ObservationIgnored @WorkspaceLocal private var uploaded: [DocFile] = []
     private(set) var uploads: [DocUpload] = []
 
     init(cache: RepositoryCache = .shared) {
@@ -636,8 +636,8 @@ final class InMemoryDocumentRepository: DocumentRepositoryProtocol {
 final class InMemoryNotificationRepository: NotificationRepositoryProtocol {
 
     private let cache: RepositoryCache
-    private var readIDs: Set<UUID> = []
-    private var dismissedIDs: Set<UUID> = []
+    @ObservationIgnored @WorkspaceLocal private var readIDs: Set<UUID> = []
+    @ObservationIgnored @WorkspaceLocal private var dismissedIDs: Set<UUID> = []
 
     init(cache: RepositoryCache = .shared) {
         self.cache = cache
@@ -677,7 +677,7 @@ final class InMemoryNotificationRepository: NotificationRepositoryProtocol {
     // server does — a mute set here really suppresses the row, so a bug in
     // the filtering logic shows up in previews rather than in production.
 
-    private var mutes: [MuteTarget] = []
+    @ObservationIgnored @WorkspaceLocal private var mutes: [MuteTarget] = []
     private var storedPreferences: [NotificationPreference] = NotificationCategory.allCases.map {
         NotificationPreference(category: $0, inApp: true, push: true, email: false,
                                minPushPriority: .normal)

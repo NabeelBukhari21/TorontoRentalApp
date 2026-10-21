@@ -38,6 +38,7 @@ final class MockWorkspace: WorkspaceActivating {
         guard let organizationID = session.organizationID else { return nil }
         if organizationID == MockAccountDirectory.demoOrganizationID { return .demo }
         return .empty(
+            organizationID: organizationID,
             organizationName: session.organizationName ?? "My Organization",
             ownerName: session.fullName,
             ownerEmail: session.email

@@ -27,8 +27,9 @@ colourful, for students, on a white background.
   - `RentalApp (Onboarding)` passes `-PurrpertyStartAt onboarding`, so
     the app opens at onboarding. Also supported: `login` and
     `gettingStarted` (first property → notifications → paywall, using the
-    stored session), `home` (demo owner), `tenant` (demo tenant portal) and
-    `vendor` (demo vendor portal). This works in
+    stored session), `home` (demo owner), `tenant` (demo tenant portal),
+    `vendor` (demo vendor portal) and `newOwner` (a fresh owner with an
+    empty organization, for first-run states). This works in
     DEBUG builds only; see `Core/Diagnostics/DebugLaunchOverride.swift`.
 - Deployment target: iOS 26.4. Default simulator: iPhone 17 Pro. Physical
   device: iPhone 15 Pro Max.
@@ -160,8 +161,8 @@ colourful, for students, on a white background.
   - AI tasks aren't wired to any screens.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in
     DEBUG only. Needs real StoreKit products before release.
-  - Mock mode: a new account gets its own empty workspace, but what it
-    adds isn't persisted across relaunches, and in-memory edits carry
-    over between accounts within one run.
+  - Mock mode: each organization has its own workspace (seeded demo or
+    empty) and its own in-memory edits (`@WorkspaceLocal`), but sign-ups
+    and what a new account adds aren't persisted across relaunches.
   - Supabase isn't configured.
   - The GitHub About description needs updating.

@@ -107,7 +107,8 @@ enum AppTheme: String, CaseIterable, Identifiable {
 // MARK: - Team & Integrations
 
 struct TeamMember: Identifiable {
-    let id = UUID()
+    /// Unique within an organization, and stable across reads.
+    var id: String { email }
     let name: String
     let email: String
     let role: String

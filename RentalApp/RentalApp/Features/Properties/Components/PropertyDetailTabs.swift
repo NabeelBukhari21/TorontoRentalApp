@@ -29,7 +29,7 @@ struct PropertyOverviewTab: View {
                 )
                 DSStatCard(
                     title: "Revenue",
-                    value: "$\(String(format: "%.1f", property.monthlyRevenue))K",
+                    value: property.monthlyRevenue.cadThousands,
                     icon: DS.Icons.payment,
                     iconGradient: DS.Gradients.success,
                     trend: "/month",

@@ -30,7 +30,7 @@ struct DashboardHeroCard: View {
                     VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                         Text("Monthly Revenue").dsOverline()
 
-                        Text(hasAppeared ? "$\(monthlyRevenue, specifier: "%.1f")K" : "$0.0K")
+                        Text(hasAppeared ? monthlyRevenue.cadThousands : 0.0.cadThousands)
                             .font(.system(size: 36, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .foregroundStyle(DS.Colors.textPrimary)

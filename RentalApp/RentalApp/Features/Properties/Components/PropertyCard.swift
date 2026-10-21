@@ -189,7 +189,7 @@ struct PropertyCard: View {
         HStack(spacing: labelled ? DS.Spacing.lg : DS.Spacing.md) {
             stat(icon: DS.Icons.unit, value: "\(property.unitCount)", label: labelled ? "units" : nil)
             stat(icon: DS.Icons.occupancy, value: "\(Int(property.occupancyRate * 100))%", label: labelled ? "occupied" : nil)
-            stat(icon: DS.Icons.payment, value: "$\(String(format: "%.1f", property.monthlyRevenue))K", label: "/mo")
+            stat(icon: DS.Icons.payment, value: property.monthlyRevenue.cadThousands, label: "/mo")
         }
     }
 

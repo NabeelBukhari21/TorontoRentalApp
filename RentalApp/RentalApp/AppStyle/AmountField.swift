@@ -58,3 +58,16 @@ extension FormatStyle where Self == IntegerFormatStyle<Int>.Currency {
         .currency(code: "CAD").precision(.fractionLength(0))
     }
 }
+
+extension Double {
+    /// Thousands of dollars as a short label: 96.05 → "$96.1K".
+    ///
+    /// Rounds to whole dollars first, so the same money summed two ways
+    /// (in `Decimal`, or as per-property `Double`s) always prints the same
+    /// instead of landing either side of a rounding boundary.
+    var cadThousands: String {
+        let dollars = (self * 1_000).rounded()
+        let tenths = (dollars / 100).rounded(.toNearestOrAwayFromZero) / 10
+        return String(format: "$%.1fK", tenths)
+    }
+}

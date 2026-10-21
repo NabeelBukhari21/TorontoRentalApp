@@ -16,28 +16,83 @@ import Observation
 @Observable
 final class InMemoryProfileRepository: ProfileRepositoryProtocol {
 
+    /// One profile per workspace, seeded from that workspace's owner and
+    /// staff, so a new account's Settings shows its own name and team.
+    private struct Record {
+        var fullName: String
+        var email: String
+        var phone: String
+        var jobTitle: String
+        var orgName: String
+        var orgSlug: String
+        var orgCity: String
+        var members: [TeamMember]
+
+        @MainActor
+        init(backend: FakeBackend) {
+            let owner = backend.users.first { $0.role == .owner } ?? backend.users.first
+            fullName = owner?.fullName ?? ""
+            email = owner?.email ?? ""
+            phone = owner?.phone ?? ""
+            jobTitle = owner?.jobTitle ?? "Owner"
+            orgName = backend.organization.name
+            orgSlug = backend.organization.slug
+            orgCity = "Toronto, ON"
+            members = backend.users.map { user in
+                let invited = user.status == .invited
+                return TeamMember(
+                    name: user.fullName,
+                    email: user.email,
+                    role: user.jobTitle ?? (user.role == .owner ? "Owner" : "Property Manager"),
+                    isOwner: user.role == .owner,
+                    status: invited ? "Invited" : "Active",
+                    statusKind: invited ? .warning : .success
+                )
+            }
+        }
+    }
+
+    private var records: [String: Record] = [:]
+
+    private var record: Record {
+        get { records[FakeBackend.workspace.key] ?? Record(backend: FakeBackend.shared) }
+        set { records[FakeBackend.workspace.key] = newValue }
+    }
+
     // Person
-    var fullName = "Syed Bukhari"
-    var email = "nabeelbukhari21@gmail.com"
-    var phone = "(416) 555-0100"
-    var jobTitle = "Portfolio Owner"
+    var fullName: String {
+        get { record.fullName }
+        set { record.fullName = newValue }
+    }
+    var email: String {
+        get { record.email }
+        set { record.email = newValue }
+    }
+    var phone: String {
+        get { record.phone }
+        set { record.phone = newValue }
+    }
+    var jobTitle: String {
+        get { record.jobTitle }
+        set { record.jobTitle = newValue }
+    }
 
     // Workspace
-    var orgName = "Bukhari Properties"
-    var orgSlug = "bukhari-properties"
-    var orgCity = "Toronto, ON"
+    var orgName: String {
+        get { record.orgName }
+        set { record.orgName = newValue }
+    }
+    var orgSlug: String {
+        get { record.orgSlug }
+        set { record.orgSlug = newValue }
+    }
+    var orgCity: String {
+        get { record.orgCity }
+        set { record.orgCity = newValue }
+    }
 
     // Team
-    private(set) var members: [TeamMember] = [
-        TeamMember(name: "Syed Bukhari", email: "nabeelbukhari21@gmail.com",
-                   role: "Owner", isOwner: true, status: "Active", statusKind: .success),
-        TeamMember(name: "Sarah Mitchell", email: "sarah.m@bukhariproperties.ca",
-                   role: "Property Manager", isOwner: false, status: "Active", statusKind: .success),
-        TeamMember(name: "David Park", email: "d.park@bukhariproperties.ca",
-                   role: "Maintenance Coordinator", isOwner: false, status: "Active", statusKind: .success),
-        TeamMember(name: "Alex Rivera", email: "alex.r@bukhariproperties.ca",
-                   role: "Property Manager", isOwner: false, status: "Invited", statusKind: .warning)
-    ]
+    var members: [TeamMember] { record.members }
 
     /// Persists the profile. Local today; one call away from a PATCH.
     func save() async throws {
@@ -49,7 +104,7 @@ final class InMemoryProfileRepository: ProfileRepositoryProtocol {
         guard trimmed.contains("@") else { return }
 
         withAnimation(DS.Motion.bouncy) {
-            members.append(
+            record.members.append(
                 TeamMember(
                     name: trimmed.components(separatedBy: "@").first?.capitalized ?? "Invitee",
                     email: trimmed,

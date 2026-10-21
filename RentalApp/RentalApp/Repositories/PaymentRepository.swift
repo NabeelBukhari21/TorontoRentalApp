@@ -28,9 +28,9 @@ final class InMemoryPaymentRepository: PaymentRepositoryProtocol {
         let note: String?
     }
 
-    private var recorded: [Recorded] = []
+    @ObservationIgnored @WorkspaceLocal private var recorded: [Recorded] = []
     /// Tenant id + month → when a reminder went out.
-    private var reminders: [String: Date] = [:]
+    @ObservationIgnored @WorkspaceLocal private var reminders: [String: Date] = [:]
 
     // MARK: Reads
 

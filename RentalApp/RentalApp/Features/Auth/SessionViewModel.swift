@@ -298,7 +298,27 @@ final class SessionViewModel {
             await signInDemo(email: "tenant@rentos.ca")
         case .vendor:
             await signInDemo(email: "vendor@rentos.ca")
+        case .newOwner:
+            await signUpNewOwner()
         }
+    }
+
+    /// DEBUG launch override: a fresh mock owner with an empty
+    /// organization, past getting-started, for first-run states.
+    private func signUpNewOwner() async {
+        let suffix = UUID().uuidString.prefix(6).lowercased()
+        guard case .session? = try? await auth.signUp(
+                  name: "Leo Tran",
+                  email: "leo.\(suffix)@example.com",
+                  password: UUID().uuidString,
+                  role: .owner
+              ),
+              let session = try? await auth.attachOrganization(id: "org_\(suffix)", name: "Tran Homes")
+        else {
+            transition(to: .unauthenticated)
+            return
+        }
+        transition(to: .authenticated(session))
     }
 
     /// DEBUG launch override: signs in one of the mock demo accounts.
