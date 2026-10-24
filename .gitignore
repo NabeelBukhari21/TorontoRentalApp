@@ -41,3 +41,10 @@ build/
 
 # Xcode's original auto-created repo (blank template only). Safe to delete.
 .xcode-template-git-backup/
+
+# ─── Motion studies (tools/motion) ───────────────────────────────────
+# Dependencies, renders and the art synced in from the asset catalog.
+tools/motion/node_modules/
+tools/motion/out/
+tools/motion/public/
+tools/mascot/out/

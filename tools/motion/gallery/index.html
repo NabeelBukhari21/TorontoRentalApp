@@ -1,0 +1,281 @@
+<title>Purrperty Onboarding Studies</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one band per decision, two phones side by side (A and B), a sticky picks bar that builds the reply. */
+:root {
+  --bg: #fbfaff;
+  --surface: #ffffff;
+  --sunken: #f1eeff;
+  --line: #e4e0f5;
+  --ink: #1b1b2f;
+  --muted: #625f7a;
+  --violet: #6c5ce7;
+  --violet-ink: #5a4bd1;
+  --violet-soft: #efedfd;
+  --coral-ink: #c23b3b;
+  --mint-ink: #0f7a5a;
+  --frame: #1b1b2f;
+  --shadow: 0 1px 2px rgba(27,27,47,.05), 0 12px 32px rgba(76,64,170,.10);
+  --display: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12111f; --surface: #1b1a2e; --sunken: #232142; --line: #312f50; --ink: #f2f1fa; --muted: #a9a6c4;
+    --violet: #8d80f0; --violet-ink: #b3a9ff; --violet-soft: #2a2550; --coral-ink: #ff9a9a; --mint-ink: #5fe0b6;
+    --frame: #3b3960; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12111f; --surface: #1b1a2e; --sunken: #232142; --line: #312f50; --ink: #f2f1fa; --muted: #a9a6c4;
+  --violet: #8d80f0; --violet-ink: #b3a9ff; --violet-soft: #2a2550; --coral-ink: #ff9a9a; --mint-ink: #5fe0b6;
+  --frame: #3b3960; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 140px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1080px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; border-radius: 10px; }
+
+header { padding-block: 44px 12px; display: grid; gap: 14px; }
+.eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--violet-ink); }
+header h1 { font-size: clamp(34px, 6vw, 54px); font-weight: 700; line-height: 1.02; }
+.lede { margin: 0; max-width: 64ch; color: var(--muted); font-size: 17px; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.flow span { background: var(--sunken); border-radius: 999px; padding: 4px 10px; font-weight: 600; color: var(--ink); }
+
+section { padding-block: 44px 8px; border-top: 1px solid var(--line); margin-top: 32px; }
+.sec-head { display: grid; gap: 6px; margin-bottom: 22px; }
+.sec-head .step { font-size: 13px; font-weight: 700; color: var(--violet-ink); font-variant-numeric: tabular-nums; }
+.sec-head h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 600; }
+.sec-head p { margin: 0; color: var(--muted); max-width: 66ch; }
+
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+.option { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.phone { width: min(100%, 300px); justify-self: center; border-radius: 40px; padding: 7px; background: var(--frame); box-shadow: var(--shadow); }
+.phone video { display: block; width: 100%; aspect-ratio: 720 / 1560; border-radius: 33px; background: #f1eeff; }
+.label { display: flex; align-items: baseline; gap: 10px; }
+.badge { font-family: var(--display); font-weight: 700; font-size: 18px; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--violet-soft); color: var(--violet-ink); flex: none; }
+.label h3 { font-size: 22px; font-weight: 600; }
+.option p { margin: 0; color: var(--muted); font-size: 15px; }
+.option ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+.option li b { color: var(--ink); font-weight: 600; }
+
+.choices { display: grid; gap: 10px; margin-top: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.choices h4 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.choice-row { display: grid; grid-template-columns: minmax(110px, 160px) 1fr; gap: 10px; align-items: center; }
+@media (max-width: 520px) { .choice-row { grid-template-columns: 1fr; } }
+.choice-row > span { font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: inline-block; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); font-size: 14.5px; }
+.seg input:checked + span { background: var(--violet); border-color: var(--violet); color: #fff; font-weight: 600; }
+.seg input:focus-visible + span { outline: 3px solid var(--violet); outline-offset: 2px; }
+
+.picks {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+}
+.picks-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.picks output { font-size: 14.5px; min-width: 0; flex: 1 1 320px; }
+.picks output b { color: var(--violet-ink); }
+.btn { all: unset; cursor: pointer; background: var(--violet); color: #fff; font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 12px; }
+.btn:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
+.note { font-size: 14px; color: var(--muted); max-width: 70ch; }
+@media (prefers-reduced-motion: reduce) { video { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Onboarding · Round 1</div>
+    <h1>Purr's first hello, in two flavours</h1>
+    <p class="lede">Liquid-morph studies for screens 1.1 and 1.2 and the intro fly-over. Each decision has an A and a B. Pick one of each below, and the bar at the bottom writes your reply for you. The welcome screen's parts mix and match, so you can take A's button with B's tagline.</p>
+    <div class="flow" aria-label="Order on first launch"><span>1.1 Launch</span>→<span>Head melts into six dots</span>→<span>Logo and name</span>→<span>1.2 Welcome</span>→<span>Fly-over</span>→<span>1.3 Quiz</span></div>
+  </header>
+
+  <section id="launch">
+    <div class="sec-head">
+      <div class="step">1.1</div>
+      <h2>Launch frame</h2>
+      <p>The system launch screen becomes this light lavender, so the hand-off is invisible. Purr's head is about 190 points wide, roughly two and a half times BitePal's.</p>
+    </div>
+    <div class="pair">
+      <div class="option">
+        <div class="phone"><video src="media/LaunchA.mp4" autoplay muted loop playsinline aria-label="Launch A: Peekaboo"></video></div>
+        <div class="label"><span class="badge">A</span><h3>Peekaboo</h3></div>
+        <p>Purr rises from behind a rippling liquid horizon, flicking up droplets that fall back in. Squash, stretch and a tilt as he settles.</p>
+      </div>
+      <div class="option">
+        <div class="phone"><video src="media/LaunchB.mp4" autoplay muted loop playsinline aria-label="Launch B: Drip and pop"></video></div>
+        <div class="label"><span class="badge">B</span><h3>Drip &amp; pop</h3></div>
+        <p>A violet drop falls and splashes into a wobbling blob, and Purr pops out of it with an overshoot. The blob settles into a soft halo and three sparkles twinkle.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="logo">
+    <div class="sec-head">
+      <div class="step">1.1 → 1.2</div>
+      <h2>Head → six dots → logo</h2>
+      <p>The head melts into a drop that splits into six dots, Cosmos style. In the app the dots keep turning only while the app really is loading, then form the brand. The name is set in Fredoka.</p>
+    </div>
+    <div class="pair">
+      <div class="option">
+        <div class="phone"><video src="media/LogoA.mp4" autoplay muted loop playsinline aria-label="Logo A: Orbit merge"></video></div>
+        <div class="label"><span class="badge">A</span><h3>Orbit merge</h3></div>
+        <p>The six dots orbit and pulse in turn, then pull together into the logo tile. The street of homes builds itself, Purr hops in, and "Purrperty" springs up letter by letter.</p>
+      </div>
+      <div class="option">
+        <div class="phone"><video src="media/LogoB.mp4" autoplay muted loop playsinline aria-label="Logo B: Paw print"></video></div>
+        <div class="label"><span class="badge">B</span><h3>Paw print</h3></div>
+        <p>Five dots regroup into a paw print. The sixth stretches into a coral underline, and the name rises out from behind it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="welcome">
+    <div class="sec-head">
+      <div class="step">1.2</div>
+      <h2>Welcome</h2>
+      <p>Feature cards drift above and below the name, in opposite directions. They show only things the app does today: recorded rent, repairs, renewals, vacancies, tenant chat, the Rent widget, the visit Live Activity, vendor jobs and the Ontario rent check. Each video ends with a press of the main button.</p>
+    </div>
+    <div class="pair">
+      <div class="option">
+        <div class="phone"><video src="media/WelcomeA.mp4" autoplay muted loop playsinline aria-label="Welcome A"></video></div>
+        <div class="label"><span class="badge">A</span><h3>Orb, line, sleepy Purr</h3></div>
+        <ul>
+          <li><b>Button:</b> a liquid orb with an arrow and a violet-to-coral gradient. Its edge ripples; pressed, it stretches and floods the screen.</li>
+          <li><b>Tagline:</b> "Every rental, under one paw."</li>
+          <li><b>Terms:</b> one muted line under the button, Bump style.</li>
+          <li><b>Sign in:</b> a glass pill with a sleeping Purr who wakes up when tapped.</li>
+        </ul>
+      </div>
+      <div class="option">
+        <div class="phone"><video src="media/WelcomeB.mp4" autoplay muted loop playsinline aria-label="Welcome B"></video></div>
+        <div class="label"><span class="badge">B</span><h3>Paw fill, chip, door</h3></div>
+        <ul>
+          <li><b>Button:</b> a glass capsule with Purr's paw. Holding it fills it with liquid, then it bursts.</li>
+          <li><b>Tagline:</b> "Your rentals, purring along."</li>
+          <li><b>Terms:</b> a small glass "Terms · Privacy" chip with a caption above it.</li>
+          <li><b>Sign in:</b> a "Have an account?" pill whose little door swings open.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="flyover">
+    <div class="sec-head">
+      <div class="step">After the button</div>
+      <h2>Intro fly-over</h2>
+      <p>About nine seconds, muted, with a Skip button, then on to 1.3. It's a drawn low-poly Toronto with a CN Tower nod on the waterfront, not a real map. Mint units are let and yellow ones vacant. Tenant pins use initials, never photos.</p>
+    </div>
+    <div class="pair">
+      <div class="option">
+        <div class="phone"><video src="media/FlyoverA.mp4" autoplay muted loop playsinline aria-label="Fly-over A: Drone sweep"></video></div>
+        <div class="label"><span class="badge">A</span><h3>Drone sweep</h3></div>
+        <p>A high drone orbit dives to one tower, which turns to glass. Units light up floor by floor, tenants pop in and feature cards float out. Ends on the name.</p>
+      </div>
+      <div class="option">
+        <div class="phone"><video src="media/FlyoverB.mp4" autoplay muted loop playsinline aria-label="Fly-over B: Dollhouse"></video></div>
+        <div class="label"><span class="badge">B</span><h3>Dollhouse</h3></div>
+        <p>It starts as a flat map seen from above, tilts into 3D and pushes into a building whose floors lift apart like a dollhouse. Ends with Purr cheering.</p>
+      </div>
+    </div>
+    <p class="note">These are review renders at 720 × 1560. The app gets the chosen fly-over at full resolution. The launch, dots and welcome screen get rebuilt natively in SwiftUI, so they start instantly and calm down when Reduce Motion is on.</p>
+  </section>
+
+  <section id="pick">
+    <div class="sec-head">
+      <div class="step">Your call</div>
+      <h2>Pick one of each</h2>
+      <p>Mix and match freely. Your picks stay in this browser until you copy them.</p>
+    </div>
+    <form class="choices" id="choices" aria-label="Your picks">
+      <h4>Picks</h4>
+    </form>
+  </section>
+</div>
+
+<div class="picks" role="region" aria-label="Your reply">
+  <div class="picks-in">
+    <output id="summary" for="choices"></output>
+    <button class="btn" type="button" id="copy">Copy my picks</button>
+  </div>
+</div>
+
+<script>
+const DECISIONS = [
+  ["launch", "Launch frame", ["A Peekaboo", "B Drip & pop"]],
+  ["logo", "Dots → logo", ["A Orbit merge", "B Paw print"]],
+  ["button", "Main button", ["A Liquid orb", "B Paw fill"]],
+  ["tagline", "Tagline", ["A Every rental, under one paw.", "B Your rentals, purring along."]],
+  ["terms", "Terms", ["A Muted line", "B Glass chip"]],
+  ["skip", "Sign in", ["A Sleepy Purr", "B Door"]],
+  ["flyover", "Fly-over", ["A Drone sweep", "B Dollhouse"]],
+];
+const KEY = "purrperty-onboarding-picks";
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { saved = {}; }
+
+const form = document.getElementById("choices");
+DECISIONS.forEach(([id, label, opts]) => {
+  const row = document.createElement("div");
+  row.className = "choice-row";
+  row.innerHTML = `<span id="lbl-${id}">${label}</span><div class="seg" role="radiogroup" aria-labelledby="lbl-${id}">` +
+    opts.map((o, i) => `<label><input type="radio" id="${id}-${i}" name="${id}" value="${o}"${saved[id] === o ? " checked" : ""}><span>${o}</span></label>`).join("") +
+    `</div>`;
+  form.appendChild(row);
+});
+
+const summary = document.getElementById("summary");
+function current() {
+  const data = new FormData(form);
+  return DECISIONS.map(([id, label]) => [label, data.get(id)]);
+}
+function render() {
+  const picks = current();
+  const done = picks.filter((p) => p[1]).length;
+  summary.innerHTML = done
+    ? picks.map(([l, v]) => `${l}: <b>${v ? v.split(" ")[0] : "?"}</b>`).join(" · ")
+    : "Pick an A or B for each part below.";
+  try { localStorage.setItem(KEY, JSON.stringify(Object.fromEntries(DECISIONS.map(([id]) => [id, new FormData(form).get(id)])))); } catch (e) {}
+}
+form.addEventListener("change", render);
+render();
+
+document.getElementById("copy").addEventListener("click", async () => {
+  const text = current().map(([l, v]) => `${l}: ${v || "no pick yet"}`).join("\n");
+  const btn = document.getElementById("copy");
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Copied";
+  } catch (e) {
+    const range = document.createRange();
+    range.selectNodeContents(summary);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    btn.textContent = "Selected, press copy";
+  }
+  setTimeout(() => (btn.textContent = "Copy my picks"), 1800);
+});
+
+// Under Reduce Motion, show a still frame instead of looping video.
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.querySelectorAll("video").forEach((v) => { v.removeAttribute("autoplay"); v.controls = true; v.pause(); });
+}
+</script>

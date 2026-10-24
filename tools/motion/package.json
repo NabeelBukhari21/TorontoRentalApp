@@ -1,0 +1,25 @@
+{
+  "name": "purrperty-motion",
+  "private": true,
+  "description": "Motion studies and shipped clips for Purrperty's onboarding, made with Remotion.",
+  "scripts": {
+    "sync-assets": "node scripts/sync-assets.mjs",
+    "studio": "npm run sync-assets && remotion studio src/index.ts",
+    "render-all": "npm run sync-assets && node scripts/render-all.mjs"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.8.1",
+    "@remotion/cli": "4.0.531",
+    "@remotion/google-fonts": "4.0.531",
+    "@remotion/three": "4.0.531",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.531",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/three": "0.186.0",
+    "typescript": "5.9.3"
+  }
+}
