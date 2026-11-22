@@ -1,0 +1,181 @@
+<title>Purrperty Glass Logo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one band per direction: the hero icon, every glass appearance in a row, then the in-app lockup on light and dark. A picks bar at the bottom. */
+:root {
+  --bg: #fffaf3;
+  --surface: #ffffff;
+  --sunken: #fff1df;
+  --line: #f0e2d2;
+  --ink: #2b1712;
+  --muted: #765a52;
+  --cherry: #cc2e2e;
+  --cherry-ink: #b02727;
+  --gold: #f2b83a;
+  --frame: #2b1712;
+  --shadow: 0 1px 2px rgba(43,23,18,.06), 0 14px 34px rgba(90,42,30,.12);
+  --display: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1210; --surface: #261a17; --sunken: #2e201c; --line: #3d2b26; --ink: #fbf1ea; --muted: #c2ada4;
+    --cherry: #d63535; --cherry-ink: #ff8a80; --frame: #3d2b26; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 34px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1210; --surface: #261a17; --sunken: #2e201c; --line: #3d2b26; --ink: #fbf1ea; --muted: #c2ada4;
+  --cherry: #d63535; --cherry-ink: #ff8a80; --frame: #3d2b26; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 14px 34px rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 140px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1080px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+:focus-visible { outline: 3px solid var(--cherry); outline-offset: 3px; border-radius: 10px; }
+header { padding-block: 44px 8px; display: grid; gap: 12px; }
+.eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cherry-ink); }
+header h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; line-height: 1.04; }
+.lede { margin: 0; max-width: 64ch; color: var(--muted); font-size: 17px; }
+section { padding-block: 40px 8px; border-top: 1px solid var(--line); margin-top: 32px; }
+.head { display: flex; flex-wrap: wrap; gap: 28px; align-items: center; }
+.hero-icon { width: min(220px, 50vw); border-radius: 22.37%; box-shadow: var(--shadow); }
+.head-text { display: grid; gap: 8px; flex: 1 1 300px; min-width: 0; }
+.badge { font-family: var(--display); font-weight: 700; font-size: 18px; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--sunken); color: var(--cherry-ink); }
+.head-text h2 { font-size: clamp(26px, 4vw, 34px); font-weight: 600; display: flex; gap: 12px; align-items: center; }
+.head-text p { margin: 0; color: var(--muted); max-width: 60ch; }
+.label { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 26px 0 12px; }
+.modes { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .modes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.mode { display: grid; gap: 6px; justify-items: center; text-align: center; font-size: 13px; color: var(--muted); }
+.mode img { width: 100%; max-width: 132px; border-radius: 22.37%; }
+.wall { border-radius: 18px; padding: 14px; width: 100%; display: grid; justify-items: center; }
+.wall.light { background: linear-gradient(160deg, #f9e7d2, #f5c9a8); }
+.wall.dark { background: linear-gradient(160deg, #2a1c18, #0f0a09); }
+.lockups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .lockups { grid-template-columns: 1fr; } }
+.lockup { border-radius: 20px; padding: 22px; display: flex; align-items: center; gap: 16px; }
+.lockup.on-light { background: #ffffff; border: 1px solid #f0e2d2; }
+.lockup.on-dark { background: #1a1210; }
+.lockup img { width: 84px; height: 84px; }
+.wordmark { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 6vw, 46px); letter-spacing: -.01em; line-height: 1; }
+.wordmark .purr { background: linear-gradient(135deg, #e03838, #f2b83a 140%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.on-light .perty { color: #2b1712; }
+.on-dark .perty { color: #fbf1ea; }
+.pick { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.pick label { cursor: pointer; }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick span { display: inline-block; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; }
+.pick input:checked + span { background: var(--cherry); border-color: var(--cherry); color: #fff; }
+.pick input:focus-visible + span { outline: 3px solid var(--cherry); outline-offset: 2px; }
+.picks { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+.picks-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.picks output { font-size: 15px; flex: 1 1 280px; min-width: 0; }
+.picks b { color: var(--cherry-ink); }
+.btn { all: unset; cursor: pointer; background: var(--cherry); color: #fff; font-weight: 600; font-size: 15px; padding: 10px 18px; border-radius: 12px; }
+.btn:focus-visible { outline: 3px solid var(--cherry); outline-offset: 3px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Logo · Two directions</div>
+    <h1>Purr's new glass home</h1>
+    <p class="lede">Both icons are layered Icon Composer files, so iOS 26 draws real Liquid Glass on each layer. Each one is shown in every Home Screen appearance: default, dark, clear and tinted. Under each are the in-app logo and the Fredoka wordmark on light and dark backgrounds.</p>
+  </header>
+
+  <section id="a">
+    <div class="head">
+      <img class="hero-icon" src="media/A-Default.png" alt="Option A app icon: Purr peeking over a red roof">
+      <div class="head-text">
+        <h2><span class="badge">A</span>Peek-a-roof</h2>
+        <p>Purr peeks over a chunky cherry roof with a gold ridge, a little cream house with a red door below. It says "property" at a glance, and his face fills the icon, so it stays readable at small sizes.</p>
+      </div>
+    </div>
+    <div class="label">Home Screen appearances</div>
+    <div class="modes">
+      <div class="mode"><div class="wall light"><img src="media/A-Default.png" alt="Default"></div>Default</div>
+      <div class="mode"><div class="wall dark"><img src="media/A-Dark.png" alt="Dark"></div>Dark</div>
+      <div class="mode"><div class="wall light"><img src="media/A-ClearLight.png" alt="Clear light"></div>Clear light</div>
+      <div class="mode"><div class="wall dark"><img src="media/A-ClearDark.png" alt="Clear dark"></div>Clear dark</div>
+      <div class="mode"><div class="wall light"><img src="media/A-TintedLight.png" alt="Tinted light"></div>Tinted light</div>
+      <div class="mode"><div class="wall dark"><img src="media/A-TintedDark.png" alt="Tinted dark"></div>Tinted dark</div>
+    </div>
+    <div class="label">In the app</div>
+    <div class="lockups">
+      <div class="lockup on-light"><img src="media/A-mark.png" alt=""><div class="wordmark"><span class="purr">Purr</span><span class="perty">perty</span></div></div>
+      <div class="lockup on-dark"><img src="media/A-mark.png" alt=""><div class="wordmark"><span class="purr">Purr</span><span class="perty">perty</span></div></div>
+    </div>
+  </section>
+
+  <section id="b">
+    <div class="head">
+      <img class="hero-icon" src="media/B-Default.png" alt="Option B app icon: Purr with a gold house key in a cream bubble">
+      <div class="head-text">
+        <h2><span class="badge">B</span>Key bubble</h2>
+        <p>Purr holds his gold house key inside a cream glass bubble on a cherry-to-ember tile. It's bolder on a busy Home Screen, and the key carries the "your rentals" idea.</p>
+      </div>
+    </div>
+    <div class="label">Home Screen appearances</div>
+    <div class="modes">
+      <div class="mode"><div class="wall light"><img src="media/B-Default.png" alt="Default"></div>Default</div>
+      <div class="mode"><div class="wall dark"><img src="media/B-Dark.png" alt="Dark"></div>Dark</div>
+      <div class="mode"><div class="wall light"><img src="media/B-ClearLight.png" alt="Clear light"></div>Clear light</div>
+      <div class="mode"><div class="wall dark"><img src="media/B-ClearDark.png" alt="Clear dark"></div>Clear dark</div>
+      <div class="mode"><div class="wall light"><img src="media/B-TintedLight.png" alt="Tinted light"></div>Tinted light</div>
+      <div class="mode"><div class="wall dark"><img src="media/B-TintedDark.png" alt="Tinted dark"></div>Tinted dark</div>
+    </div>
+    <div class="label">In the app</div>
+    <div class="lockups">
+      <div class="lockup on-light"><img src="media/B-mark.png" alt=""><div class="wordmark"><span class="purr">Purr</span><span class="perty">perty</span></div></div>
+      <div class="lockup on-dark"><img src="media/B-mark.png" alt=""><div class="wordmark"><span class="purr">Purr</span><span class="perty">perty</span></div></div>
+    </div>
+  </section>
+
+  <section id="pick">
+    <h2 style="font-size: 26px; font-weight: 600;">Pick one</h2>
+    <form class="pick" id="pick-form" aria-label="Logo direction">
+      <label><input type="radio" id="pick-a" name="logo" value="A Peek-a-roof"><span>A · Peek-a-roof</span></label>
+      <label><input type="radio" id="pick-b" name="logo" value="B Key bubble"><span>B · Key bubble</span></label>
+    </form>
+  </section>
+</div>
+
+<div class="picks" role="region" aria-label="Your reply">
+  <div class="picks-in">
+    <output id="summary" for="pick-form">Pick A or B, then copy your reply.</output>
+    <button class="btn" type="button" id="copy">Copy my pick</button>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("pick-form");
+const summary = document.getElementById("summary");
+const KEY = "purrperty-logo-pick";
+try { const saved = localStorage.getItem(KEY); if (saved) { const el = [...form.elements].find((e) => e.value === saved); if (el) el.checked = true; } } catch (e) {}
+function render() {
+  const v = new FormData(form).get("logo");
+  summary.innerHTML = v ? `Logo: <b>${v}</b>` : "Pick A or B, then copy your reply.";
+  try { if (v) localStorage.setItem(KEY, v); } catch (e) {}
+}
+form.addEventListener("change", render);
+render();
+document.getElementById("copy").addEventListener("click", async () => {
+  const v = new FormData(form).get("logo") || "no pick yet";
+  const btn = document.getElementById("copy");
+  try { await navigator.clipboard.writeText(`Logo: ${v}`); btn.textContent = "Copied"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(summary); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected, press copy"; }
+  setTimeout(() => (btn.textContent = "Copy my pick"), 1800);
+});
+</script>

@@ -45,23 +45,35 @@ struct RentalAppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.container, container)
-                .environment(\.featureFlags, container.featureFlags)
-                .task { await startUp() }
-                .onChange(of: scenePhase) { _, phase in
-                    guard phase == .background else { return }
-                    // Submit while there is still a runloop to submit on.
-                    backgroundRefresh.schedule()
-                    // And ask for a drain if writes are still queued — this
-                    // was previously never called anywhere, so a queue built
-                    // up offline sat until the user happened to reopen the
-                    // app, which is the one moment it did not need to.
-                    backgroundRefresh.scheduleDrainIfNeeded()
-                    // Leave the widgets showing the latest numbers.
-                    Task { await container.widgetSnapshots.publish() }
-                }
+            #if DEBUG
+            if let still = PurrStillStudio.request {
+                PurrStillStudio(request: still)
+            } else {
+                app
+            }
+            #else
+            app
+            #endif
         }
+    }
+
+    private var app: some View {
+        ContentView()
+            .environment(\.container, container)
+            .environment(\.featureFlags, container.featureFlags)
+            .task { await startUp() }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .background else { return }
+                // Submit while there is still a runloop to submit on.
+                backgroundRefresh.schedule()
+                // And ask for a drain if writes are still queued — this
+                // was previously never called anywhere, so a queue built
+                // up offline sat until the user happened to reopen the
+                // app, which is the one moment it did not need to.
+                backgroundRefresh.scheduleDrainIfNeeded()
+                // Leave the widgets showing the latest numbers.
+                Task { await container.widgetSnapshots.publish() }
+            }
     }
 
     @Environment(\.scenePhase) private var scenePhase
