@@ -94,6 +94,8 @@ struct RootNavigation: View {
         // System is the default (see `InMemoryPreferencesRepository.theme`);
         // Light and Dark remain available in Settings → Appearance.
         .preferredColorScheme(container.preferences.theme.colorScheme)
+        // Purr's look, everywhere he appears (Settings ▸ Appearance).
+        .environment(\.purrStyle, container.preferences.purrStyle)
         .environment(session)
         .environment(\.toasts, toasts)
         .dsToastLayer()

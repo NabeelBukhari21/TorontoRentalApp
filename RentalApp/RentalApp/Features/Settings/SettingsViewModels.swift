@@ -187,6 +187,9 @@ final class PreferencesSettingsViewModel {
     var theme: AppTheme {
         get { repo.theme } set { repo.theme = newValue }
     }
+    var purrStyle: PurrStyle {
+        get { repo.purrStyle } set { repo.purrStyle = newValue }
+    }
     var reduceGlassEffects: Bool {
         get { repo.reduceGlassEffects } set { repo.reduceGlassEffects = newValue }
     }

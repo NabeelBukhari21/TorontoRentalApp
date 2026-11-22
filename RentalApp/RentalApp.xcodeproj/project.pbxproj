@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		84061D013100000000000003 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84061D013100000000000002 /* Supabase */; };
+		84061D013200000000000003 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 84061D013200000000000002 /* RiveRuntime */; };
 		842FDD463086A1E200D3780E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 842FDD453086A1E200D3780E /* WidgetKit.framework */; };
 		842FDD483086A1E200D3780E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 842FDD473086A1E200D3780E /* SwiftUI.framework */; };
 		842FDD553086A1E400D3780E /* PurrpertyWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 842FDD433086A1E200D3780E /* PurrpertyWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -87,6 +88,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				84061D013100000000000003 /* Supabase in Frameworks */,
+				84061D013200000000000003 /* RiveRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +156,7 @@
 			name = RentalApp;
 			packageProductDependencies = (
 				84061D013100000000000002 /* Supabase */,
+				84061D013200000000000002 /* RiveRuntime */,
 			);
 			productName = RentalApp;
 			productReference = 84061CDF3012E7C8009DC134 /* RentalApp.app */;
@@ -210,6 +213,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				84061D013100000000000001 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				84061D013200000000000001 /* XCRemoteSwiftPackageReference "rive-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 84061CE03012E7C8009DC134 /* Products */;
@@ -567,6 +571,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		84061D013200000000000001 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rive-app/rive-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 6.29.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -574,6 +586,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 84061D013100000000000001 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		84061D013200000000000002 /* RiveRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 84061D013200000000000001 /* XCRemoteSwiftPackageReference "rive-ios" */;
+			productName = RiveRuntime;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

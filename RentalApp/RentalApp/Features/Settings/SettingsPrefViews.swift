@@ -221,6 +221,9 @@ struct SettingsNotificationsPage: View {
 struct SettingsAppearancePage: View {
 
     @State private var viewModel: PreferencesSettingsViewModel
+    #if DEBUG
+    @State private var showsPurrGallery = false
+    #endif
 
     init(container: AppContainer = .shared) {
         _viewModel = State(initialValue: PreferencesSettingsViewModel(repository: container.preferences))
@@ -253,6 +256,9 @@ struct SettingsAppearancePage: View {
             }
             .dsEntrance(index: 0)
 
+            purrLook
+                .dsEntrance(index: 1)
+
             SettingsSectionCard(title: "Display") {
                 SettingsToggleRow(
                     icon: "circle.hexagongrid.fill", title: "Reduce glass effects",
@@ -266,8 +272,57 @@ struct SettingsAppearancePage: View {
                     isOn: $viewModel.showPortfolioValueOnHome
                 )
             }
-            .dsEntrance(index: 1)
+            .dsEntrance(index: 2)
+
+            #if DEBUG
+            Button("All of Purr's moods") { showsPurrGallery = true }
+                .font(.footnote.weight(.semibold))
+                .sheet(isPresented: $showsPurrGallery) { PurrGallery() }
+            #endif
         }
+    }
+
+    // MARK: Purr's Look
+
+    /// Four looks of the same cat, each a live preview. Picking one
+    /// changes Purr everywhere at once.
+    private var purrLook: some View {
+        DSCard(style: .raised) {
+            VStack(alignment: .leading, spacing: DS.Spacing.md) {
+                Text("Purr's look").dsOverline()
+
+                HStack(spacing: DS.Spacing.sm) {
+                    ForEach(PurrStyle.allCases) { style in
+                        purrTile(style, isSelected: viewModel.purrStyle == style) {
+                            withAnimation(DS.Motion.smooth) { viewModel.purrStyle = style }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func purrTile(_ style: PurrStyle, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: DS.Spacing.xs) {
+                PurrMascot(mood: .appearance, size: 64, isInteractive: false)
+                    .environment(\.purrStyle, style)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, DS.Spacing.xs)
+                    .background(DS.Colors.surface, in: .rect(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(isSelected ? DS.Colors.brand : DS.Colors.outline, lineWidth: isSelected ? 2 : 1)
+                    )
+                Text(style.title)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(isSelected ? DS.Colors.brand : DS.Colors.textSecondary)
+            }
+        }
+        .buttonStyle(DSPressStyle())
+        .accessibilityLabel("\(style.title) look")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private func themeTile(_ theme: AppTheme, isSelected: Bool, action: @escaping () -> Void) -> some View {

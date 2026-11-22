@@ -144,6 +144,10 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var theme: AppTheme = InMemoryPreferencesRepository.storedTheme {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.themeKey) }
     }
+    /// Purr's look; persisted for the same reason as `theme`.
+    var purrStyle: PurrStyle = InMemoryPreferencesRepository.storedPurrStyle {
+        didSet { UserDefaults.standard.set(purrStyle.rawValue, forKey: Self.purrStyleKey) }
+    }
     var reduceGlassEffects = false
     var showPortfolioValueOnHome = true
 
@@ -159,6 +163,11 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     // MARK: Persistence
 
     private static let themeKey = "appearance.theme.v1"
+    private static let purrStyleKey = "appearance.purrStyle.v1"
+
+    private static var storedPurrStyle: PurrStyle {
+        UserDefaults.standard.string(forKey: purrStyleKey).flatMap(PurrStyle.init(rawValue:)) ?? .classic
+    }
 
     /// System when nothing has been chosen yet — see the note on `theme`.
     private static var storedTheme: AppTheme {
