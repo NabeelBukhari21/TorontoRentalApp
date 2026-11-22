@@ -3,37 +3,35 @@
 //  RentalApp
 //
 //  Design System — Colour palette.
-//  Bright, playful, white-first. Adaptive light/dark.
+//  Purr's colours: cherry red and gold on white, a warm cream for cards,
+//  warm brown for text. Adaptive light/dark.
 //
 //  ─────────────────────────────────────────────────────────────────
 //  FILLS AND INKS: WHY EVERY ACCENT HAS TWO TOKENS
 //  ─────────────────────────────────────────────────────────────────
-//  The accent palette is bright on purpose — it is what makes the app
-//  feel fun. But bright colours fail as TEXT on white. Measured against
-//  WCAG AA (4.5:1 for body text):
-//
-//      Coral  #FF6B6B   2.78:1   ✗
-//      Sunny  #FFD93D   1.38:1   ✗
-//      Mint   #2ED8A3   1.83:1   ✗
-//      Sky    #4DA8FF   2.51:1   ✗
+//  The bright accents are what make the app feel fun, but bright colours
+//  fail as TEXT on white (WCAG AA is 4.5:1 for body text): gold #F2B83A
+//  is 1.98, blush #F07870 2.74, mint 1.83, sky 2.51.
 //
 //  So each accent comes as a pair:
 //
 //  • `accentX`     — the bright colour. Fills, gradients, chips' soft
 //                    backgrounds, illustrations, confetti. Never text.
 //  • `accentXInk`  — same hue, darkened until it passes AA on white, on
-//                    the `surface` card colour, AND on its own 14% tint.
+//                    the cream `surface`, AND on its own 14% tint.
 //                    Text, icons, and anything that must be read.
 //
-//  Text sitting ON a bright accent fill uses `textOnAccent` (dark ink),
-//  which passes on all four (6.1–12.3:1).
+//  Text sitting ON a bright accent fill uses `textOnAccent` (warm ink),
+//  6.2–9.5 on all four.
 //
-//  Violet is the exception that makes the brand work: `#6C5CE7` passes
-//  both as text on white (4.86:1) and under white text (4.86:1), so it
-//  can be the CTA colour with white labels. Violet text on a violet TINT
-//  does not pass (4.04:1) — use `brandInk` for that one case.
+//  Cherry is the brand and the system tint (`AccentColor` asset): light
+//  #CC2E2E carries white labels at 5.25 and reads as text at 5.25 on
+//  white, 4.91 on cream. In dark mode no single red can carry white text
+//  AND read as text on the near-black background, so the fill (#D63535,
+//  white text 4.75) and the text colour (`brandInk`, #FF8A80, 8.08) part.
 //
-//  Every value below was checked; the ratios are recorded beside them.
+//  Ratios were measured (WCAG relative luminance) and are recorded beside
+//  each value.
 //
 
 import SwiftUI
@@ -46,7 +44,7 @@ enum DS {}
 
 extension Color {
 
-    /// Creates a colour from a hex value, e.g. `Color(hex: 0x6C5CE7)`.
+    /// Creates a colour from a hex value, e.g. `Color(hex: 0xCC2E2E)`.
     ///
     /// Use inside the design system only. A hex literal in a feature file
     /// is a colour the theme cannot reach.
@@ -74,27 +72,34 @@ extension DS {
 
     enum Colors {
 
-        // MARK: Brand — electric violet
+        // MARK: Brand — Purr's cherry red
 
-        /// Legacy bridges to the system accent (the `AccentColor` asset,
-        /// with dark and Increase Contrast variants). Screens moving to
-        /// AppStyle use `.tint` / `Color.accentColor` directly; these go
-        /// when the old design system is deleted (UI rebuild, phase 5).
+        /// The system accent (the `AccentColor` asset, with dark and
+        /// Increase Contrast variants): buttons, tints, selection, fills
+        /// that carry white text. Light #CC2E2E · dark #D63535.
         static var brand: Color { .accentColor }
-        static var brandInk: Color { .accentColor }
+
+        /// Cherry for text and icons. Light: the brand itself (5.25 on
+        /// white, 4.91 on cream); on its own tint use this darker #B02727
+        /// (5.47). Dark: lifted #FF8A80 (8.08 on the background).
+        static let brandInk = Color(
+            light: Color(hex: 0xB02727),
+            dark: Color(hex: 0xFF8A80)
+        )
 
         // MARK: Accents — bright fills
 
-        /// Coral fill. Not for text — see `accentCoralInk`.
-        static let accentCoral = Color(
-            light: Color(hex: 0xFF6B6B),
-            dark: Color(hex: 0xFF7A7A)
+        /// Purr's gold. Not for text — see `accentGoldInk`.
+        static let accentGold = Color(
+            light: Color(hex: 0xF2B83A),
+            dark: Color(hex: 0xF2B83A)
         )
 
-        /// Sunny fill. Not for text — see `accentSunnyInk`.
-        static let accentSunny = Color(
-            light: Color(hex: 0xFFD93D),
-            dark: Color(hex: 0xFFD93D)
+        /// Purr's blush, the pink of his cheeks. Not for text — see
+        /// `accentBlushInk`.
+        static let accentBlush = Color(
+            light: Color(hex: 0xF07870),
+            dark: Color(hex: 0xFF8A80)
         )
 
         /// Mint fill. Not for text — see `accentMintInk`.
@@ -109,44 +114,39 @@ extension DS {
             dark: Color(hex: 0x4DA8FF)
         )
 
-        /// The end stop of the hero gradient, chosen against the text that
-        /// sits on it (`textOnBrand`):
-        ///
-        /// • Light: deep sky #2A6BD4 — white text 5.06. Plain sky under
-        ///   white text is 2.51.
-        /// • Dark: plain sky #4DA8FF — dark ink 7.50. The deep sky would
-        ///   carry dark-mode ink at only 3.72.
-        static let accentSkyDeep = Color(
-            light: Color(hex: 0x2A6BD4),
-            dark: Color(hex: 0x4DA8FF)
+        /// The end stop of the hero gradient (cherry → ember), chosen
+        /// against the white text on it: ember #B4501E is 5.11 in light
+        /// mode; dark mode ends on the dark brand red, 4.75.
+        static let accentEmber = Color(
+            light: Color(hex: 0xB4501E),
+            dark: Color(hex: 0xB4501E)
         )
 
         // MARK: Accents — inks (text & icons)
 
-        /// Coral for text/icons. 6.14 on white · 5.74 on card · 5.33 on its
-        /// bright tint · 4.61 on a tint of itself over a card (the tightest
-        /// pairing the app uses — `category.tint.opacity(0.13)` chips).
-        static let accentCoralInk = Color(
-            light: Color(hex: 0xB72D28),
-            dark: Color(hex: 0xFF8A8A)
+        /// Gold for text/icons. 6.31 on white · 5.90 on cream · 5.48 on
+        /// its tint over cream. Dark #FFC94D: 12.05 on the background.
+        static let accentGoldInk = Color(
+            light: Color(hex: 0x855600),
+            dark: Color(hex: 0xFFC94D)
         )
 
-        /// Sunny for text/icons. 6.04 on white · 5.64 on card · 5.77 on
-        /// bright tint · 4.65 on self-tint over a card.
-        static let accentSunnyInk = Color(
-            light: Color(hex: 0x885900),
-            dark: Color(hex: 0xFFD93D)
+        /// Blush (rose) for text/icons; also `danger`. 5.86 on white ·
+        /// 5.48 on cream · 4.83 on its tint over cream. Dark #FF9A90: 9.03.
+        static let accentBlushInk = Color(
+            light: Color(hex: 0xB23A44),
+            dark: Color(hex: 0xFF9A90)
         )
 
-        /// Mint for text/icons. 6.11 on white · 5.71 on card · 5.59 on
-        /// bright tint · 4.68 on self-tint over a card.
+        /// Mint for text/icons. 6.11 on white · 5.72 on cream · 5.25 on
+        /// its tint over cream. Dark: 10.97.
         static let accentMintInk = Color(
             light: Color(hex: 0x116F57),
             dark: Color(hex: 0x3EE0AE)
         )
 
-        /// Sky for text/icons. 6.12 on white · 5.72 on card · 5.43 on
-        /// bright tint · 4.66 on self-tint over a card.
+        /// Sky for text/icons. 6.12 on white · 5.73 on cream · 5.10 on its
+        /// tint over cream. Dark: 8.72.
         static let accentSkyInk = Color(
             light: Color(hex: 0x0B60BE),
             dark: Color(hex: 0x6BB8FF)
@@ -154,53 +154,43 @@ extension DS {
 
         // MARK: Surfaces
 
-        /// The launch frame's light lavender — also the system launch
-        /// screen (`UILaunchScreen` in Info.plist), so the hand-off from
-        /// the system to the launch animation can't be seen.
+        /// The launch frame: Purr's cream. Also the system launch screen
+        /// (`UILaunchScreen` in Info.plist), so the hand-off from the
+        /// system to the launch animation can't be seen.
         static let launchBackground = Color("LaunchBackground")
 
-        /// App background — pure white.
+        /// App background — pure white; warm near-black in dark mode.
         static let background = Color(
             light: Color(hex: 0xFFFFFF),
-            dark: Color(hex: 0x0F1020)
+            dark: Color(hex: 0x1A1210)
         )
 
-        /// Cards and grouped content.
+        /// Cards and grouped content — a warm cream, Purr's fur.
         static let surface = Color(
-            light: Color(hex: 0xF6F7FB),
-            dark: Color(hex: 0x1A1B2E)
+            light: Color(hex: 0xFFF6EC),
+            dark: Color(hex: 0x261A17)
         )
 
         /// Raised surface — white cards that sit ON coloured or ambient
         /// backgrounds, floating pills, controls inside `surface` cards,
         /// sheets. Separated from the background by shadow and hairline.
-        ///
-        /// Dark #222439 keeps `brand` text at 4.63; the first pick, #24263D,
-        /// sat at exactly 4.50.
         static let surfaceRaised = Color(
             light: Color(hex: 0xFFFFFF),
-            dark: Color(hex: 0x222439)
+            dark: Color(hex: 0x2E201C)
         )
 
         /// Secondary surface — input fields, tracks, inactive segments.
-        ///
-        /// The same value as `surface` in light mode, deliberately.
-        ///
-        /// Fields carry secondary text and violet labels. The first pick,
-        /// #EEF0F7, looked better and failed both (4.31 / 4.27). #F5F6FA
-        /// got secondary text to 4.54 but violet only to 4.498 — rounds to
-        /// 4.50, still under the line. #F6F7FB is the darkest grey where
-        /// both pass (4.58 / 4.54). Fields are told apart from cards by their
-        /// `outline` border rather than by fill; on white surfaces they read
-        /// as soft grey wells. Dark mode keeps a distinct value.
+        /// The same cream as `surface` in light mode, deliberately: every
+        /// text colour passes on it (secondary 5.86, brand 4.91); fields
+        /// are told apart from cards by their `outline` border.
         static let surfaceSecondary = Color(
-            light: Color(hex: 0xF6F7FB),
-            dark: Color(hex: 0x202238)
+            light: Color(hex: 0xFFF6EC),
+            dark: Color(hex: 0x2A1D19)
         )
 
         /// Hairline separators and outlines.
         static let outline = Color(
-            light: Color(hex: 0x1B1B2F, opacity: 0.08),
+            light: Color(hex: 0x2B1712, opacity: 0.09),
             dark: Color(hex: 0xFFFFFF, opacity: 0.10)
         )
 
@@ -208,7 +198,7 @@ extension DS {
         /// segments. Darker than `surfaceSecondary`, which is too close to
         /// white to read as a track (it is tuned for text contrast).
         static let track = Color(
-            light: Color(hex: 0x1B1B2F, opacity: 0.10),
+            light: Color(hex: 0x2B1712, opacity: 0.10),
             dark: Color(hex: 0xFFFFFF, opacity: 0.14)
         )
 
@@ -217,13 +207,13 @@ extension DS {
         static let highlightLine = Color(hex: 0xFFFFFF, opacity: 0.45)
 
         /// Dimming scrim behind media overlays and modal content.
-        static let scrim = Color(hex: 0x1B1B2F, opacity: 0.45)
+        static let scrim = Color(hex: 0x2B1712, opacity: 0.45)
 
-        /// The soft contact shadow under the mascot (and anything else that
-        /// "stands" on the page). Ink-tinted on white; deeper in dark mode,
-        /// where a light shadow would read as a glow.
+        /// The soft contact shadow under Purr (and anything else that
+        /// "stands" on the page). Brown-tinted on white; deeper in dark
+        /// mode, where a light shadow would read as a glow.
         static let groundShadow = Color(
-            light: Color(hex: 0x1B1B2F, opacity: 0.13),
+            light: Color(hex: 0x2B1712, opacity: 0.13),
             dark: Color(hex: 0x000000, opacity: 0.45)
         )
 
@@ -234,39 +224,34 @@ extension DS {
 
         // MARK: Text
 
-        /// Ink. 16.88 on white · 15.76 on card.
+        /// Warm brown ink, from Purr's outline. 17.02 on white · 15.92 on
+        /// cream. Dark #FBF1EA: 16.58.
         static let textPrimary = Color(
-            light: Color(hex: 0x1B1B2F),
-            dark: Color(hex: 0xF4F5FA)
+            light: Color(hex: 0x2B1712),
+            dark: Color(hex: 0xFBF1EA)
         )
 
-        /// 4.90 on white · 4.58 on card.
+        /// 6.26 on white · 5.86 on cream. Dark #C2ADA4: 8.62 · 7.32 raised.
         static let textSecondary = Color(
-            light: Color(hex: 0x6B7085),
-            dark: Color(hex: 0xA9ADC1)
+            light: Color(hex: 0x765A52),
+            dark: Color(hex: 0xC2ADA4)
         )
 
-        /// Same value as `textSecondary`, deliberately.
-        ///
-        /// A lighter grey reads as "tertiary", but no grey lighter than
-        /// #6B7085 passes AA on the #F6F7FB cards (#71768B manages 4.20).
-        /// Hierarchy between secondary and tertiary now comes from size
-        /// and weight rather than from a contrast drop users can't read.
+        /// Same value as `textSecondary`, deliberately: hierarchy between
+        /// secondary and tertiary comes from size and weight, not from a
+        /// contrast drop users can't read.
         static let textTertiary = Color(
-            light: Color(hex: 0x6B7085),
-            dark: Color(hex: 0xA9ADC1)
+            light: Color(hex: 0x765A52),
+            dark: Color(hex: 0xC2ADA4)
         )
 
-        /// Text on `brand` fills and the hero gradient.
-        ///
-        /// White in light mode (4.86 on violet). Dark ink in dark mode,
-        /// because the lifted dark-mode violet is too light for white
-        /// (3.29 ✗) but carries dark ink at 5.73.
+        /// Text on `brand` fills and the hero gradient: white in both
+        /// modes (5.25 light, 4.75 on the dark-mode red).
         static let textOnBrand = Color.white
 
-        /// Text on bright accent fills (coral, sunny, mint, sky) and the
-        /// warm and fresh gradients. 6.08–12.25 across all four.
-        static let textOnAccent = Color(hex: 0x1B1B2F)
+        /// Text on bright accent fills (gold, blush, mint, sky) and the
+        /// warm and fresh gradients. 6.18–9.48 across all four.
+        static let textOnAccent = Color(hex: 0x2B1712)
 
         /// White that does NOT adapt — for content on fixed, non-adaptive
         /// colour fills such as org monograms and photo placeholders, which
@@ -274,9 +259,7 @@ extension DS {
         static let onFixedColor = Color(hex: 0xFFFFFF)
 
         /// Ink on `highlight` fills — sent message bubbles, unread pills,
-        /// selected chips. Highlight is the brand violet pair, so this is
-        /// the same rule as `textOnBrand`: white in light mode (4.86–6.06),
-        /// dark ink in dark mode, where white on the lifted violet is 3.29.
+        /// selected chips. Highlight is the brand red, so: white.
         static let onHighlight = textOnBrand
 
         // MARK: Status
@@ -286,13 +269,13 @@ extension DS {
         // passes AA on its tint — see `DSStatusKind.tint`.
 
         static let success = accentMintInk
-        static let warning = accentSunnyInk
-        static let danger  = accentCoralInk
+        static let warning = accentGoldInk
+        static let danger  = accentBlushInk
         static let info    = accentSkyInk
 
         static let neutral = Color(
-            light: Color(hex: 0x6B7085),
-            dark: Color(hex: 0xA9ADC1)
+            light: Color(hex: 0x765A52),
+            dark: Color(hex: 0xC2ADA4)
         )
     }
 }
@@ -308,11 +291,11 @@ extension DS.Colors {
     /// `background` / `surface` / `brand` above; keep them in step.
     enum ThemeSwatch {
         static let lightBackground = Color(hex: 0xFFFFFF)
-        static let lightSurface    = Color(hex: 0xF6F7FB)
-        static let lightAccent     = Color(hex: 0x6C5CE7)
-        static let darkBackground  = Color(hex: 0x0F1020)
-        static let darkSurface     = Color(hex: 0x1A1B2E)
-        static let darkAccent      = Color(hex: 0x8B7FF0)
+        static let lightSurface    = Color(hex: 0xFFF6EC)
+        static let lightAccent     = Color(hex: 0xCC2E2E)
+        static let darkBackground  = Color(hex: 0x1A1210)
+        static let darkSurface     = Color(hex: 0x261A17)
+        static let darkAccent      = Color(hex: 0xD63535)
     }
 }
 
@@ -355,8 +338,8 @@ enum DSStatusKind: CaseIterable {
     var fill: Color {
         switch self {
         case .success: DS.Colors.accentMint
-        case .warning: DS.Colors.accentSunny
-        case .danger: DS.Colors.accentCoral
+        case .warning: DS.Colors.accentGold
+        case .danger: DS.Colors.accentBlush
         case .info: DS.Colors.accentSky
         case .neutral: DS.Colors.textSecondary
         }
@@ -372,24 +355,25 @@ enum DSStatusKind: CaseIterable {
 
 // MARK: - Accent
 
-/// One of the five brand colours, as a unit.
+/// One of the five brand colours, as a unit: Purr's cherry, gold and
+/// blush, plus mint and sky for calm and informational categories.
 ///
 /// Used to give categories (document types, search kinds, settings
 /// sections, maintenance priorities…) their own colour, without each one
 /// reinventing which shade to use for which job.
 enum DSAccent: CaseIterable, Sendable {
-    case violet
-    case coral
-    case sunny
+    case cherry
+    case blush
+    case gold
     case mint
     case sky
 
     /// Bright colour — fills, gradients, illustrations.
     var fill: Color {
         switch self {
-        case .violet: DS.Colors.brand
-        case .coral:  DS.Colors.accentCoral
-        case .sunny:  DS.Colors.accentSunny
+        case .cherry: DS.Colors.brand
+        case .blush:  DS.Colors.accentBlush
+        case .gold:   DS.Colors.accentGold
         case .mint:   DS.Colors.accentMint
         case .sky:    DS.Colors.accentSky
         }
@@ -398,9 +382,9 @@ enum DSAccent: CaseIterable, Sendable {
     /// AA-safe foreground — text and icons on white, cards, or `tint`.
     var ink: Color {
         switch self {
-        case .violet: DS.Colors.brandInk
-        case .coral:  DS.Colors.accentCoralInk
-        case .sunny:  DS.Colors.accentSunnyInk
+        case .cherry: DS.Colors.brandInk
+        case .blush:  DS.Colors.accentBlushInk
+        case .gold:   DS.Colors.accentGoldInk
         case .mint:   DS.Colors.accentMintInk
         case .sky:    DS.Colors.accentSkyInk
         }
@@ -412,8 +396,8 @@ enum DSAccent: CaseIterable, Sendable {
     /// Text that sits on `fill`.
     var onFill: Color {
         switch self {
-        case .violet: DS.Colors.textOnBrand
-        case .coral, .sunny, .mint, .sky: DS.Colors.textOnAccent
+        case .cherry: DS.Colors.textOnBrand
+        case .blush, .gold, .mint, .sky: DS.Colors.textOnAccent
         }
     }
 }

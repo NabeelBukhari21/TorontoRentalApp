@@ -526,8 +526,8 @@ final class InMemoryDocumentRepository: DocumentRepositoryProtocol {
         DocFolder(id: "leases", name: "Leases", icon: DS.Icons.lease, tint: DS.Colors.brandInk),
         DocFolder(id: "insurance", name: "Insurance", icon: "shield.fill", tint: DS.Colors.accentSkyInk),
         DocFolder(id: "financials", name: "Financials", icon: DS.Icons.payment, tint: DS.Colors.success),
-        DocFolder(id: "inspections", name: "Inspections", icon: "checklist", tint: DS.Colors.accentSunnyInk),
-        DocFolder(id: "photos", name: "Photos", icon: DS.Icons.camera, tint: DS.Colors.accentCoralInk)
+        DocFolder(id: "inspections", name: "Inspections", icon: "checklist", tint: DS.Colors.accentGoldInk),
+        DocFolder(id: "photos", name: "Photos", icon: DS.Icons.camera, tint: DS.Colors.accentBlushInk)
     ]
 
     func files(matching query: DocumentQuery, forceRefresh: Bool) async throws -> Page<DocFile> {

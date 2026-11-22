@@ -148,7 +148,7 @@ struct DSButton: View {
     private var shadow: DSShadowStyle {
         switch variant {
         case .primary: DS.Shadows.glow(DS.Colors.brand)
-        case .destructive: DS.Shadows.glow(DS.Colors.accentCoralInk, intensity: 0.30)
+        case .destructive: DS.Shadows.glow(DS.Colors.accentBlushInk, intensity: 0.30)
         case .soft: DS.Shadows.soft
         default: DSShadowStyle(color: .clear, radius: 0, y: 0)
         }

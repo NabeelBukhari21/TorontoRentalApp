@@ -58,10 +58,10 @@ struct DesignSystemShowcase: View {
             VStack(spacing: DS.Spacing.md) {
                 HStack(spacing: DS.Spacing.sm) {
                     swatch(DS.Colors.brand, "Brand")
-                    swatch(DS.Colors.accentSunnyInk, "Violet")
+                    swatch(DS.Colors.accentGoldInk, "Violet")
                     swatch(DS.Colors.accentSkyInk, "Cyan")
-                    swatch(DS.Colors.accentCoralInk, "Coral")
-                    swatch(DS.Colors.accentSunnyInk, "Amber")
+                    swatch(DS.Colors.accentBlushInk, "Coral")
+                    swatch(DS.Colors.accentGoldInk, "Amber")
                 }
                 HStack(spacing: DS.Spacing.sm) {
                     gradientSwatch(DS.Gradients.brand, "Brand")

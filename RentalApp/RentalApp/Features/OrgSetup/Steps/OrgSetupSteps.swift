@@ -169,7 +169,7 @@ struct OrgLogoStep: View {
                         } label: {
                             Text("Remove photo")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(DS.Colors.accentCoralInk)
+                                .foregroundStyle(DS.Colors.accentBlushInk)
                         }
                         .buttonStyle(DSPressStyle(scale: 0.95))
                         .transition(.opacity)
@@ -258,7 +258,7 @@ struct OrgSizeStep: View {
                                 viewModel.portfolioSize == option
                                     ? AnyShapeStyle(
                                         LinearGradient(
-                                            colors: [DS.Colors.accentSkyInk.opacity(0.9), DS.Colors.accentSunnyInk.opacity(0.7)],
+                                            colors: [DS.Colors.accentSkyInk.opacity(0.9), DS.Colors.accentGoldInk.opacity(0.7)],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )

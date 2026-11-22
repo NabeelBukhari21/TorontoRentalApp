@@ -29,7 +29,7 @@ struct OrgCompletionView: View {
                         .font(.system(size: 30, weight: .heavy, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [DS.Colors.brand, DS.Colors.accentSkyDeep],
+                                colors: [DS.Colors.brand, DS.Colors.accentEmber],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
@@ -188,8 +188,8 @@ struct OrgConfettiBurst: View {
     /// violet (the brand) weighted twice.
     private static var palette: [Color] { [
         DS.Colors.brand,
-        DS.Colors.accentCoral,
-        DS.Colors.accentSunny,
+        DS.Colors.accentBlush,
+        DS.Colors.accentGold,
         DS.Colors.accentMint,
         DS.Colors.accentSky,
         DS.Colors.brand

@@ -25,7 +25,7 @@ struct AIOrb: View {
         ZStack {
             // Halo.
             Circle()
-                .fill(DS.Colors.accentSunny.opacity(0.40))
+                .fill(DS.Colors.accentGold.opacity(0.40))
                 .frame(width: size * 0.9, height: size * 0.9)
                 .blur(radius: size * 0.22)
                 .scaleEffect(breathe ? 1.25 : 0.9)
@@ -34,7 +34,7 @@ struct AIOrb: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [DS.Colors.onFixedColor, DS.Colors.accentSunny, DS.Colors.accentCoral],
+                        colors: [DS.Colors.onFixedColor, DS.Colors.accentGold, DS.Colors.accentBlush],
                         center: UnitPoint(x: 0.35, y: 0.3),
                         startRadius: 0,
                         endRadius: size * 0.4
@@ -292,7 +292,7 @@ struct AIHealthCard: View {
                             .trim(from: 0, to: revealed ? Double(score) / 100 : 0)
                             .stroke(
                                 AngularGradient(
-                                    colors: [DS.Colors.accentMint, DS.Colors.accentSunny, DS.Colors.accentCoral, DS.Colors.accentMint],
+                                    colors: [DS.Colors.accentMint, DS.Colors.accentGold, DS.Colors.accentBlush, DS.Colors.accentMint],
                                     center: .center
                                 ),
                                 style: StrokeStyle(lineWidth: 9, lineCap: .round)

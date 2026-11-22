@@ -459,7 +459,7 @@ struct MascotSparkles: View {
     var center: UnitPoint = UnitPoint(x: 0.5, y: 0.35)
 
     private static let colors: [Color] = [
-        DS.Colors.accentCoral, DS.Colors.accentSunny, DS.Colors.accentMint, DS.Colors.accentSky
+        DS.Colors.accentBlush, DS.Colors.accentGold, DS.Colors.accentMint, DS.Colors.accentSky
     ]
     /// Angles in degrees (0 = right, clockwise): three either side of the
     /// head, matching the art.
@@ -567,9 +567,9 @@ private struct MascotAlertBadge: View {
             .font(.system(size: size * 0.62, weight: .heavy, design: .rounded))
             .foregroundStyle(DS.Colors.textOnAccent)
             .frame(width: size, height: size)
-            .background(DS.Colors.accentSunny, in: Circle())
+            .background(DS.Colors.accentGold, in: Circle())
             .overlay(Circle().strokeBorder(DS.Colors.surfaceRaised, lineWidth: max(size * 0.07, 1)))
-            .dsShadow(DS.Shadows.glow(DS.Colors.accentSunny, intensity: 0.4))
+            .dsShadow(DS.Shadows.glow(DS.Colors.accentGold, intensity: 0.4))
             .phaseAnimator(animates ? [0.0, 1.0] : [0.0]) { badge, phase in
                 badge.rotationEffect(.degrees(-10 + 20 * phase))
             } animation: { _ in

@@ -9,7 +9,7 @@
 //  THE RULES (Human Interface Guidelines, Liquid Glass)
 //  ─────────────────────────────────────────────────────────────────
 //  • Colour: semantic system colours only. The single brand colour is
-//    the `AccentColor` asset (violet), applied as the app's tint. It
+//    the `AccentColor` asset (Purr's cherry red), applied as the app's tint. It
 //    has dark and Increase Contrast variants, so views never pick hex.
 //  • Type: Dynamic Type text styles only (`.largeTitle` … `.caption2`).
 //    No fixed point sizes.

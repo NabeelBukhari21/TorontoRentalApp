@@ -24,14 +24,14 @@ struct WelcomeFeature: Identifiable, Sendable {
 
     static let all: [WelcomeFeature] = [
         WelcomeFeature(id: 0, symbol: "banknote", title: "Rent recorded", detail: "$2,150 · Unit 4B", accent: .mint),
-        WelcomeFeature(id: 1, symbol: "wrench.and.screwdriver", title: "Repair booked", detail: "Thu 10 am · Leaky tap", accent: .coral),
+        WelcomeFeature(id: 1, symbol: "wrench.and.screwdriver", title: "Repair booked", detail: "Thu 10 am · Leaky tap", accent: .blush),
         WelcomeFeature(id: 2, symbol: "calendar", title: "Lease renews", detail: "In 60 days · N1 ready", accent: .sky),
-        WelcomeFeature(id: 3, symbol: "door.left.hand.open", title: "Unit 12 is vacant", detail: "Asking $2,400", accent: .sunny),
-        WelcomeFeature(id: 4, symbol: "bubble.left", title: "Amara O.", detail: "“Thanks, the tap is fixed!”", accent: .violet, initials: "AO"),
+        WelcomeFeature(id: 3, symbol: "door.left.hand.open", title: "Unit 12 is vacant", detail: "Asking $2,400", accent: .gold),
+        WelcomeFeature(id: 4, symbol: "bubble.left", title: "Amara O.", detail: "“Thanks, the tap is fixed!”", accent: .cherry, initials: "AO"),
         WelcomeFeature(id: 5, symbol: "chart.pie", title: "October rent", detail: "$18.4K of $22K in", accent: .mint),
         WelcomeFeature(id: 6, symbol: "clock", title: "Plumber arriving", detail: "In 25 min · Unit 4B", accent: .sky),
         WelcomeFeature(id: 7, symbol: "checkmark.circle", title: "Job accepted", detail: "Tri-City Plumbing", accent: .mint),
-        WelcomeFeature(id: 8, symbol: "checkmark.shield", title: "Rent increase check", detail: "Within Ontario guideline", accent: .violet),
+        WelcomeFeature(id: 8, symbol: "checkmark.shield", title: "Rent increase check", detail: "Within Ontario guideline", accent: .cherry),
     ]
 }
 
@@ -124,7 +124,7 @@ struct WelcomeBackground: View {
                 [0, 1], [0.5, 1], [1, 1],
             ],
             colors: [
-                DSAccent.violet.fill.opacity(0.16), .clear, DSAccent.coral.fill.opacity(0.12),
+                DSAccent.cherry.fill.opacity(0.16), .clear, DSAccent.blush.fill.opacity(0.12),
                 .clear, .clear, .clear,
                 DSAccent.mint.fill.opacity(0.16), .clear, DSAccent.sky.fill.opacity(0.14),
             ]

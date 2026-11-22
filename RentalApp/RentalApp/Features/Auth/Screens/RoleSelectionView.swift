@@ -162,10 +162,10 @@ private extension AppRole {
     /// because the role's meaning has nothing to do with its colour.
     var accent: DSAccent {
         switch self {
-        case .owner:           .violet
+        case .owner:           .cherry
         case .propertyManager: .sky
         case .tenant:          .mint
-        case .vendor:          .coral
+        case .vendor:          .blush
         }
     }
 }

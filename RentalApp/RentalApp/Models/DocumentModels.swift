@@ -30,10 +30,10 @@ enum DocFileType: String, CaseIterable, Identifiable {
 
     var accent: DSAccent {
         switch self {
-        case .pdf:         .coral
+        case .pdf:         .blush
         case .image:       .sky
         case .spreadsheet: .mint
-        case .contract:    .violet
+        case .contract:    .cherry
         }
     }
 

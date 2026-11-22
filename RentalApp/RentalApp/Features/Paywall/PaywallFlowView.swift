@@ -216,7 +216,7 @@ private struct PaywallTimelineStep: View {
                     isLast: false
                 )
                 milestone(
-                    icon: "bell.fill", tint: DS.Colors.accentSunny,
+                    icon: "bell.fill", tint: DS.Colors.accentGold,
                     title: "Day \(viewModel.reminderDay)",
                     detail: viewModel.remindsBeforeTrialEnds
                         ? "We remind you the trial is ending."
@@ -378,7 +378,7 @@ private struct PaywallPlansStep: View {
                         .foregroundStyle(DS.Colors.textOnAccent)
                         .padding(.horizontal, DS.Spacing.sm)
                         .padding(.vertical, DS.Spacing.xs)
-                        .background(DS.Colors.accentSunny, in: Capsule())
+                        .background(DS.Colors.accentGold, in: Capsule())
                         .offset(x: -DS.Spacing.sm, y: -DS.Spacing.md)
                 }
             }

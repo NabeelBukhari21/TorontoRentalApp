@@ -54,7 +54,7 @@ struct DSProgressRing: View {
     var lineWidth: CGFloat = 10
     var size: CGFloat = 88
     var gradient: AngularGradient = AngularGradient(
-        colors: [DS.Colors.brand, DS.Colors.accentSunnyInk, DS.Colors.accentSkyInk, DS.Colors.brand],
+        colors: [DS.Colors.brand, DS.Colors.accentGoldInk, DS.Colors.accentSkyInk, DS.Colors.brand],
         center: .center
     )
     var label: String? = nil
@@ -136,7 +136,7 @@ struct DSAnimatedCounter: View {
                         DSProgressRing(
                             value: 0.38,
                             gradient: AngularGradient(
-                                colors: [DS.Colors.accentCoralInk, DS.Colors.accentSunnyInk, DS.Colors.accentCoralInk],
+                                colors: [DS.Colors.accentBlushInk, DS.Colors.accentGoldInk, DS.Colors.accentBlushInk],
                                 center: .center
                             ),
                             label: "Overdue"

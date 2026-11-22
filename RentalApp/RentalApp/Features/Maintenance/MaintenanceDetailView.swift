@@ -240,7 +240,7 @@ struct MaintenanceDetailView: View {
                         .trim(from: 0, to: ai.urgencyScore)
                         .stroke(
                             AngularGradient(
-                                colors: [DS.Colors.accentSunny, DS.Colors.accentCoral],
+                                colors: [DS.Colors.accentGold, DS.Colors.accentBlush],
                                 center: .center
                             ),
                             style: StrokeStyle(lineWidth: 7, lineCap: .round)

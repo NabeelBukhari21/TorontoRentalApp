@@ -208,7 +208,7 @@ struct SettingsNotificationsPage: View {
                 SettingsToggleRow(
                     icon: "moon.fill", title: "Quiet hours",
                     subtitle: "10 PM – 8 AM · urgent alerts still deliver",
-                    tint: DS.Colors.accentSunnyInk, isOn: $viewModel.quietHoursEnabled
+                    tint: DS.Colors.accentGoldInk, isOn: $viewModel.quietHoursEnabled
                 )
             }
             .dsEntrance(index: 2)

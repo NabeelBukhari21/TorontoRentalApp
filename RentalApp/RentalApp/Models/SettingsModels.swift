@@ -64,12 +64,12 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable, Codable {
 
     var accent: DSAccent {
         switch self {
-        case .profile, .organization: .violet
+        case .profile, .organization: .cherry
         case .team:                   .sky
         case .billing:                .mint
-        case .notifications:          .coral
-        case .appearance:             .sunny
-        case .aiPreferences:          .violet
+        case .notifications:          .blush
+        case .appearance:             .gold
+        case .aiPreferences:          .cherry
         case .integrations:           .sky
         }
     }

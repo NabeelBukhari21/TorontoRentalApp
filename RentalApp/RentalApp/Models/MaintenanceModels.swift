@@ -33,12 +33,12 @@ enum TicketPriority: Int, Codable, CaseIterable, Identifiable, Comparable {
         }
     }
 
-    /// Each priority's colour. Coral → sunny → sky → mint reads as a heat
+    /// Each priority's colour. Blush → gold → sky → mint reads as a heat
     /// scale from "now" to "whenever", without leaning on red alone.
     var accent: DSAccent {
         switch self {
-        case .urgent: .coral
-        case .high:   .sunny
+        case .urgent: .blush
+        case .high:   .gold
         case .medium: .sky
         case .low:    .mint
         }
@@ -118,10 +118,10 @@ enum TicketCategory: String, CaseIterable {
     var accent: DSAccent {
         switch self {
         case .plumbing:   .sky
-        case .electrical: .sunny
+        case .electrical: .gold
         case .hvac:       .mint
-        case .appliance:  .coral
-        case .general:    .violet
+        case .appliance:  .blush
+        case .general:    .cherry
         }
     }
 

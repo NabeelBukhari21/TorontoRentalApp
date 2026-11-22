@@ -34,10 +34,10 @@ struct SplashBackground: View {
                 orb(DS.Colors.accentSky.opacity(0.20), width: size.width * 0.9, blur: 110,
                     from: CGPoint(x: -0.25, y: 0.15), to: CGPoint(x: 0.35, y: 0.32), in: size)
 
-                orb(DS.Colors.accentCoral.opacity(0.14), width: size.width * 0.7, blur: 90,
+                orb(DS.Colors.accentBlush.opacity(0.14), width: size.width * 0.7, blur: 90,
                     from: CGPoint(x: -0.10, y: 0.10), to: CGPoint(x: 0.10, y: -0.05), in: size)
 
-                orb(DS.Colors.accentSunny.opacity(0.22), width: size.width * 0.6, blur: 90,
+                orb(DS.Colors.accentGold.opacity(0.22), width: size.width * 0.6, blur: 90,
                     from: CGPoint(x: 0.30, y: 0.38), to: CGPoint(x: -0.20, y: 0.20), in: size)
 
                 orb(DS.Colors.accentMint.opacity(0.14), width: size.width * 0.5, blur: 80,

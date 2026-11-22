@@ -77,10 +77,10 @@ enum SearchKind: String, Codable, Sendable, CaseIterable, Identifiable {
     /// files sunny, conversation mint.
     var accent: DSAccent {
         switch self {
-        case .property, .unit:            .violet
+        case .property, .unit:            .cherry
         case .tenant, .lease:             .sky
-        case .maintenanceRequest, .vendor: .coral
-        case .document:                   .sunny
+        case .maintenanceRequest, .vendor: .blush
+        case .document:                   .gold
         case .message:                    .mint
         }
     }

@@ -101,7 +101,7 @@ struct DashboardHeroCard: View {
                 LinearGradient(
                     colors: [
                         DS.Colors.brand.opacity(0.35),
-                        DS.Colors.accentSunnyInk.opacity(0.05)
+                        DS.Colors.accentGoldInk.opacity(0.05)
                     ],
                     startPoint: .top,
                     endPoint: .bottom

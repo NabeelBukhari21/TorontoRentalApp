@@ -255,7 +255,7 @@ struct SettingsTeamPage: View {
                 SettingsRowDivider()
                 SettingsValueRow(icon: DS.Icons.tenant, title: "Property Manager", value: "Manage & message", tint: DS.Colors.accentSkyInk)
                 SettingsRowDivider()
-                SettingsValueRow(icon: DS.Icons.maintenance, title: "Maintenance Coordinator", value: "Tickets & vendors", tint: DS.Colors.accentSunnyInk)
+                SettingsValueRow(icon: DS.Icons.maintenance, title: "Maintenance Coordinator", value: "Tickets & vendors", tint: DS.Colors.accentGoldInk)
             }
             .dsEntrance(index: 2)
         }

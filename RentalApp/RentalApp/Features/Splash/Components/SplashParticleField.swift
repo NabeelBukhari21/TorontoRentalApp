@@ -64,8 +64,8 @@ struct SplashParticleField: View {
     /// colours (white and champagne) would have been.
     private static var palette: [Color] { [
         DS.Colors.brand,
-        DS.Colors.accentCoral,
-        DS.Colors.accentSunny,
+        DS.Colors.accentBlush,
+        DS.Colors.accentGold,
         DS.Colors.accentMint,
         DS.Colors.accentSky
     ] }

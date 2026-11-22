@@ -208,8 +208,8 @@ struct AuthPasswordStrengthMeter: View {
     /// AA-safe ink.
     private var accent: DSAccent {
         switch strength {
-        case ..<0.35: .coral
-        case ..<0.6: .sunny
+        case ..<0.35: .blush
+        case ..<0.6: .gold
         case ..<0.85: .sky
         default: .mint
         }

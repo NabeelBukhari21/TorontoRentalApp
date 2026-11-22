@@ -4,9 +4,9 @@
 //
 //  Design System — Elevation shadows.
 //
-//  Soft, diffused, and tinted with the brand violet rather than black.
-//  A grey shadow on white reads as "dirty"; a faint violet one reads as
-//  light passing through a coloured object — the friendlier of the two.
+//  Soft, diffused, and tinted warm brown (Purr's outline) rather than
+//  black. A grey shadow on white reads as "dirty"; a faint warm one reads
+//  as light passing through a coloured object — the friendlier of the two.
 //  Dark mode switches to deep, neutral shadows, because a tinted shadow
 //  on a near-black surface just looks like a stain.
 //
@@ -27,7 +27,7 @@ extension DS {
         /// Subtle lift for resting cards.
         static let soft = DSShadowStyle(
             color: Color(
-                light: Color(hex: 0x6C5CE7, opacity: 0.07),
+                light: Color(hex: 0x5A2A1E, opacity: 0.07),
                 dark: Color(hex: 0x000000, opacity: 0.30)
             ),
             radius: 12,
@@ -37,7 +37,7 @@ extension DS {
         /// Standard card elevation.
         static let card = DSShadowStyle(
             color: Color(
-                light: Color(hex: 0x6C5CE7, opacity: 0.10),
+                light: Color(hex: 0x5A2A1E, opacity: 0.10),
                 dark: Color(hex: 0x000000, opacity: 0.40)
             ),
             radius: 20,
@@ -47,7 +47,7 @@ extension DS {
         /// High elevation — floating panels, popovers, the tab bar.
         static let floating = DSShadowStyle(
             color: Color(
-                light: Color(hex: 0x6C5CE7, opacity: 0.16),
+                light: Color(hex: 0x5A2A1E, opacity: 0.16),
                 dark: Color(hex: 0x000000, opacity: 0.50)
             ),
             radius: 32,

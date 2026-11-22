@@ -154,7 +154,7 @@ struct OrgOptionCard: View {
                         isSelected
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [DS.Colors.brand.opacity(0.9), DS.Colors.accentSunnyInk.opacity(0.7)],
+                                    colors: [DS.Colors.brand.opacity(0.9), DS.Colors.accentGoldInk.opacity(0.7)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )

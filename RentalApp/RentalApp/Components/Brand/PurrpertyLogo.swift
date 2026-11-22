@@ -28,25 +28,28 @@ import SwiftUI
 /// look identical in light and dark mode. Logo-only — screens use
 /// `DS.Colors`.
 enum PurrpertyBrand {
-    static let violet      = Color(hex: 0x6C5CE7)
-    static let violetLight = Color(hex: 0x8F83F0)
-    static let violetDeep  = Color(hex: 0x4B3BC9)
-    static let coral       = Color(hex: 0xFF6B6B)
-    static let sunny       = Color(hex: 0xFFD93D)
-    static let sunnyLight  = Color(hex: 0xFFF0A8)
+    // Purr's colours. Names describe the role in the art (the tall
+    // building is still "violet" in the geometry) until the logo redesign
+    // replaces this palette.
+    static let violet      = Color(hex: 0xE03838)
+    static let violetLight = Color(hex: 0xF07870)
+    static let violetDeep  = Color(hex: 0xB02727)
+    static let coral       = Color(hex: 0xF07870)
+    static let sunny       = Color(hex: 0xF2B83A)
+    static let sunnyLight  = Color(hex: 0xFFE6A8)
     static let mint        = Color(hex: 0x2ED8A3)
     static let sky         = Color(hex: 0x4DA8FF)
-    static let skyDeep     = Color(hex: 0x2A6BD4)
-    static let skyLight    = Color(hex: 0x8CC6FF)
-    static let ink         = Color(hex: 0x1B1B2F)
+    static let skyDeep     = Color(hex: 0xB4501E)
+    static let skyLight    = Color(hex: 0xFFD27A)
+    static let ink         = Color(hex: 0x2B1712)
     static let white       = Color(hex: 0xFFFFFF)
 
     // House walls — pastel versions of the accents, so the saturated roofs
     // and the cat stay the most colourful things in the logo.
     static let wallSunny  = Color(hex: 0xFFE9A6)
     static let wallMint   = Color(hex: 0xC4F2E3)
-    static let wallSky    = Color(hex: 0xD9ECFF)
-    static let wallViolet = Color(hex: 0xD9D4FB)
+    static let wallSky    = Color(hex: 0xFFF1DA)
+    static let wallViolet = Color(hex: 0xFDE0DA)
 }
 
 // MARK: - Geometry

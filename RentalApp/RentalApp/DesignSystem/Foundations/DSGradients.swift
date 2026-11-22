@@ -17,23 +17,23 @@ extension DS {
 
         // MARK: Signature gradients
 
-        /// Violet → sky. Hero cards, the dashboard revenue card, AI panel,
+        /// Cherry → ember. Hero cards, the dashboard revenue card, AI panel,
         /// flagship moments. Text: `textOnBrand` (white).
         ///
-        /// Ends on `accentSkyDeep` rather than plain sky so white text holds
-        /// AA across the whole card: 4.86 at the violet end, 5.06 at the sky
-        /// end. Plain #4DA8FF would drop to 2.51.
+        /// Ends on `accentEmber` rather than Purr's gold so white text holds
+        /// AA across the whole card: 5.25 at the cherry end, 5.11 at the
+        /// ember end. Plain gold would drop to 1.98.
         static var hero: LinearGradient { LinearGradient(
-            colors: [DS.Colors.brand, DS.Colors.accentSkyDeep],
+            colors: [DS.Colors.brand, DS.Colors.accentEmber],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         ) }
 
-        /// Coral → sunny. Celebrations, streak-style highlights, alerts that
-        /// should feel warm rather than alarming. Text: `textOnAccent` (ink,
-        /// 6.08–12.25).
+        /// Blush → gold, Purr's cheeks to his collar tag. Celebrations,
+        /// streak-style highlights, alerts that should feel warm rather
+        /// than alarming. Text: `textOnAccent` (ink, 6.18–9.48).
         static let warm = LinearGradient(
-            colors: [DS.Colors.accentCoral, DS.Colors.accentSunny],
+            colors: [DS.Colors.accentBlush, DS.Colors.accentGold],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -49,18 +49,18 @@ extension DS {
         // MARK: Role gradients
 
         /// Primary brand gradient — primary buttons, the FAB, icon wells.
-        /// Violet → deeper violet, so white labels pass at both ends
-        /// (4.86, 6.06) while still reading as a gradient.
+        /// Cherry → deeper cherry, so white labels pass at both ends
+        /// (5.25, 6.63) while still reading as a gradient.
         static var brand: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.brandInk],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         ) }
 
-        /// AI features. Violet → sky, angled differently from `hero` so the
-        /// two read as related but distinct. Text: `textOnBrand`.
+        /// AI features. Ember → cherry, angled differently from `hero` so
+        /// the two read as related but distinct. Text: `textOnBrand`.
         static var ai: LinearGradient { LinearGradient(
-            colors: [DS.Colors.accentSkyDeep, DS.Colors.brand],
+            colors: [DS.Colors.accentEmber, DS.Colors.brand],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         ) }
@@ -69,7 +69,7 @@ extension DS {
         static let success = fresh
 
         /// Filled highlight — sent message bubbles, unread pills, selected
-        /// chips, confirmed states. Text: `onHighlight` (white, 4.86–6.06).
+        /// chips, confirmed states. Text: `onHighlight` (white, 5.25–6.63).
         static var highlight: LinearGradient { LinearGradient(
             colors: [DS.Colors.brand, DS.Colors.brandInk],
             startPoint: .top,
@@ -79,7 +79,7 @@ extension DS {
         /// Horizontal multi-colour sweep for progress fills (lease terms,
         /// usage, onboarding). Decorative — never carries text.
         static var progress: LinearGradient { LinearGradient(
-            colors: [DS.Colors.brand, DS.Colors.accentSky, DS.Colors.accentMint],
+            colors: [DS.Colors.brand, DS.Colors.accentGold, DS.Colors.accentMint],
             startPoint: .leading,
             endPoint: .trailing
         ) }
@@ -115,12 +115,12 @@ extension DS {
         /// photos don't change with dark mode. Text never sits directly on
         /// these; overlays add a `mediaBackground` fade first.
         static let placeholderStops: [[Color]] = [
-            [Color(hex: 0x6C5CE7), Color(hex: 0x4DA8FF)], // violet → sky
-            [Color(hex: 0xFF6B6B), Color(hex: 0xFFD93D)], // coral → sunny
+            [Color(hex: 0xE03838), Color(hex: 0xF2B83A)], // cherry → gold
+            [Color(hex: 0xF07870), Color(hex: 0xF2B83A)], // blush → gold
             [Color(hex: 0x2ED8A3), Color(hex: 0x4DA8FF)], // mint → sky
-            [Color(hex: 0xFFD93D), Color(hex: 0x2ED8A3)], // sunny → mint
-            [Color(hex: 0x4DA8FF), Color(hex: 0x6C5CE7)], // sky → violet
-            [Color(hex: 0x6C5CE7), Color(hex: 0xFF6B6B)]  // violet → coral
+            [Color(hex: 0xF2B83A), Color(hex: 0x2ED8A3)], // gold → mint
+            [Color(hex: 0x4DA8FF), Color(hex: 0xE03838)], // sky → cherry
+            [Color(hex: 0xE03838), Color(hex: 0xF07870)]  // cherry → blush
         ]
 
         static let placeholders: [LinearGradient] = placeholderStops.map {
@@ -134,12 +134,12 @@ extension DS {
         ///
         /// Fixed colours (identity shouldn't change with dark mode), each
         /// pair chosen so white letters (`onFixedColor`) pass AA at BOTH
-        /// ends: every stop here is 4.86–6.14 against white.
+        /// ends: every stop here is 4.75–6.63 against white.
         static let monogramStops: [[Color]] = [
-            [Color(hex: 0x6C5CE7), Color(hex: 0x5A49E0)], // violet
-            [Color(hex: 0x6C5CE7), Color(hex: 0x2A6BD4)], // violet → sky
-            [Color(hex: 0xB72D28), Color(hex: 0x6C5CE7)], // coral → violet
-            [Color(hex: 0x885900), Color(hex: 0xB72D28)], // sunset
+            [Color(hex: 0xCC2E2E), Color(hex: 0xB02727)], // cherry
+            [Color(hex: 0xCC2E2E), Color(hex: 0xB4501E)], // cherry → ember
+            [Color(hex: 0xB23A44), Color(hex: 0xCC2E2E)], // rose → cherry
+            [Color(hex: 0x855600), Color(hex: 0xB4501E)], // sunset
             [Color(hex: 0x116F57), Color(hex: 0x0B60BE)]  // mint → sky
         ]
 
@@ -162,9 +162,9 @@ struct DSAmbientBackground: View {
 
     var colors: [Color] = [
         DS.Colors.brand.opacity(0.14),
-        DS.Colors.accentSky.opacity(0.14),
-        DS.Colors.accentCoral.opacity(0.10),
-        DS.Colors.accentSunny.opacity(0.14)
+        DS.Colors.accentGold.opacity(0.16),
+        DS.Colors.accentBlush.opacity(0.10),
+        DS.Colors.accentGold.opacity(0.10)
     ]
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
