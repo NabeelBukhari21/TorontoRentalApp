@@ -17,14 +17,16 @@ struct DSErrorView: View {
 
     let error: AppError
     var retry: (() async -> Void)?
+    /// Purr's reaction. Defaults to one that fits the error.
+    var mood: PurrMood? = nil
 
     @State private var isRetrying = false
 
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
-            // The cat, concerned — friendlier than a warning triangle, and
-            // the alert badge it wears still says "something's wrong".
-            MascotView(mood: .concerned, size: 128)
+            // Purr reacts to what went wrong — friendlier than a warning
+            // triangle, and it still says "something's wrong".
+            PurrMascot(mood: mood ?? Self.mood(for: error), size: 146)
 
             VStack(spacing: DS.Spacing.sm) {
                 Text("Something went wrong")
@@ -57,6 +59,16 @@ struct DSErrorView: View {
         .padding(DS.Spacing.xxxl)
         .frame(maxWidth: .infinity)
         .dsEntrance()
+    }
+
+    static func mood(for error: AppError) -> PurrMood {
+        switch error {
+        case .network: .offline
+        case .notFound: .notFound
+        case .unauthorized: .sessionExpired
+        case .invalidCredentials: .loginFailed
+        case .validation, .unknown: .error
+        }
     }
 }
 

@@ -23,11 +23,11 @@ struct VendorJobsView: View {
         .listStyle(.insetGrouped)
         .overlay {
             if viewModel.jobs.isEmpty {
-                ContentUnavailableView(
-                    "No Jobs",
-                    systemImage: AppSymbol.vendor.rawValue,
-                    description: Text("Jobs sent to you will appear here.")
-                )
+                ContentUnavailableView {
+                    PurrLabel("No Jobs", mood: .cloudRide)
+                } description: {
+                    Text("Jobs sent to you will appear here.")
+                }
             }
         }
         .navigationTitle("Jobs")

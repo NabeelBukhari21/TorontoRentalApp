@@ -32,7 +32,8 @@ struct NotificationsView: View {
                         DSEmptyState(
                             icon: DS.Icons.notifications,
                             title: "All clear",
-                            message: "No notifications — you're completely caught up."
+                            message: "No notifications — you're completely caught up.",
+                            mood: .allRead
                         )
                         .padding(.top, DS.Spacing.huge)
                     } else {

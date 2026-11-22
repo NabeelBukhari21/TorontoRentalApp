@@ -34,8 +34,11 @@ struct VendorJobDetailView: View {
                 content(job)
             } else {
                 // Declined: it's no longer this vendor's job.
-                ContentUnavailableView("Job Returned", systemImage: AppSymbol.vendor.rawValue,
-                                       description: Text("This job is no longer assigned to you."))
+                ContentUnavailableView {
+                    PurrLabel("Job Returned", mood: .goodbye)
+                } description: {
+                    Text("This job is no longer assigned to you.")
+                }
             }
         }
         .navigationTitle("Job")
@@ -199,7 +202,7 @@ struct VendorJobDetailView: View {
     private func accept(_ job: MaintenanceTicket) {
         Task {
             if await viewModel.accept(job) {
-                toasts.success("Job accepted")
+                toasts.success("Job accepted", mood: .vendorAssigned)
             }
         }
     }
@@ -209,7 +212,7 @@ struct VendorJobDetailView: View {
         declineReason = ""
         Task {
             if await viewModel.decline(job, reason: reason) {
-                toasts.success("Job sent back")
+                toasts.success("Job sent back", mood: .goodbye)
                 dismiss()
             }
         }
@@ -277,7 +280,7 @@ struct CompleteJobView: View {
     private func complete() {
         Task {
             if await viewModel.complete(job, notes: notes) {
-                toasts.success("Job marked done")
+                toasts.success("Job marked done", mood: .resolved)
                 dismiss()
             }
         }

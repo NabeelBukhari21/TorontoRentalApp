@@ -86,7 +86,8 @@ struct PropertyListView: View {
                         DSEmptyState(
                             icon: DS.Icons.properties,
                             title: "No matches",
-                            message: "Try a different search or filter — your properties are still here."
+                            message: "Try a different search or filter — your properties are still here.",
+                            mood: .noResults
                         )
                         .padding(.top, DS.Spacing.xxl)
                     } else {

@@ -121,9 +121,9 @@ struct DashboardView: View {
 
             if viewModel.isLoading {
                 VStack(spacing: DS.Spacing.lg) {
-                    // The cat at its laptop while the portfolio loads.
+                    // Purr fetching while the portfolio loads.
                     MascotGuide(
-                        mood: .working,
+                        mood: .loading,
                         message: "Fetching your portfolio…",
                         mascotSize: 100
                     )

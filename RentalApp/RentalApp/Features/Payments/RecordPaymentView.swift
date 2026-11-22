@@ -34,7 +34,7 @@ struct RecordPaymentView: View {
                     form(row)
                 } else if let error = viewModel.loadError {
                     ContentUnavailableView {
-                        Label("Can't Record a Payment", symbol: .caution)
+                        PurrLabel("Can't Record a Payment", mood: .error)
                     } description: {
                         Text(error)
                     }
@@ -104,7 +104,7 @@ struct RecordPaymentView: View {
                 if viewModel.isPartial {
                     Text("\((row.outstanding - viewModel.draft.amount).formatted(.cad)) will still be owing for \(row.dueOn.monthTitle).")
                 } else if viewModel.draft.amount > row.outstanding {
-                    Label("That's more than the \(row.outstanding.formatted(.cad)) still owing.", symbol: .caution)
+                    PurrLabel("That's more than the \(row.outstanding.formatted(.cad)) still owing.", mood: .error)
                         .foregroundStyle(.red)
                 }
             }
@@ -131,7 +131,7 @@ struct RecordPaymentView: View {
         Task {
             if let entry = await viewModel.submit() {
                 onRecorded()
-                toasts.success("Recorded \((-entry.amount).formatted(.cad)) from \(viewModel.row?.firstName ?? "tenant")")
+                toasts.success("Recorded \((-entry.amount).formatted(.cad)) from \(viewModel.row?.firstName ?? "tenant")", mood: .paymentSuccess)
                 dismiss()
             }
         }

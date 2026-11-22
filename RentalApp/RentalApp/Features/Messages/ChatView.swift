@@ -83,7 +83,8 @@ struct ChatView: View {
                 DSEmptyState(
                     icon: DS.Icons.messages,
                     title: "Conversation not found",
-                    message: "This thread may have been removed."
+                    message: "This thread may have been removed.",
+                    mood: .notFound
                 )
             }
         }

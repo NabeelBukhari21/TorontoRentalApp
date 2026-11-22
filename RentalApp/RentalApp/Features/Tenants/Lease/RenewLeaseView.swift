@@ -33,7 +33,7 @@ struct RenewLeaseView: View {
                     form(current)
                 } else if let error = viewModel.loadError {
                     ContentUnavailableView {
-                        Label("Couldn't Load the Lease", symbol: .caution)
+                        PurrLabel("Couldn't Load the Lease", mood: .error)
                     } description: {
                         Text(error)
                     }
@@ -184,7 +184,7 @@ struct RenewLeaseView: View {
         Task {
             if let renewed = await viewModel.submit() {
                 onRenewed(renewed)
-                toasts.success("Lease renewed: \(renewed.termText)")
+                toasts.success("Lease renewed: \(renewed.termText)", mood: .leaseSigned)
                 dismiss()
             }
         }

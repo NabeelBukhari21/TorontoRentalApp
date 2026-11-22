@@ -114,7 +114,8 @@ struct ArchivedPropertiesView: View {
                     DSEmptyState(
                         icon: "archivebox",
                         title: "Nothing archived",
-                        message: "Archived properties keep their units, leases, and history — and can be restored any time."
+                        message: "Archived properties keep their units, leases, and history — and can be restored any time.",
+                        mood: .blobSleep
                     )
                 } else {
                     ScrollView(showsIndicators: false) {

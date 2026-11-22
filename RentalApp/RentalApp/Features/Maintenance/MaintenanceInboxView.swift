@@ -175,7 +175,8 @@ struct MaintenanceInboxView: View {
                 DSEmptyState(
                     icon: "checkmark.seal.fill",
                     title: "Inbox zero",
-                    message: "No requests match — enjoy the quiet while it lasts."
+                    message: "No requests match — enjoy the quiet while it lasts.",
+                    mood: .noRequests
                 )
                 .padding(.top, DS.Spacing.huge)
             } else {

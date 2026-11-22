@@ -240,7 +240,8 @@ struct PropertyTenantsTab: View {
                 DSEmptyState(
                     icon: DS.Icons.tenants,
                     title: "No tenants yet",
-                    message: "Tenants appear here once units are leased."
+                    message: "Tenants appear here once units are leased.",
+                    mood: .vacancy
                 )
             } else {
                 ForEach(Array(tenants.enumerated()), id: \.element.id) { index, tenant in
@@ -286,7 +287,8 @@ struct PropertyMaintenanceTab: View {
                 DSEmptyState(
                     icon: "checkmark.seal.fill",
                     title: "All clear",
-                    message: "No open maintenance requests for this property."
+                    message: "No open maintenance requests for this property.",
+                    mood: .noRequests
                 )
             } else {
                 ForEach(Array(requests.enumerated()), id: \.element.id) { index, request in

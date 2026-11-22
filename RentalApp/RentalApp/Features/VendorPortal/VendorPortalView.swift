@@ -36,7 +36,7 @@ struct VendorPortalView: View {
             case .notLinked:
                 NavigationStack {
                     ContentUnavailableView {
-                        Label("No Jobs Yet", systemImage: AppSymbol.vendor.rawValue)
+                        PurrLabel("No Jobs Yet", mood: .cloudRide)
                     } description: {
                         Text("Your account isn't linked to a property manager yet. Ask them to add \(viewModel.session.email) as a vendor in Purrperty, and the jobs they send you will appear here.")
                     }
@@ -46,7 +46,7 @@ struct VendorPortalView: View {
             case .failed(let message):
                 NavigationStack {
                     ContentUnavailableView {
-                        Label("Couldn't Load Your Jobs", symbol: .caution)
+                        PurrLabel("Couldn't Load Your Jobs", mood: .error)
                     } description: {
                         Text(message)
                     } actions: {
@@ -95,7 +95,7 @@ struct VendorPortalView: View {
             )
         } else if let client = viewModel.account?.client {
             ContentUnavailableView {
-                Label("No Messages Yet", systemImage: AppSymbol.messages.rawValue)
+                PurrLabel("No Messages Yet", mood: .inboxEmpty)
             } description: {
                 Text("\(client.name) hasn't started a conversation with you in Purrperty yet. You can email \(client.email).")
             } actions: {

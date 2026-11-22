@@ -47,7 +47,7 @@ struct TenantLedgerView: View {
                 list(ledger)
             } else if let error = viewModel.loadError {
                 ContentUnavailableView {
-                    Label("Couldn't Load Payments", symbol: .caution)
+                    PurrLabel("Couldn't Load Payments", mood: .error)
                 } description: {
                     Text(error.errorDescription ?? "")
                 } actions: {
@@ -158,7 +158,7 @@ struct TenantLedgerView: View {
             if let failure = await viewModel.sendReminder() {
                 toasts.failure(.validation(failure))
             } else {
-                toasts.success("Reminder sent to \(viewModel.firstName)")
+                toasts.success("Reminder sent to \(viewModel.firstName)", mood: .messageSent)
             }
         }
     }

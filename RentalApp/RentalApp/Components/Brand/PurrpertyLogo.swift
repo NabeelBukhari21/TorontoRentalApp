@@ -105,9 +105,9 @@ struct PurrpertyLogoMark: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private typealias G = PurrpertyLogoGeometry
-    private var catMood: MascotMood {
-        guard isBuilt else { return .idle }
-        return celebrates ? .cheer : .happy
+    private var catMood: PurrMood {
+        guard isBuilt else { return .dashboard }
+        return celebrates ? .celebrate : .dashboard
     }
 
     var body: some View {
@@ -195,15 +195,9 @@ struct PurrpertyLogoMark: View {
 
     private var cat: some View {
         let catSide = size * G.catSize
-        // Align the cat's floor line with the ground line.
-        let top = size * G.groundY - catSide * MascotPose.floorY
-        return MascotView(
-            mood: catMood,
-            size: catSide,
-            isInteractive: false,
-            isAnimated: animates,
-            greetsOnAppear: false
-        )
+        // Align Purr's feet (97% down his canvas) with the ground line.
+        let top = size * G.groundY - catSide * 0.97
+        return PurrMascot(mood: catMood, size: catSide, isInteractive: false)
         .offset(y: isBuilt ? 0 : size * 0.35)
         .opacity(isBuilt ? 1 : 0)
         .animation(entrance(order: 4, duration: 0.6), value: isBuilt)

@@ -97,7 +97,7 @@ struct ScheduleVisitView: View {
     private func book() {
         Task {
             if await viewModel.schedule(job, at: date, note: note) {
-                toasts.success("Visit booked for \(date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute()))")
+                toasts.success("Visit booked for \(date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute()))", mood: .scheduledVisit)
                 dismiss()
             }
         }

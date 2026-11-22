@@ -203,6 +203,7 @@ struct DocumentCenterView: View {
                 icon: DS.Icons.documents,
                 title: "No documents found",
                 message: "Adjust your search or filters, or upload your first file.",
+                mood: .documentsEmpty,
                 actionTitle: "Upload",
                 action: { Task { await viewModel.importSampleFile() } }
             )

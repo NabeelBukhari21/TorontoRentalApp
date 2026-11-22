@@ -175,10 +175,12 @@ struct MascotBubbleShape: Shape {
 /// and empty states.
 struct MascotGuide: View {
 
-    var mood: MascotMood = .happy
+    var mood: PurrMood = .dashboard
     var title: String? = nil
     let message: String
     var mascotSize: CGFloat = 104
+    /// A tap plays one of Purr's signature moves instead of a little hop.
+    var surprisesOnTap: Bool = false
     /// When false the cat steps out and the bubble points up instead — for
     /// screens where Purr is already on stage above (e.g. an animated clip).
     var showsMascot: Bool = true
@@ -187,10 +189,10 @@ struct MascotGuide: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: DS.Spacing.xs) {
             if showsMascot {
-                MascotView(mood: mood, size: mascotSize, onTap: onTapMascot)
-                    // The canvas has headroom for raised arms; pull the bubble
-                    // in so it sits beside the cat, not beside empty space.
-                    .padding(.trailing, -mascotSize * 0.08)
+                PurrMascot(mood: mood, size: mascotSize, surprisesOnTap: surprisesOnTap, onTap: onTapMascot)
+                    // The canvas has headroom for big moves; pull the bubble
+                    // in so it sits beside Purr, not beside empty space.
+                    .padding(.trailing, -mascotSize * 0.12)
                     .transition(.scale(scale: 0.4, anchor: .bottom).combined(with: .opacity))
             }
 
@@ -206,8 +208,8 @@ struct MascotGuide: View {
 
 #Preview("Guide") {
     VStack(spacing: DS.Spacing.xxl) {
-        MascotGuide(mood: .happy, message: "Hi! I'll help you run your rentals — properties, tenants and repairs, all in one place.")
-        MascotGuide(mood: .thinking, title: "What do you manage?", message: "I'll tailor your dashboard to your portfolio.")
+        MascotGuide(mood: .welcome, message: "Hi! I'll help you run your rentals — properties, tenants and repairs, all in one place.")
+        MascotGuide(mood: .assistantThinking, title: "What do you manage?", message: "I'll tailor your dashboard to your portfolio.")
         MascotSpeechBubble(message: "Bubble with a bottom tail.", tail: .bottom)
     }
     .padding()

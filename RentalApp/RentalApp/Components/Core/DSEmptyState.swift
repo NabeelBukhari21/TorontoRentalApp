@@ -2,9 +2,9 @@
 //  DSEmptyState.swift
 //  RentalApp
 //
-//  Design System — Empty states: the mascot keeps you company, with the
-//  screen's own icon as a badge so the context ("no documents", "no
-//  tenants") is still clear at a glance.
+//  Design System — Empty states: Purr keeps you company, acting out the
+//  moment (inbox zero, nothing archived, no results), with the screen's
+//  own icon as a badge so the context is still clear at a glance.
 //
 
 import SwiftUI
@@ -14,13 +14,16 @@ struct DSEmptyState: View {
     let icon: String
     let title: String
     let message: String
+    /// What Purr acts out. Good-news empties ("All clear") deserve a
+    /// happier mood than "nothing found".
+    var mood: PurrMood = .emptyState
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
             ZStack(alignment: .bottomTrailing) {
-                MascotView(mood: .idle, size: 132, greetsOnAppear: true)
+                PurrMascot(mood: mood, size: 150)
 
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))

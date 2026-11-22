@@ -18,19 +18,17 @@ import SwiftUI
 /// setup screen. Used as the first, borderless section of a step's list.
 struct OnboardingHeader: View {
 
-    let mood: MascotMood
+    let mood: PurrMood
     let title: String
     var message: String? = nil
-    /// Kept below each pose's crisp limit (see `MascotPose.nativePixels`).
-    var mascotSize: CGFloat = 120
+    var mascotSize: CGFloat = 140
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(spacing: 12) {
             // Artwork gives way to text at accessibility sizes.
-            MascotView(mood: mood, size: typeSize.isAccessibilitySize ? mascotSize * 0.6 : mascotSize)
-                .accessibilityHidden(true)
+            PurrMascot(mood: mood, size: typeSize.isAccessibilitySize ? mascotSize * 0.6 : mascotSize)
 
             Text(title)
                 .font(.largeTitle.bold())
@@ -136,7 +134,7 @@ struct OnboardingProgressView: View {
     NavigationStack {
         List {
             Section {
-                OnboardingHeader(mood: .thinking, title: "Who are you?", message: "Tell me a little about you.")
+                OnboardingHeader(mood: .assistantThinking, title: "Who are you?", message: "Tell me a little about you.")
             }
             .onboardingHeaderSection()
 

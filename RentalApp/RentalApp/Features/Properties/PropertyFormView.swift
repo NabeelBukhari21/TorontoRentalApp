@@ -342,11 +342,8 @@ struct PropertyFormView: View {
         Task {
             if let saved = await viewModel.submit() {
                 onSaved(saved)
-                toasts.success(
-                    viewModel.mode.propertyID == nil
-                        ? "\(saved.name) created"
-                        : "Changes saved"
-                )
+                let isNew = viewModel.mode.propertyID == nil
+                toasts.success(isNew ? "\(saved.name) created" : "Changes saved", mood: isNew ? .propertyAdded : .saved)
                 dismiss()
             }
         }

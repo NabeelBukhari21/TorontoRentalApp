@@ -102,6 +102,7 @@ struct TenantListView: View {
                             icon: DS.Icons.tenants,
                             title: "No tenants found",
                             message: "Try a different search or filter, or add your first tenant.",
+                            mood: .tenants,
                             actionTitle: "Add Tenant",
                             action: { router.present(.newTenant) }
                         )

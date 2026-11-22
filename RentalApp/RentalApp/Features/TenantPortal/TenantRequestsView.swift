@@ -35,7 +35,7 @@ struct TenantRequestsView: View {
         .overlay {
             if viewModel.requests.isEmpty {
                 ContentUnavailableView {
-                    Label("No Requests", systemImage: AppSymbol.maintenance.rawValue)
+                    PurrLabel("No Requests", mood: .noRequests)
                 } description: {
                     Text("Something broken or not working? Report it and your landlord will be notified.")
                 } actions: {

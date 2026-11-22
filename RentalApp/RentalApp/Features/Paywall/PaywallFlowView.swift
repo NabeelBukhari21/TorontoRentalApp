@@ -155,8 +155,7 @@ private struct PaywallIntroStep: View {
                     .fill(DS.Gradients.hero)
                     .frame(width: 160, height: 160)
                     .opacity(0.16)
-                // 125pt keeps the sunglasses pose crisp (MascotPose.nativePixels).
-                MascotView(mood: .cool, size: 125)
+                PurrMascot(mood: .referralReward, size: 140)
             }
             .dsEntrance(index: 0)
 
@@ -205,7 +204,7 @@ private struct PaywallTimelineStep: View {
                     .font(.system(size: 30, weight: .heavy, design: .rounded))
                     .foregroundStyle(DS.Colors.textPrimary)
                 Spacer(minLength: 0)
-                MascotFaceView(face: .wink, size: 56)
+                PurrMascot(mood: .reminder, size: 64)
             }
             .dsEntrance(index: 0)
 

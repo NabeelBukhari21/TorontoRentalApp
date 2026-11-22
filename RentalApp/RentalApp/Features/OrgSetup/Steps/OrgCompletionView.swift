@@ -20,9 +20,9 @@ struct OrgCompletionView: View {
             VStack(spacing: DS.Spacing.xxl) {
                 Spacer()
 
-                // The cat, arms up. Replaces the success ring: a celebration
+                // Purr's party. Replaces the success ring: a celebration
                 // reads better as a character's reaction than as a checkmark.
-                MascotView(mood: .cheer, size: 170)
+                PurrMascot(mood: .partyTime, size: 190, surprisesOnTap: true)
 
                 VStack(spacing: DS.Spacing.sm) {
                     Text("You're all set!")

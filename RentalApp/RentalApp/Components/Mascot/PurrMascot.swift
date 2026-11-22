@@ -135,3 +135,27 @@ private struct PurrCanvas: View {
         PurrMascot(mood: .error, size: 120)
     }
 }
+
+// MARK: - Unavailable Label
+
+/// A `Label` whose icon is Purr acting out the moment, for the system
+/// `ContentUnavailableView` (empty, error and waiting states) on the
+/// native screens.
+struct PurrLabel: View {
+
+    let title: Text
+    let mood: PurrMood
+
+    init(_ titleKey: LocalizedStringKey, mood: PurrMood) {
+        title = Text(titleKey)
+        self.mood = mood
+    }
+
+    var body: some View {
+        Label {
+            title
+        } icon: {
+            PurrMascot(mood: mood, size: 132)
+        }
+    }
+}

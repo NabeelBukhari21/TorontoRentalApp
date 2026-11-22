@@ -45,7 +45,7 @@ struct TenantPortalView: View {
             case .failed(let message):
                 NavigationStack {
                     ContentUnavailableView {
-                        Label("Couldn't Load Your Home", symbol: .caution)
+                        PurrLabel("Couldn't Load Your Home", mood: .error)
                     } description: {
                         Text(message)
                     } actions: {
@@ -108,7 +108,7 @@ struct TenantPortalView: View {
 
     private var notLinked: some View {
         ContentUnavailableView {
-            Label("Waiting for Your Landlord", systemImage: "house.lodge")
+            PurrLabel("Waiting for Your Landlord", mood: .idleTimeout)
         } description: {
             Text("Your account isn't linked to a rental yet. Ask your landlord or property manager to invite \(viewModel.session.email) from Purrperty, and your lease, rent and requests will appear here.")
         }

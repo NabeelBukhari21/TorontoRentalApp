@@ -47,19 +47,23 @@ struct Toast: Identifiable, Sendable {
     /// Offered on failure so the user is not left re-doing the gesture.
     let retry: (@MainActor @Sendable () async -> Void)?
     let duration: Duration
+    /// Purr's reaction. Nil picks one from the style.
+    let mood: PurrMood?
 
     init(
         message: String,
         style: Style,
         undo: UndoToken? = nil,
         retry: (@MainActor @Sendable () async -> Void)? = nil,
-        duration: Duration = .seconds(4)
+        duration: Duration = .seconds(4),
+        mood: PurrMood? = nil
     ) {
         self.message = message
         self.style = style
         self.undo = undo
         self.retry = retry
         self.duration = duration
+        self.mood = mood
     }
 }
 
@@ -102,8 +106,10 @@ final class ToastCenter {
         }
     }
 
-    func success(_ message: String) {
-        show(Toast(message: message, style: .success, duration: .seconds(3)))
+    /// - Parameter mood: Purr acting out what just happened (a receipt, a
+    ///   moving box). Defaults to a general well done.
+    func success(_ message: String, mood: PurrMood? = nil) {
+        show(Toast(message: message, style: .success, duration: .seconds(3), mood: mood))
     }
 
     func failure(_ error: AppError, retry: (@MainActor @Sendable () async -> Void)? = nil) {

@@ -160,7 +160,7 @@ struct RentCollectionView: View {
             ProgressView()
         } else if let error = viewModel.loadError {
             ContentUnavailableView {
-                Label("Couldn't Load Rent", symbol: .caution)
+                PurrLabel("Couldn't Load Rent", mood: .error)
             } description: {
                 Text(error.errorDescription ?? "")
             } actions: {
@@ -168,13 +168,17 @@ struct RentCollectionView: View {
             }
         } else if viewModel.visibleRows.isEmpty {
             if viewModel.searchText.isEmpty {
-                ContentUnavailableView(
-                    "Nothing Here",
-                    systemImage: AppSymbol.rent.rawValue,
-                    description: Text("No rent is \(viewModel.filter == .paid ? "paid" : "listed") for \(viewModel.month.monthTitle) with this filter.")
-                )
+                ContentUnavailableView {
+                    PurrLabel("Nothing Here", mood: .paymentHistory)
+                } description: {
+                    Text("No rent is \(viewModel.filter == .paid ? "paid" : "listed") for \(viewModel.month.monthTitle) with this filter.")
+                }
             } else {
-                ContentUnavailableView.search(text: viewModel.searchText)
+                ContentUnavailableView {
+                    PurrLabel("No Results for \u{201C}\(viewModel.searchText)\u{201D}", mood: .noResults)
+                } description: {
+                    Text("Check the spelling or try a new search.")
+                }
             }
         }
     }
@@ -203,7 +207,7 @@ struct RentCollectionView: View {
             if let failure = await viewModel.sendReminder(to: row) {
                 toasts.failure(.validation(failure))
             } else {
-                toasts.success("Reminder sent to \(row.firstName)")
+                toasts.success("Reminder sent to \(row.firstName)", mood: .messageSent)
             }
         }
     }

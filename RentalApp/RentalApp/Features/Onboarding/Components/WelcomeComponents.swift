@@ -238,7 +238,7 @@ struct WelcomeTermsChip: View {
 
 // MARK: - Sign In
 
-/// "Sign in" with a sleeping Purr, who wakes up when tapped.
+/// "Sign in" with a sleeping Purr, who wakes up and waves when tapped.
 struct SleepyPurrSignInButton: View {
 
     let action: () -> Void
@@ -256,10 +256,9 @@ struct SleepyPurrSignInButton: View {
             }
         } label: {
             HStack(spacing: 7) {
-                MascotFaceView(face: isAwake ? .happy : .sleepy, size: 28)
-                    .phaseAnimator(reduceMotion || isAwake ? [1.0] : [1.0, 1.06]) { face, scale in
-                        face.scaleEffect(scale)
-                    } animation: { _ in .easeInOut(duration: 1.6) }
+                // Asleep with Zs drifting up; wakes into a greeting.
+                PurrMascot(mood: isAwake ? .welcomeBack : .idleTimeout, size: 40, isInteractive: false)
+                    .padding(-4)
                 Text("Sign in")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(DS.Colors.brandInk)

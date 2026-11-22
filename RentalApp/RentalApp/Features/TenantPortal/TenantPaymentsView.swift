@@ -18,7 +18,7 @@ struct TenantPaymentsView: View {
             if let ledger = viewModel.ledger {
                 list(ledger)
             } else {
-                ContentUnavailableView("No Rent Account Yet", systemImage: AppSymbol.rent.rawValue)
+                ContentUnavailableView { PurrLabel("No Rent Account Yet", mood: .paymentHistory) }
             }
         }
         .navigationTitle("Payments")
@@ -90,7 +90,7 @@ struct TenantMessagesView: View {
             )
         } else if let landlord = viewModel.account?.landlord {
             ContentUnavailableView {
-                Label("No Messages Yet", systemImage: AppSymbol.messages.rawValue)
+                PurrLabel("No Messages Yet", mood: .inboxEmpty)
             } description: {
                 Text("Your landlord hasn't started a conversation with you in Purrperty yet. You can email \(landlord.email).")
             } actions: {

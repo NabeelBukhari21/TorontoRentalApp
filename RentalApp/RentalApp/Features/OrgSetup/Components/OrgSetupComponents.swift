@@ -55,21 +55,23 @@ struct OrgSetupProgressBar: View {
 
 /// The mascot asks each step's question, Duolingo-style.
 ///
-/// It waits (idle, or thinking for the multiple-choice steps) until the
-/// answer is valid, then turns happy and hops — a small reward for every
-/// step completed. A new header is created per step, so the cat also hops
-/// hello each time the step changes.
+/// Purr acts out each step (signing his name, posing for a photo, looking
+/// over properties) and gives a little reaction once the answer is valid
+/// — a small reward for every step completed.
 struct OrgSetupStepHeader: View {
 
     let step: OrgSetupStep
     /// Whether the current answer is valid (`OrgSetupViewModel.canContinue`).
     var isReady: Bool = false
 
-    private var mood: MascotMood {
-        if isReady { return .happy }
+    private var mood: PurrMood {
+        if isReady { return .success }
         switch step {
-        case .propertyType, .portfolioSize: return .thinking
-        case .name, .logo, .inviteTeam:     return .idle
+        case .name:          return .editProfile
+        case .logo:          return .profilePhoto
+        case .propertyType:  return .properties
+        case .portfolioSize: return .analytics
+        case .inviteTeam:    return .inviteFriends
         }
     }
 

@@ -141,7 +141,7 @@ struct GettingStartedView: View {
                     }
                 } footer: {
                     if !viewModel.postalCodeIsValid {
-                        Label("That doesn't look like a Canadian postal code.", symbol: .caution)
+                        PurrLabel("That doesn't look like a Canadian postal code.", mood: .error)
                             .foregroundStyle(.red)
                     }
                 }
@@ -199,7 +199,7 @@ struct GettingStartedView: View {
     private var savingStep: some View {
         List {
             Section {
-                OnboardingHeader(mood: .working, title: "Adding \(viewModel.draft.name)")
+                OnboardingHeader(mood: .builder, title: "Adding \(viewModel.draft.name)")
             }
             .onboardingHeaderSection()
 
@@ -249,8 +249,7 @@ private struct GettingStartedCelebration: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                MascotView(mood: .excited, size: 180)
-                    .accessibilityHidden(true)
+                PurrMascot(mood: .propertyAdded, size: 200, surprisesOnTap: true)
 
                 VStack(spacing: 8) {
                     Text("\(propertyName) is live")
@@ -328,8 +327,7 @@ private struct GettingStartedNotificationPriming: View {
                 notificationPreview
                     .padding(.top, 24)
 
-                MascotView(mood: .happy, size: 140)
-                    .accessibilityHidden(true)
+                PurrMascot(mood: .newNotification, size: 150)
 
                 VStack(spacing: 8) {
                     Text("Never miss a rent payment")

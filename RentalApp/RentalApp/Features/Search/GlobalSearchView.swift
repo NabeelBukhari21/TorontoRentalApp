@@ -298,16 +298,17 @@ struct GlobalSearchView: View {
     private var emptyState: some View {
         switch viewModel.presentation {
         case .tooShort:
-            ContentUnavailableView(
-                "Keep typing",
-                systemImage: AppSymbol.search.rawValue,
-                description: Text("Type two or more characters to search.")
-            )
+            ContentUnavailableView {
+                PurrLabel("Keep typing", mood: .typing)
+            } description: {
+                Text("Type two or more characters to search.")
+            }
         case .searching:
-            ProgressView()
+            PurrMascot(mood: .searching, size: 132)
+                .accessibilityLabel("Searching")
         case .noResults:
             ContentUnavailableView {
-                Label("No results for \u{201C}\(viewModel.text)\u{201D}", symbol: .search)
+                PurrLabel("No results for \u{201C}\(viewModel.text)\u{201D}", mood: .noResults)
             } description: {
                 Text(viewModel.scope.isEmpty
                      ? "Check the spelling or try a shorter term."
@@ -320,7 +321,7 @@ struct GlobalSearchView: View {
             }
         case .failed(let error):
             ContentUnavailableView {
-                Label("Couldn't search", symbol: .caution)
+                PurrLabel("Couldn't search", mood: .error)
             } description: {
                 Text(error.errorDescription ?? "Something went wrong.")
             } actions: {

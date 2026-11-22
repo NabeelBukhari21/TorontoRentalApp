@@ -219,7 +219,8 @@ struct NavigationComingSoonView: View {
                 DSEmptyState(
                     icon: route.icon,
                     title: route.title,
-                    message: "Unit-level views arrive in the next release. Units are visible today inside each property's detail page."
+                    message: "Unit-level views arrive in the next release. Units are visible today inside each property's detail page.",
+                    mood: .comingSoon
                 )
 
                 Spacer()

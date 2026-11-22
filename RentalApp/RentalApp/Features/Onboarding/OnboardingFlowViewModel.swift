@@ -153,18 +153,19 @@ final class OnboardingFlowViewModel {
 
     // MARK: Purr
 
-    var mascotMood: MascotMood {
+    /// Purr acts out each step. Answering a question earns a reaction.
+    var mascotMood: PurrMood {
         switch step {
-        case .welcome:     .cheer
-        case .intro:       .happy
-        case .persona:     .thinking
-        case .units:       profile.unitRange == nil ? .thinking : .happy
-        case .headaches:   profile.headaches.isEmpty ? .concerned : .happy
-        case .goal:        .excited
-        case .personalize: .cool
-        case .building:    .working
-        case .unlocked:    .cheer
-        case .signUp:      .happy
+        case .welcome:     .welcome
+        case .intro:       .dashboard
+        case .persona:     profile.persona == nil ? .assistantThinking : .welcomeBack
+        case .units:       profile.unitRange == nil ? .properties : .fullyOccupied
+        case .headaches:   profile.headaches.isEmpty ? .begging : .thankYou
+        case .goal:        profile.goal == nil ? .assistantIdea : .clapping
+        case .personalize: .appearance
+        case .building:    .builder
+        case .unlocked:    .celebrate
+        case .signUp:      .signUp
         }
     }
 

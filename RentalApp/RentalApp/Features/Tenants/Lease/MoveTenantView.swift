@@ -32,7 +32,7 @@ struct MoveTenantView: View {
                 if let current = viewModel.current {
                     if viewModel.units.isEmpty {
                         ContentUnavailableView {
-                            Label("No Vacant Units", symbol: .unit)
+                            PurrLabel("No Vacant Units", mood: .fullyOccupied)
                         } description: {
                             Text("Every unit has a tenant. A unit appears here once it's vacant.")
                         }
@@ -41,7 +41,7 @@ struct MoveTenantView: View {
                     }
                 } else if let error = viewModel.loadError {
                     ContentUnavailableView {
-                        Label("Couldn't Load the Lease", symbol: .caution)
+                        PurrLabel("Couldn't Load the Lease", mood: .error)
                     } description: {
                         Text(error)
                     }
@@ -161,7 +161,7 @@ struct MoveTenantView: View {
         Task {
             if let lease = await viewModel.submit() {
                 onMoved(lease)
-                toasts.success("Moving to \(lease.unitName) on \(lease.start.formatted(date: .abbreviated, time: .omitted))")
+                toasts.success("Moving to \(lease.unitName) on \(lease.start.formatted(date: .abbreviated, time: .omitted))", mood: .boxSurprise)
                 dismiss()
             }
         }

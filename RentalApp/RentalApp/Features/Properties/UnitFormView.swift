@@ -207,7 +207,7 @@ struct UnitFormView: View {
         Task {
             if let unit = await viewModel.submit() {
                 onSaved(unit)
-                toasts.success("\(unit.name) saved")
+                toasts.success("\(unit.name) saved", mood: .saved)
                 dismiss()
             }
         }

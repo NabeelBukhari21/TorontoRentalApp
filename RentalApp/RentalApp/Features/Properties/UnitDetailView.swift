@@ -80,7 +80,7 @@ struct UnitDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failed(let error):
                 ContentUnavailableView {
-                    Label("Couldn't Load This Unit", symbol: .caution)
+                    PurrLabel("Couldn't Load This Unit", mood: .error)
                 } description: {
                     Text(error.errorDescription ?? "")
                 } actions: {

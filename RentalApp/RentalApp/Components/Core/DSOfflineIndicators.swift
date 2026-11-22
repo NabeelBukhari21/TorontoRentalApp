@@ -106,7 +106,8 @@ struct PendingChangesView: View {
                     DSEmptyState(
                         icon: "checkmark.circle",
                         title: "Everything is synced",
-                        message: "No changes are waiting to reach the server."
+                        message: "No changes are waiting to reach the server.",
+                        mood: .backOnline
                     )
                 } else {
                     ScrollView(showsIndicators: false) {

@@ -101,7 +101,8 @@ struct ConversationListView: View {
             DSEmptyState(
                 icon: DS.Icons.messages,
                 title: "Pick a conversation",
-                message: "Select a thread from the list to start messaging."
+                message: "Select a thread from the list to start messaging.",
+                mood: .inbox
             )
             Spacer()
         }
@@ -143,7 +144,8 @@ struct ConversationListView: View {
                 DSEmptyState(
                     icon: DS.Icons.messages,
                     title: "No conversations",
-                    message: "Nothing matches — adjust your search or filters."
+                    message: "Nothing matches — adjust your search or filters.",
+                    mood: .inboxEmpty
                 )
                 .padding(.top, DS.Spacing.xxl)
             } else {

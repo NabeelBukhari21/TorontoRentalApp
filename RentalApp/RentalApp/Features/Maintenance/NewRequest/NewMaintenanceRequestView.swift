@@ -294,7 +294,7 @@ struct NewMaintenanceRequestView: View {
         focus = nil
         Task {
             if let ticket = await viewModel.submit() {
-                toasts.success("Request added: \(ticket.title)")
+                toasts.success("Request added: \(ticket.title)", mood: .requestSubmitted)
                 dismiss()
             }
         }

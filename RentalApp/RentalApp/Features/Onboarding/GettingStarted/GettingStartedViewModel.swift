@@ -128,13 +128,13 @@ final class GettingStartedViewModel {
         }
     }
 
-    var mascotMood: MascotMood {
+    var mascotMood: PurrMood {
         switch step {
-        case .kind:    .happy
-        case .address: .thinking
-        case .name:    .happy
-        case .units:   unitCount > 1 ? .excited : .happy
-        default:       .happy
+        case .kind:    .addProperty
+        case .address: .mapView
+        case .name:    .editProfile
+        case .units:   unitCount > 1 ? .clapping : .keysReady
+        default:       .dashboard
         }
     }
 

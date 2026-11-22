@@ -107,7 +107,7 @@ struct PropertyDetailView: View {
         Task {
             do {
                 try await viewModel.archive()
-                toasts.success("\(property.name) archived")
+                toasts.success("\(property.name) archived", mood: .saved)
                 dismiss()
             } catch {
                 toasts.failure(AppError.from(error)) { archive(property) }
@@ -124,7 +124,7 @@ struct PropertyDetailView: View {
             Task {
                 do {
                     try await viewModel.delete()
-                    toasts.success("\(property.name) deleted")
+                    toasts.success("\(property.name) deleted", mood: .goodbye)
                     dismiss()
                 } catch {
                     toasts.failure(AppError.from(error))

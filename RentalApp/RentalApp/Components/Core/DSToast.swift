@@ -31,11 +31,11 @@ struct DSToastView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(symbol: role.symbol)
-                .font(.title3)
-                .foregroundStyle(role.color)
-                .symbolEffect(.bounce, value: toast.id)
-                .accessibilityHidden(true)
+            // Purr acts out the result; the message carries the meaning.
+            PurrMascot(mood: toast.mood ?? toast.style.mood, size: 46, isInteractive: false)
+                .padding(.vertical, -6)
+                .padding(.leading, -8)
+                .id(toast.id)
 
             Text(toast.message)
                 .font(.subheadline)
@@ -212,12 +212,12 @@ extension View {
 // MARK: - Mascot
 
 private extension Toast.Style {
-    /// The cat's reaction to each outcome.
-    var mascotFace: MascotFace {
+    /// Purr's reaction to each outcome, when the toast doesn't name one.
+    var mood: PurrMood {
         switch self {
-        case .success: .happy
-        case .failure: .sad
-        case .info:    .curious
+        case .success: .success
+        case .failure: .error
+        case .info:    .newNotification
         }
     }
 }
