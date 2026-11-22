@@ -27,8 +27,8 @@
 
 | # | Screen | Purpose | Purr's role |
 |---|--------|---------|-------------|
-| 1 | Splash | The logo builds itself | Hops in and cheers |
-| 2 | Hello | One outcome-led promise | Hello clip |
+| 1 | Splash | A drop splashes, Purr pops out and melts into six dots that turn while the app loads, then merge into the logo and name (returning users: just the pop) | Pops in, then becomes the logo |
+| 2 | Welcome + fly-over | The name, tagline and drifting cards of real features; the paw button plays a short 3D fly-over of a building opened floor by floor | On the logo; cheers at the end of the fly-over |
 | 3 | Quiz: "Who are you?" | Landlord, property manager or tenant | Thinking |
 | 4 | Quiz: "How many units?" | 1, 2–5, 6–20, 20+ | Reacts to the answer |
 | 5 | Quiz: "What's your biggest headache?" | Multi-select: late rent, repairs, tenant messages, paperwork, finding tenants | Sympathetic face |

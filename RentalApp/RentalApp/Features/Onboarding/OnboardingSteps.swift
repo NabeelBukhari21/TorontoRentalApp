@@ -9,47 +9,6 @@
 
 import SwiftUI
 
-// MARK: - Hello
-
-/// The hook: Purr's hello clip and one outcome-led promise.
-struct OnboardingHelloStep: View {
-
-    let onStart: () -> Void
-    let onSignIn: () -> Void
-
-    @Environment(\.dynamicTypeSize) private var typeSize
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Artwork gives way to text at accessibility sizes.
-                MascotClipView(clip: .hello, size: typeSize.isAccessibilitySize ? 120 : 220)
-                    .accessibilityLabel("Purr, the Purrperty cat, waving hello")
-
-                Text("Never chase rent again.")
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-
-                Text("Rent, repairs and tenants, sorted in one place. I'm Purr, and I'll help.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 40)
-            .frame(maxWidth: 540)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .primaryActionBar {
-            PrimaryActionButton(title: "Get started", action: onStart)
-            Button("I already have an account", action: onSignIn)
-                .frame(minHeight: 44)
-        }
-    }
-}
-
 // MARK: - Persona
 
 struct OnboardingPersonaStep: View {

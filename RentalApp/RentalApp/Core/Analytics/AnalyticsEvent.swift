@@ -119,6 +119,8 @@ enum AnalyticsEvent: Sendable, Equatable {
     case onboardingStepViewed(step: String)
     /// A quiz answer. Both values come from closed enums — never free text.
     case onboardingAnswered(question: String, answer: String)
+    /// The intro fly-over ended, watched to the end or skipped.
+    case onboardingIntroFinished(skipped: Bool)
     /// The post-sign-up "getting started" flow finished.
     case activationCompleted(addedProperty: Bool)
     /// The answer to the system notification prompt, after priming.
@@ -183,6 +185,7 @@ enum AnalyticsEvent: Sendable, Equatable {
         case .onboardingCompleted:      "onboarding_completed"
         case .onboardingStepViewed:     "onboarding_step_viewed"
         case .onboardingAnswered:       "onboarding_answered"
+        case .onboardingIntroFinished:  "onboarding_intro_finished"
         case .activationCompleted:      "activation_completed"
         case .notificationPermissionResponded: "notification_permission_responded"
         case .organizationCreated:      "organization_created"
@@ -267,6 +270,8 @@ enum AnalyticsEvent: Sendable, Equatable {
             ["step": .enumerated(step)]
         case .onboardingAnswered(let question, let answer):
             ["question": .enumerated(question), "answer": .enumerated(answer)]
+        case .onboardingIntroFinished(let skipped):
+            ["skipped": .flag(skipped)]
         case .activationCompleted(let addedProperty):
             ["added_property": .flag(addedProperty)]
         case .notificationPermissionResponded(let granted):
@@ -291,7 +296,7 @@ enum AnalyticsEvent: Sendable, Equatable {
     var isCritical: Bool {
         switch self {
         case .signedIn, .signUpCompleted, .signedOut, .onboardingCompleted,
-             .onboardingStepViewed, .onboardingAnswered, .activationCompleted,
+             .onboardingStepViewed, .onboardingAnswered, .onboardingIntroFinished, .activationCompleted,
              .notificationPermissionResponded,
              .organizationCreated, .purchaseCompleted, .purchaseFailed,
              .paywallPresented, .paywallDismissed:

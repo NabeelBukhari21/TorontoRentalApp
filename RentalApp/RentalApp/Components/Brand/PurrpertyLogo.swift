@@ -441,7 +441,8 @@ struct PurrpertyWordmark: View {
             Text(verbatim: "perty")
                 .foregroundStyle(onDark ? AnyShapeStyle(PurrpertyBrand.white) : AnyShapeStyle(DS.Colors.textPrimary))
         }
-        .font(.system(size: fontSize, weight: .heavy, design: .rounded))
+        // Fredoka, the brand face; a logo keeps its size, so no Dynamic Type.
+        .font(DS.Typography.brandFixed(fontSize, weight: .bold))
         .lineLimit(1)
         .minimumScaleFactor(0.7)
         .accessibilityElement(children: .ignore)

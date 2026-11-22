@@ -92,9 +92,13 @@ colourful, for students, on a white background.
 - `MascotGuide` is the cat plus a speech bubble. `showsMascot: false`
   makes the bubble point up instead.
 - `MascotFaceView(face:)` shows 12 expression tiles, up to about 44pt.
-- `MascotClipView(clip:)` plays a video clip on a white card.
-  - `.hello` → `Resources/Media/PurrHello.mp4`.
-  - Prepare new clips with `tools/mascot/video_whiten.py`.
+- `MascotHead` (cut by `tools/mascot/head_cut.py`) is the head alone,
+  for the launch sequence.
+- Motion is designed in Remotion (`tools/motion`, see its README), then
+  rebuilt natively with `Components/Motion/LiquidMotion.swift` (time-based
+  springs, rippling blobs, a gooey Canvas layer). Clips that ship as
+  video (the intro fly-over) are rendered there and played with
+  `VideoClipPlayer`.
 - Assets live in `Resources/Assets.xcassets/Mascot/`. The cut-out
   pipeline is in `tools/mascot/`.
 
@@ -124,12 +128,18 @@ colourful, for students, on a white background.
   - mascot system and new poses
   - logo redesign and app icon
   - Purrperty rebrand
-  - onboarding hello clip
   - debug launch override
   - onboarding redesign per `docs/ONBOARDING_PLAYBOOK.md`: quiz →
     make it yours → building → unlocked → sign-up pitch, then (staff,
     after org setup) getting started → first property → aha + founder
     note → notification priming → 3-step trial paywall
+  - onboarding round 1 (liquid morph, picked from the Remotion studies):
+    launch sequence (`Features/Splash/LaunchSequenceView`, Drip & pop →
+    six-dot loader → logo; brief pop for returning users), welcome
+    (feature-card marquees, paw button, terms chip, sleepy-Purr sign-in)
+    and the Dollhouse fly-over (`PurrIntroFlyover.mp4`). Brand font:
+    Fredoka (`DS.Typography.brand`, bundled, OFL). Screens 1.3–1.11 are
+    the next round.
   - user accent colours (`AccentStore`, `DS.Colors.brand` is computed)
 - Missing features, built step by step per `docs/FEATURES_PLAN.md`:
   1. New maintenance request form — done
@@ -154,8 +164,6 @@ colourful, for students, on a white background.
   2. Fix the Home UI.
   3. Build new features.
 - Open items:
-  - The hello clip still carries the DomoAI watermark. Replace it with a
-    clean export.
   - Request 1024px exports of the cool, work, sleep and leap poses.
   - The "Reduce glass effects" setting is now a no-op.
   - AI tasks aren't wired to any screens.

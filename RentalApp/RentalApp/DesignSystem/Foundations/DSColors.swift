@@ -154,6 +154,11 @@ extension DS {
 
         // MARK: Surfaces
 
+        /// The launch frame's light lavender — also the system launch
+        /// screen (`UILaunchScreen` in Info.plist), so the hand-off from
+        /// the system to the launch animation can't be seen.
+        static let launchBackground = Color("LaunchBackground")
+
         /// App background — pure white.
         static let background = Color(
             light: Color(hex: 0xFFFFFF),

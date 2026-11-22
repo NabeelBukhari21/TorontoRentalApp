@@ -42,15 +42,23 @@ struct OnboardingView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.step == .hello {
-                    OnboardingHelloStep(onStart: viewModel.advance, onSignIn: onSignIn)
-                } else {
+                switch viewModel.step {
+                case .welcome:
+                    OnboardingWelcomeStep(onStart: viewModel.advance, onSignIn: onSignIn)
+                case .intro:
+                    OnboardingIntroStep { viewModel.finishIntro(skipped: $0) }
+                default:
                     stepList
                 }
             }
             .id(viewModel.step)
-            .transition(reduceMotion ? .opacity : .push(from: viewModel.movesForward ? .trailing : .leading))
+            // The cover crossfades (the welcome floods into the fly-over);
+            // the questions push.
+            .transition(reduceMotion || viewModel.step.isFullScreen || viewModel.step == .persona
+                ? .opacity
+                : .push(from: viewModel.movesForward ? .trailing : .leading))
             .toolbar { toolbar }
+            .toolbar(viewModel.step.isFullScreen ? .hidden : .automatic, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -93,7 +101,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var stepSections: some View {
         switch viewModel.step {
-        case .hello:       EmptyView()
+        case .welcome, .intro: EmptyView()
         case .persona:     OnboardingPersonaStep(viewModel: viewModel)
         case .units:       OnboardingUnitsStep(viewModel: viewModel)
         case .headaches:   OnboardingHeadachesStep(viewModel: viewModel)
@@ -126,7 +134,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var bottomBar: some View {
         switch viewModel.step {
-        case .building, .hello:
+        case .building, .welcome, .intro:
             EmptyView()
         case .signUp:
             PrimaryActionButton(title: "Create account", isLoading: viewModel.auth.isLoading) {

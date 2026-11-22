@@ -4,7 +4,8 @@
 //
 //  Onboarding — Hook → Personalise → Sign up.
 //
-//  Follows docs/ONBOARDING_PLAYBOOK.md §1: an outcome-led hello, a short
+//  Follows docs/ONBOARDING_PLAYBOOK.md §1: a welcome and a short fly-over
+//  of what the app does, then a short
 //  conversational quiz with Purr, "make it yours", an honest building
 //  step, a summary of what the answers switched on, then sign-up — by
 //  which point the user is invested and the form reads as a pitch.
@@ -20,7 +21,10 @@ import Observation
 // MARK: - Steps
 
 enum OnboardingStep: String, CaseIterable, Sendable {
-    case hello
+    /// The cover: the name, drifting feature cards, the paw button.
+    case welcome
+    /// The fly-over video of the app at work.
+    case intro
     case persona
     case units
     case headaches
@@ -31,16 +35,19 @@ enum OnboardingStep: String, CaseIterable, Sendable {
     case signUp
 
     /// Steps where going back makes sense. The building step is a moment,
-    /// not a form, and hello is the start.
+    /// not a form, and the welcome and fly-over are the start.
     var allowsBack: Bool {
         switch self {
-        case .hello, .building: false
+        case .welcome, .intro, .building: false
         default: true
         }
     }
 
-    /// Hello is the cover; everything after it shows progress.
-    var showsProgress: Bool { self != .hello }
+    /// The welcome and fly-over are the cover; the questions show progress.
+    var showsProgress: Bool { !isFullScreen }
+
+    /// Drawn edge to edge, without the navigation bar or bottom bar.
+    var isFullScreen: Bool { self == .welcome || self == .intro }
 }
 
 // MARK: - Building Checklist
@@ -63,7 +70,7 @@ final class OnboardingFlowViewModel {
 
     // MARK: State
 
-    private(set) var step: OnboardingStep = .hello
+    private(set) var step: OnboardingStep = .welcome
     private(set) var movesForward = true
     var profile: OnboardingProfile
     private(set) var buildTasks: [OnboardingBuildTask] = []
@@ -101,23 +108,27 @@ final class OnboardingFlowViewModel {
     /// and with nothing to build or unlock, those two steps as well.
     var steps: [OnboardingStep] {
         guard profile.persona?.asksPortfolioQuestions ?? true else {
-            return [.hello, .persona, .personalize, .signUp]
+            return [.welcome, .intro, .persona, .personalize, .signUp]
         }
         return OnboardingStep.allCases
     }
 
     private var index: Int { steps.firstIndex(of: step) ?? 0 }
 
+    /// The steps that count toward progress: everything after the cover.
+    private var questionSteps: [OnboardingStep] { steps.filter(\.showsProgress) }
+    private var questionIndex: Int { questionSteps.firstIndex(of: step) ?? 0 }
+
     /// Starts at ~10% on the first question so the bar already feels
     /// under way (playbook §5, endowed progress).
     var progress: Double {
-        let questions = Double(max(steps.count - 1, 1))
-        return 0.1 + 0.9 * Double(index) / questions
+        let questions = Double(max(questionSteps.count - 1, 1))
+        return 0.1 + 0.9 * Double(questionIndex) / questions
     }
 
-    /// "Step 3 of 7" — hello isn't counted, it's the cover.
+    /// "Step 3 of 7" — the welcome and fly-over aren't counted.
     var stepLabel: String {
-        "Step \(max(index, 1)) of \(steps.count - 1)"
+        "Step \(questionIndex + 1) of \(questionSteps.count)"
     }
 
     var canContinue: Bool {
@@ -133,7 +144,6 @@ final class OnboardingFlowViewModel {
 
     var continueTitle: String {
         switch step {
-        case .hello:       "Let's go"
         // Tenants have nothing to build; for them this leads to sign-up.
         case .personalize: steps.contains(.building) ? "Build my Purrperty" : "Continue"
         case .unlocked:    "Save my setup"
@@ -145,7 +155,8 @@ final class OnboardingFlowViewModel {
 
     var mascotMood: MascotMood {
         switch step {
-        case .hello:       .cheer
+        case .welcome:     .cheer
+        case .intro:       .happy
         case .persona:     .thinking
         case .units:       profile.unitRange == nil ? .thinking : .happy
         case .headaches:   profile.headaches.isEmpty ? .concerned : .happy
@@ -206,7 +217,17 @@ final class OnboardingFlowViewModel {
         // The building step is a one-way moment; stepping back over it
         // lands on the choice it was building from.
         if previous == .building, index > 1 { previous = steps[index - 2] }
+        // Back from the first question is the welcome, not a replay of
+        // the fly-over.
+        if previous == .intro { previous = .welcome }
         move(to: previous, forward: false)
+    }
+
+    /// The fly-over ended, watched through or skipped.
+    func finishIntro(skipped: Bool) {
+        guard step == .intro else { return }
+        Task { await analytics.track(.onboardingIntroFinished(skipped: skipped)) }
+        advance()
     }
 
     private func move(to next: OnboardingStep, forward: Bool) {

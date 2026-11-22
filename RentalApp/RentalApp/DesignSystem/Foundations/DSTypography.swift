@@ -12,6 +12,22 @@ extension DS {
 
     enum Typography {
 
+        // MARK: Brand
+
+        /// Fredoka, the brand face: the wordmark, the launch and the
+        /// welcome screen. Bundled (`Resources/Fonts`, OFL) and scaled with
+        /// Dynamic Type relative to `style`. Everything else stays on the
+        /// system faces.
+        static func brand(_ size: CGFloat, weight: Font.Weight = .bold, relativeTo style: Font.TextStyle = .largeTitle) -> Font {
+            Font.custom("Fredoka", size: size, relativeTo: style).weight(weight)
+        }
+
+        /// Fixed-size Fredoka, for art that is laid out to the point (the
+        /// launch animation), where scaling would break the composition.
+        static func brandFixed(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+            Font.custom("Fredoka", fixedSize: size).weight(weight)
+        }
+
         // MARK: Display
 
         /// Hero numbers and splash moments.

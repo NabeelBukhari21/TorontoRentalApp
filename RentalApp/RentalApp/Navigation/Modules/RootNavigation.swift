@@ -18,11 +18,12 @@
 //  screen — no coordination, no flags, no chance of the two
 //  disagreeing.
 //
-//  There is no splash screen. Per the HIG (Launching), the launch
-//  screen is the system-generated one — a plain system background —
-//  and while the session check runs (well under a second) the root
-//  shows that same background, so launch reads as the app simply
-//  appearing, then onboarding, sign-in or Home.
+//  The launch screen is the system-generated one in the launch
+//  lavender (`UILaunchScreen` → `LaunchBackground`). Over whatever the
+//  session resolves to, `LaunchSequenceView` plays Purr's launch on that
+//  same colour, so the system hand-off can't be seen. Its six dots turn
+//  while the session check runs, then it fades away. First launch gets
+//  the whole sequence; a returning user only Purr's pop.
 //
 //  Module map:
 //  • RootNavigation            — this launch coordinator
@@ -56,8 +57,17 @@ struct RootNavigation: View {
     /// is owned by the composition root and injected like everything else.
     private var toasts: ToastCenter { container.toasts }
 
+    /// The launch sequence has played; the app underneath takes over.
+    @State private var launchFinished = false
+    private let launchMode: LaunchSequenceMode
+
     init(container: AppContainer) {
         self.container = container
+        // Decided once, before anything renders: the full brand moment
+        // only for someone who has never been through onboarding.
+        let firstLaunch = !container.sessionStore.hasCompletedOnboarding
+            || DebugLaunchOverride.current == .onboarding
+        launchMode = firstLaunch ? .full : .brief
         _session = State(initialValue: SessionViewModel(
             auth: container.auth,
             store: container.sessionStore,
@@ -68,7 +78,18 @@ struct RootNavigation: View {
     }
 
     var body: some View {
-        destination
+        ZStack {
+            destination
+                .accessibilityHidden(!launchFinished)
+
+            if !launchFinished {
+                LaunchSequenceView(mode: launchMode, isReady: session.state != .checking) {
+                    withAnimation(.easeOut(duration: 0.35)) { launchFinished = true }
+                }
+                .transition(.opacity)
+                .zIndex(1)
+            }
+        }
         // One colour-scheme source for the whole app, launch flow included.
         // System is the default (see `InMemoryPreferencesRepository.theme`);
         // Light and Dark remain available in Settings → Appearance.
@@ -100,9 +121,8 @@ struct RootNavigation: View {
     private var destination: some View {
         switch session.state {
         case .checking:
-            // Matches the system-generated launch screen exactly, so the
-            // hand-off from launch screen to app is invisible.
-            Color.plainBackground
+            // Behind the launch sequence, in its colour.
+            DS.Colors.launchBackground
                 .ignoresSafeArea()
                 .accessibilityHidden(true)
 

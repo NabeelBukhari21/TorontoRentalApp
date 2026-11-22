@@ -111,11 +111,13 @@ final class VideoClipPlayer {
 struct VideoClipSurface: UIViewRepresentable {
 
     let player: AVPlayer
+    /// Fit inside the frame (a card) or fill it edge to edge (full screen).
+    var gravity: AVLayerVideoGravity = .resizeAspect
 
     func makeUIView(context: Context) -> PlayerLayerView {
         let view = PlayerLayerView()
         view.playerLayer.player = player
-        view.playerLayer.videoGravity = .resizeAspect
+        view.playerLayer.videoGravity = gravity
         view.backgroundColor = .clear
         view.isUserInteractionEnabled = false
         return view
