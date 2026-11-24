@@ -61,13 +61,13 @@ extension FlyoverStyle {
             .init(t: 12, lat: 43.6436, lon: -79.3815, distance: 1080, heading: 148, pitch: 60),
         ]
         case .hop: [
-            .init(t: 0, lat: 43.6426, lon: -79.3871, distance: 1500, heading: 8, pitch: 52),
-            .init(t: 2.4, lat: 43.6430, lon: -79.3850, distance: 900, heading: 30, pitch: 62),
-            .init(t: 4.2, lat: 43.6525, lon: -79.3835, distance: 1500, heading: 352, pitch: 58),
-            .init(t: 5.8, lat: 43.6677, lon: -79.3948, distance: 640, heading: 330, pitch: 60),
-            .init(t: 7.2, lat: 43.6672, lon: -79.3945, distance: 560, heading: 290, pitch: 62),
-            .init(t: 8.6, lat: 43.6660, lon: -79.3790, distance: 1150, heading: 350, pitch: 56),
-            .init(t: 10.2, lat: 43.6667, lon: -79.3658, distance: 460, heading: 18, pitch: 58),
+            .init(t: 0, lat: 43.6424, lon: -79.3845, distance: 1500, heading: 8, pitch: 52),
+            .init(t: 2.4, lat: 43.6421, lon: -79.3820, distance: 900, heading: 34, pitch: 60),
+            .init(t: 4.2, lat: 43.6510, lon: -79.3900, distance: 1500, heading: 340, pitch: 56),
+            .init(t: 5.8, lat: 43.6578, lon: -79.3997, distance: 700, heading: 330, pitch: 58),
+            .init(t: 7.0, lat: 43.6578, lon: -79.3996, distance: 580, heading: 300, pitch: 60),
+            .init(t: 8.0, lat: 43.6640, lon: -79.3800, distance: 1150, heading: 350, pitch: 56),
+            .init(t: 9.1, lat: 43.6667, lon: -79.3657, distance: 460, heading: 18, pitch: 58),
             .init(t: 12, lat: 43.6669, lon: -79.3655, distance: 400, heading: 40, pitch: 60),
         ]
         case .space: [
@@ -92,9 +92,9 @@ extension FlyoverStyle {
             .init(id: 3, lat: 43.6441, lon: -79.3818, from: 8.1, to: 11, symbol: "door.left.hand.open", title: "Unit 12 is vacant", detail: "Asking $2,400", accent: "gold"),
         ]
         case .hop: [
-            .init(id: 0, lat: 43.6431, lon: -79.3852, from: 1.1, to: 3.6, symbol: "building.2.fill", title: "Condo tower", detail: "Rent recorded · $2,150", accent: "mint"),
-            .init(id: 1, lat: 43.6677, lon: -79.3948, from: 5.0, to: 7.9, symbol: "wrench.and.screwdriver.fill", title: "Student rentals", detail: "Repair booked · Thu 10 am", accent: "blush"),
-            .init(id: 2, lat: 43.6668, lon: -79.3656, from: 9.0, to: 11.2, symbol: "house.fill", title: "Family house", detail: "Lease renews in 60 days", accent: "gold"),
+            .init(id: 0, lat: 43.6421, lon: -79.3817, from: 0.9, to: 3.5, symbol: "building.2.fill", title: "Condo tower", detail: "Rent recorded · $2,150", accent: "mint"),
+            .init(id: 1, lat: 43.6580, lon: -79.3994, from: 5.0, to: 7.4, symbol: "wrench.and.screwdriver.fill", title: "Student rentals", detail: "Repair booked · Thu 10 am", accent: "blush"),
+            .init(id: 2, lat: 43.6667, lon: -79.3657, from: 8.7, to: 11.2, symbol: "house.fill", title: "Family house", detail: "Lease renews in 60 days", accent: "gold"),
         ]
         case .space:
             zip(0..., [(43.6494, -79.3795), (43.6532, -79.3832), (43.6465, -79.3870), (43.6560, -79.3800), (43.6505, -79.3722), (43.6590, -79.3900), (43.6450, -79.3760), (43.6545, -79.3950)]).map { i, p in
@@ -114,8 +114,8 @@ extension FlyoverStyle {
         ]
         case .hop: [
             .init(id: 0, from: 0.6, to: 3.6, text: "One tower or twenty doors"),
-            .init(id: 1, from: 4.6, to: 7.9, text: "Student rooms, always in hand"),
-            .init(id: 2, from: 8.4, to: 10.1, text: "Right down to your street"),
+            .init(id: 1, from: 4.6, to: 7.5, text: "Student rooms, always in hand"),
+            .init(id: 2, from: 7.9, to: 10.2, text: "Right down to your street"),
         ]
         case .space: [
             .init(id: 0, from: 0.5, to: 3.0, text: "Somewhere down there…"),

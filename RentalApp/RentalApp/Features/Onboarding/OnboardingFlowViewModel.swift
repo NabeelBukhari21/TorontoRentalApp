@@ -202,7 +202,7 @@ final class OnboardingFlowViewModel {
         // One
         case [.lateRent]: .rentOverdue
         case [.repairs]: .builder
-        case [.tenantMessages]: .newMessage
+        case [.tenantMessages]: .askQuestion
         case [.paperwork]: .analytics
         case [.findingTenants]: .vacancy
         // Two
@@ -217,12 +217,12 @@ final class OnboardingFlowViewModel {
         case [.tenantMessages, .findingTenants]: .notFound
         case [.paperwork, .findingTenants]: .sneeze
         // Three
-        case [.lateRent, .repairs, .tenantMessages]: .melting
-        case [.lateRent, .repairs, .paperwork]: .dramaticFaint
+        case [.lateRent, .repairs, .tenantMessages]: .inProgress
+        case [.lateRent, .repairs, .paperwork]: .yogaStretch
         case [.lateRent, .repairs, .findingTenants]: .peekaboo
         case [.lateRent, .tenantMessages, .paperwork]: .blankStare
         case [.lateRent, .tenantMessages, .findingTenants]: .favouriteTaken
-        case [.lateRent, .paperwork, .findingTenants]: .ghostMode
+        case [.lateRent, .paperwork, .findingTenants]: .permissionDenied
         case [.repairs, .tenantMessages, .paperwork]: .drumRoll
         case [.repairs, .tenantMessages, .findingTenants]: .shakeDry
         case [.repairs, .paperwork, .findingTenants]: .karateChop

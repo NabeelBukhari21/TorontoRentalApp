@@ -7,6 +7,7 @@
 //
 //      -PurrpertyStartAt onboarding -PurrpertyAutopilot YES
 //      [-PurrpertyAutopilotStop goal]   stop on that step, answered
+//      [-PurrpertyAutopilotHeadaches YES]   then every combination of headaches
 //
 
 #if DEBUG
@@ -57,6 +58,12 @@ enum OnboardingAutopilot {
             default: break
             }
             await pause(2.4)
+            if step == .headaches, defaults.bool(forKey: "PurrpertyAutopilotHeadaches") {
+                for bits in 1..<(1 << OnboardingHeadache.allCases.count) {
+                    viewModel.profile.headaches = Set(OnboardingHeadache.allCases.enumerated().filter { bits & (1 << $0.offset) != 0 }.map(\.element))
+                    try? await Task.sleep(for: .seconds(2))
+                }
+            }
             if stop == step.rawValue { return }
             if step != .signUp { viewModel.advance() }
         }

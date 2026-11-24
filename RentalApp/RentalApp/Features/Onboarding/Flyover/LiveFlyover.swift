@@ -31,7 +31,10 @@ struct LiveFlyover: View {
 
     var body: some View {
         ZStack {
-            picture.ignoresSafeArea()
+            Color.black
+                .overlay { picture }
+                .clipped()
+                .ignoresSafeArea()
 
             // Keeps the caption and Skip readable over a bright city.
             VStack {
@@ -110,20 +113,50 @@ struct LiveFlyover: View {
 
     private var cards: some View {
         GeometryReader { proxy in
-            ForEach(director.style.stops) { stop in
-                if let point = director.points[stop.id], time > stop.from, time < stop.to, !isFinale {
-                    FlyoverPin(stop: stop, age: time - stop.from, side: side(stop.id), edge: proxy.size.width, x: point.x)
-                        .position(x: point.x, y: max(point.y, 330))
-                        .transition(.scale(scale: 0.6).combined(with: .opacity))
-                }
+            ForEach(placements(in: proxy.size)) { spot in
+                FlyoverPin(stop: spot.stop, age: time - spot.stop.from, stem: spot.stem, shift: spot.shift)
+                    .position(spot.point)
+                    .transition(.scale(scale: 0.6).combined(with: .opacity))
             }
         }
-        .animation(DS.Motion.bouncy, value: director.style.stops.map { time > $0.from && time < $0.to })
+        .animation(DS.Motion.bouncy, value: placements(in: CGSize(width: 402, height: 874)).map(\.id))
         .animation(.easeOut(duration: 0.25), value: isFinale)
     }
 
-    /// Stems of different heights, so neighbours don't overlap.
-    private func side(_ id: Int) -> CGFloat { [70, 128, 12, 186][id % 4] }
+    private struct Spot: Identifiable {
+        let stop: FlyoverStop
+        let point: CGPoint
+        let stem, shift: CGFloat
+        var id: Int { stop.id }
+    }
+
+    /// Below the caption.
+    private static let ceiling: CGFloat = 262
+    private static let preferredStems: [CGFloat] = [116, 190, 60, 250]
+
+    /// Each card rises from its place until it's clear of the others; one
+    /// with no room, or whose place has left the screen, waits.
+    private func placements(in size: CGSize) -> [Spot] {
+        guard !isFinale else { return [] }
+        var taken: [CGRect] = []
+        var spots: [Spot] = []
+        for stop in director.style.stops where time > stop.from && time < stop.to {
+            guard let point = director.points[stop.id],
+                  point.x > 14, point.x < size.width - 14, point.y < size.height - 60 else { continue }
+            let card = stop.title.isEmpty ? CGSize(width: 46, height: 46) : FlyoverPin.card
+            let half = card.width / 2 + 12
+            let x = min(max(point.x, half), size.width - half)
+            var y = stop.title.isEmpty ? point.y - 40 : max(point.y - Self.preferredStems[stop.id % 4], Self.ceiling)
+            func frame() -> CGRect { CGRect(x: x - card.width / 2, y: y - card.height / 2, width: card.width, height: card.height) }
+            while let hit = taken.first(where: { $0.insetBy(dx: -6, dy: -6).intersects(frame()) }) {
+                y = hit.minY - card.height / 2 - 8
+            }
+            guard y >= Self.ceiling - 1, point.y - y > card.height / 2 else { continue }
+            taken.append(frame())
+            spots.append(Spot(stop: stop, point: point, stem: point.y - y, shift: x - point.x))
+        }
+        return spots
+    }
 
     // MARK: Words
 
@@ -197,12 +230,10 @@ struct LiveFlyover: View {
 private struct FlyoverPin: View {
     let stop: FlyoverStop
     let age: Double
-    let side: CGFloat
-    /// The screen's width and the pin's place on it, to keep the card on.
-    let edge: CGFloat
-    let x: CGFloat
+    /// How far up the card is, and how far aside to stay on screen.
+    let stem, shift: CGFloat
 
-    private static let cardWidth: CGFloat = 214
+    static let card = CGSize(width: 214, height: 64)
     private var accent: DSAccent {
         switch stop.accent {
         case "mint": .mint
@@ -213,11 +244,6 @@ private struct FlyoverPin: View {
         }
     }
     private var hasCard: Bool { !stop.title.isEmpty }
-    private var stem: CGFloat { hasCard ? 46 + side : 26 }
-    private var shift: CGFloat {
-        let half = Self.cardWidth / 2 + 12
-        return min(max(x, half), max(edge - half, half)) - x
-    }
 
     var body: some View {
         ZStack {
@@ -232,17 +258,17 @@ private struct FlyoverPin: View {
             Circle().fill(accent.fill).overlay(Circle().strokeBorder(.white, lineWidth: 3))
                 .frame(width: 16, height: 16)
             Group {
-                if hasCard { card.offset(x: shift) } else {
+                if hasCard { label.offset(x: shift) } else {
                     ClayToken(symbol: stop.symbol, accent: accent, size: 46)
                         .shadow(color: .black.opacity(0.35), radius: 8, y: 6)
                 }
             }
-            .offset(y: -stem - 22)
+            .offset(y: -stem)
         }
         .frame(width: 1, height: 1)
     }
 
-    private var card: some View {
+    private var label: some View {
         HStack(spacing: 10) {
             ClayToken(symbol: stop.symbol, accent: accent, size: 42)
             VStack(alignment: .leading, spacing: 0) {
@@ -257,8 +283,8 @@ private struct FlyoverPin: View {
             .minimumScaleFactor(0.8)
             Spacer(minLength: 0)
         }
-        .padding(10)
-        .frame(width: Self.cardWidth)
+        .padding(.horizontal, 10)
+        .frame(width: Self.card.width, height: Self.card.height)
         .background {
             RoundedRectangle(cornerRadius: 22, style: .continuous).fill(DS.Colors.surfaceRaised)
                 .shadow(color: .black.opacity(0.4), radius: 14, y: 10)

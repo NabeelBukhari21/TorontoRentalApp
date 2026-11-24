@@ -164,6 +164,12 @@ colourful, for students, on a white background.
     the Rive canvas while animating), `Clay`, `SceneDepth`,
     `LiquidBackdrop`. Record it with `-PurrpertyStartAt onboarding
     -PurrpertyAutopilot YES` (see `OnboardingAutopilot`).
+  - live 3D fly-over of Toronto (`Features/Onboarding/Flyover`, three
+    camera paths A/B/C, MapKit imagery; film when offline, in the simulator
+    and for Reduce Motion). `tools/flyover` previews a path on a Mac
+    (`-PurrpertyFlyoverFrames`): run ONE renderer at a time. Street
+    lookup and check: `Services/Address/AddressSearch`. Tap-away keyboard:
+    `Core/Keyboard`
   - Rive Purr in four looks, red and gold palette
   - "Peek-a-roof" logo: layered Liquid Glass `AppIcon.icon` plus the
     in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`
