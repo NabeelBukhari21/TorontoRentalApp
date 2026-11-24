@@ -486,3 +486,17 @@ enum MaintenanceMockData {
         return events.reversed()
     }
 }
+
+// MARK: - Purr
+
+extension MaintenanceTicket {
+    /// Purr acting out where this request is in its workflow.
+    var purrMood: PurrMood {
+        switch status {
+        case .new:        priority == .urgent ? .urgentIssue : .newRequest
+        case .inProgress: .inProgress
+        case .scheduled:  .scheduledVisit
+        case .done:       .resolved
+        }
+    }
+}

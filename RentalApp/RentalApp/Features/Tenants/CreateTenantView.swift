@@ -168,7 +168,7 @@ struct CreateTenantView: View {
         VStack(spacing: DS.Spacing.xl) {
             Spacer()
 
-            AuthSuccessBadge(tint: DS.Colors.brand)
+            PurrMascot(mood: .keysReady, size: 150)
 
             VStack(spacing: DS.Spacing.xs) {
                 Text("\(viewModel.name) added")

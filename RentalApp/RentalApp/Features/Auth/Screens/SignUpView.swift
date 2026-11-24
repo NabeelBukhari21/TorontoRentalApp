@@ -20,7 +20,8 @@ struct SignUpView: View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
                 title: "Create your account",
-                subtitle: "Start managing properties in minutes"
+                subtitle: "Start managing properties in minutes",
+                mood: .signUp
             )
             .dsEntrance(index: 0)
 

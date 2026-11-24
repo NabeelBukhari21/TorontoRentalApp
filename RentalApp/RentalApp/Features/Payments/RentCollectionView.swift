@@ -89,6 +89,12 @@ struct RentCollectionView: View {
         let roll = viewModel.roll
 
         return Section {
+            PurrNote(
+                mood: roll.owingCount > 0 ? .rentDue : (roll.collectionRate >= 1 ? .moneyDance : .paymentHistory),
+                text: roll.owingCount > 0
+                    ? "\(roll.owingCount) \(roll.owingCount == 1 ? "tenant owes" : "tenants owe") rent."
+                    : (roll.collectionRate >= 1 ? "All of this month's rent is in!" : "No rent is overdue.")
+            )
             VStack(alignment: .leading, spacing: 8) {
                 LabeledContent("Collected") {
                     Text("\(roll.collected.formatted(.cad)) of \(roll.expected.formatted(.cad))")

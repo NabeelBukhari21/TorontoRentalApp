@@ -50,13 +50,17 @@ struct VendorJobDetailView: View {
     private func content(_ job: MaintenanceTicket) -> some View {
         List {
             Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(job.title)
-                        .font(.title3.bold())
-                    if !job.description.isEmpty {
-                        Text(job.description)
-                            .foregroundStyle(.secondary)
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(job.title)
+                            .font(.title3.bold())
+                        if !job.description.isEmpty {
+                            Text(job.description)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    PurrMascot(mood: job.status == .inProgress ? .builder : job.purrMood, size: 80)
                 }
                 .padding(.vertical, 4)
             }

@@ -9,80 +9,6 @@
 
 import SwiftUI
 
-// MARK: - AI Orb
-
-/// The copilot's presence — a golden core with an orbiting satellite,
-/// echoing the Purrperty logo. Spins faster while "working".
-struct AIOrb: View {
-
-    var size: CGFloat = 64
-    var isWorking: Bool = false
-
-    @State private var breathe = false
-    @State private var orbit: Double = 0
-
-    var body: some View {
-        ZStack {
-            // Halo.
-            Circle()
-                .fill(DS.Colors.accentGold.opacity(0.40))
-                .frame(width: size * 0.9, height: size * 0.9)
-                .blur(radius: size * 0.22)
-                .scaleEffect(breathe ? 1.25 : 0.9)
-
-            // Core.
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [DS.Colors.onFixedColor, DS.Colors.accentGold, DS.Colors.accentBlush],
-                        center: UnitPoint(x: 0.35, y: 0.3),
-                        startRadius: 0,
-                        endRadius: size * 0.4
-                    )
-                )
-                .frame(width: size * 0.52, height: size * 0.52)
-                .overlay(
-                    Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1)
-                )
-                .scaleEffect(breathe ? 1.05 : 0.96)
-
-            // Orbit ring + satellite.
-            Ellipse()
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.clear, DS.Colors.accentSky.opacity(0.85), .clear],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    lineWidth: 1
-                )
-                .frame(width: size, height: size * 0.38)
-                .rotationEffect(.degrees(-14))
-
-            ZStack {
-                Circle()
-                    .fill(DS.Colors.accentMint)
-                    .frame(width: size * 0.09, height: size * 0.09)
-                    .shadow(color: DS.Colors.accentMint.opacity(0.9), radius: size * 0.05)
-                    .offset(x: size * 0.48)
-            }
-            .rotationEffect(.degrees(orbit))
-            .scaleEffect(y: 0.38)
-            .rotationEffect(.degrees(-14))
-        }
-        .frame(width: size, height: size)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-                breathe = true
-            }
-            withAnimation(.linear(duration: 5).repeatForever(autoreverses: false)) {
-                orbit += 360
-            }
-        }
-        .animation(DS.Motion.smooth, value: isWorking)
-    }
-}
-
 // MARK: - Obsidian Panel
 
 /// The copilot's signature surface: obsidian gradient + champagne hairline.
@@ -393,14 +319,14 @@ struct AILoadingState: View {
     var body: some View {
         VStack(spacing: DS.Spacing.lg) {
             HStack(spacing: DS.Spacing.md) {
-                AIOrb(size: 56, isWorking: true)
+                PurrMascot(mood: .assistantThinking, size: 84)
 
                 VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                     Text("Analyzing your portfolio…")
                         .font(DS.Typography.headline)
                         .foregroundStyle(DS.Colors.textPrimary)
 
-                    Text("Reviewing 12 properties, 8 requests, 4 renewals")
+                    Text("Reading your properties, requests and renewals")
                         .font(DS.Typography.caption)
                         .foregroundStyle(DS.Colors.textTertiary)
                 }
@@ -424,7 +350,7 @@ struct AILoadingState: View {
 
         ScrollView {
             VStack(spacing: DS.Spacing.lg) {
-                AIOrb(size: 80)
+                PurrMascot(mood: .assistantIdle, size: 96)
 
                 AIActionCard(
                     action: AIRecommendedAction(

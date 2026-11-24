@@ -18,11 +18,29 @@ struct LoginView: View {
     /// stored — the one-tap path back in for a returning user.
     var biometricUnlock: BiometricUnlockOption? = nil
 
+    private enum Field { case email, password }
+    @State private var focus: Field?
+
+    /// Purr peeks at the email and looks away from the password.
+    private var mood: PurrMood {
+        if viewModel.isLoading { return .loading }
+        switch focus {
+        case .password: return .passwordHidden
+        case .email:    return .loginTyping
+        case nil:       return viewModel.formError == nil ? .login : .loginFailed
+        }
+    }
+
+    private func focusChanged(_ field: Field, _ focused: Bool) {
+        if focused { focus = field } else if focus == field { focus = nil }
+    }
+
     var body: some View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
                 title: "Welcome back",
-                subtitle: "Sign in to manage your portfolio"
+                subtitle: "Sign in to manage your portfolio",
+                mood: mood
             )
             .dsEntrance(index: 0)
 
@@ -36,7 +54,8 @@ struct LoginView: View {
                         textContentType: .emailAddress,
                         error: viewModel.emailError,
                         showsValidCheck: viewModel.emailLooksValid,
-                        shakeTrigger: viewModel.shakeTrigger
+                        shakeTrigger: viewModel.shakeTrigger,
+                        onFocusChange: { focusChanged(.email, $0) }
                     )
                     .onChange(of: viewModel.email) { _, _ in
                         viewModel.emailError = nil
@@ -49,7 +68,8 @@ struct LoginView: View {
                         isSecure: true,
                         textContentType: .password,
                         error: viewModel.passwordError,
-                        shakeTrigger: viewModel.shakeTrigger
+                        shakeTrigger: viewModel.shakeTrigger,
+                        onFocusChange: { focusChanged(.password, $0) }
                     )
                     .onChange(of: viewModel.password) { _, _ in
                         viewModel.passwordError = nil

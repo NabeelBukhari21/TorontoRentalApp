@@ -7,8 +7,8 @@
 //  Purr is a Rive rig (`Resources/Mascot/purr*.riv`, made in
 //  /Users/admin/Projects/Rive/rentos-mascot). A `PurrMood` picks a pose,
 //  face, prop and effect; changing it blends Purr into the new moment.
-//  `PurrController` and `PurrMood` in `Purr/` are the generated vendor
-//  files; this view adds what the app needs on top:
+//  `PurrMood` in `Purr/` is the generated catalogue and `PurrController`
+//  drives the rig; this view adds what the app needs on top:
 //
 //  • the look the user picked (Settings ▸ Appearance), from the environment
 //  • Reduce Motion: the pose blends in, then Purr holds still
@@ -17,8 +17,6 @@
 //  • VoiceOver: decorative; the words on screen carry the meaning
 //
 
-import Combine
-import RiveRuntime
 import SwiftUI
 
 // MARK: - Look
@@ -75,7 +73,7 @@ private struct PurrCanvas: View {
     let surprisesOnTap: Bool
     let onTap: (() -> Void)?
 
-    @StateObject private var controller: PurrController
+    @State private var controller: PurrController
     @State private var reaction: PurrMood?
     @State private var taps = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -85,14 +83,14 @@ private struct PurrCanvas: View {
         self.isInteractive = isInteractive
         self.surprisesOnTap = surprisesOnTap
         self.onTap = onTap
-        _controller = StateObject(wrappedValue: PurrController(mood: mood, style: style))
+        _controller = State(initialValue: PurrController(mood: mood, style: style))
     }
 
     /// What Purr is doing right now: a reaction if one is playing.
     private var current: PurrMood { reaction ?? mood }
 
     var body: some View {
-        controller.riveViewModel.view()
+        PurrRigView(controller: controller)
             .contentShape(.rect)
             .onTapGesture {
                 guard isInteractive else { return }
@@ -103,15 +101,14 @@ private struct PurrCanvas: View {
             .sensoryFeedback(.impact(weight: .light), trigger: taps)
             // Blend into the new moment; under Reduce Motion, settle and hold.
             .task(id: current) {
+                controller.isPaused = false
                 controller.set(current)
-                guard reduceMotion else {
-                    controller.riveViewModel.play()
-                    return
-                }
-                controller.riveViewModel.play()
+                guard reduceMotion else { return }
+                // Loads before the timer starts, so there is a pose to hold.
+                await controller.load()
                 try? await Task.sleep(for: .milliseconds(700))
                 guard !Task.isCancelled else { return }
-                controller.riveViewModel.pause()
+                controller.isPaused = true
             }
     }
 
@@ -125,6 +122,34 @@ private struct PurrCanvas: View {
         }
     }
 }
+
+// MARK: - Gallery
+
+#if DEBUG
+/// Every mood and look in one screen, for checking on device.
+struct PurrGallery: View {
+
+    @State private var mood: PurrMood = .splash
+    @State private var style: PurrStyle = .classic
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Picker("Look", selection: $style) {
+                ForEach(PurrStyle.allCases) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            PurrMascot(mood: mood, size: 260)
+                .environment(\.purrStyle, style)
+            Text(mood.rawValue).font(.headline)
+            Text(mood.section).font(.caption).foregroundStyle(.secondary)
+            List(PurrMood.allCases) { option in
+                Button(option.rawValue) { mood = option }
+            }
+        }
+        .padding()
+    }
+}
+#endif
 
 // MARK: - Previews
 
@@ -156,6 +181,26 @@ struct PurrLabel: View {
             title
         } icon: {
             PurrMascot(mood: mood, size: 132)
+        }
+    }
+}
+
+// MARK: - Note Row
+
+/// Purr beside one line of fact, as the first row of a native list
+/// ("1 month of rent is owing."). States only what the screen shows.
+struct PurrNote: View {
+
+    let mood: PurrMood
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            PurrMascot(mood: mood, size: 76)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

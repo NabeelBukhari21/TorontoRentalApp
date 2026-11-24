@@ -19,7 +19,8 @@ struct RoleSelectionView: View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
                 title: "How will you use Purrperty?",
-                subtitle: "This shapes your workspace. You can change it later."
+                subtitle: "This shapes your workspace. You can change it later.",
+                mood: .welcome
             )
             .dsEntrance(index: 0)
 

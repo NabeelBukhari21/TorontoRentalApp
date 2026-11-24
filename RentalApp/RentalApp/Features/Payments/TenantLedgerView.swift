@@ -86,6 +86,10 @@ struct TenantLedgerView: View {
     private func list(_ ledger: TenantLedger) -> some View {
         List {
             Section {
+                PurrNote(
+                    mood: ledger.balance > 0 ? .rentOverdue : .streak,
+                    text: ledger.balance > 0 ? "Rent is owing on this account." : "Nothing is owing. All rent so far is recorded."
+                )
                 LabeledContent("Balance") {
                     if ledger.balance > 0 {
                         Text("\(ledger.balance.formatted(.cad)) owing")

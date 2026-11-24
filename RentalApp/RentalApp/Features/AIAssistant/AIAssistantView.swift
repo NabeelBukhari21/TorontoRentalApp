@@ -60,7 +60,7 @@ struct AIAssistantView: View {
         AIHeroPanel {
             VStack(alignment: .leading, spacing: DS.Spacing.lg) {
                 HStack(spacing: DS.Spacing.md) {
-                    AIOrb(size: 52, isWorking: viewModel.isWorking)
+                    PurrMascot(mood: viewModel.isWorking ? .assistantThinking : .assistantAnswer, size: 72)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("DAILY BRIEFING")
@@ -109,8 +109,7 @@ struct AIAssistantView: View {
             if viewModel.actions.isEmpty {
                 DSCard(style: .raised) {
                     HStack(spacing: DS.Spacing.md) {
-                        Image(systemName: "checkmark.seal.fill")
-                            .foregroundStyle(DS.Colors.success)
+                        PurrMascot(mood: .allCaughtUp, size: 64)
                         Text("All caught up — nothing needs your attention.")
                             .font(DS.Typography.footnote)
                             .foregroundStyle(DS.Colors.textSecondary)
@@ -163,9 +162,7 @@ struct AIAssistantView: View {
 
             if viewModel.isWorking {
                 HStack(spacing: DS.Spacing.sm) {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(DS.Colors.brand)
+                    PurrMascot(mood: .assistantThinking, size: 48, isInteractive: false)
 
                     Text("Copilot is working on it…")
                         .font(DS.Typography.caption)

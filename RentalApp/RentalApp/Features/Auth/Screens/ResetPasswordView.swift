@@ -32,7 +32,8 @@ struct ResetPasswordView: View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
                 title: "Set a new password",
-                subtitle: "Make it strong — you won't need to remember it here again"
+                subtitle: "Make it strong — you won't need to remember it here again",
+                mood: .passwordHidden
             )
             .dsEntrance(index: 0)
 
@@ -104,7 +105,7 @@ struct ResetPasswordView: View {
 
     private var successContent: some View {
         VStack(spacing: DS.Spacing.xxl) {
-            AuthSuccessBadge()
+            PurrMascot(mood: .loginSuccess, size: 150)
 
             VStack(spacing: DS.Spacing.sm) {
                 Text("Password updated")

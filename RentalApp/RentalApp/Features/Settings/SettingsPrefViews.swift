@@ -417,14 +417,14 @@ struct SettingsAIPage: View {
             // Copilot identity.
             AIHeroPanel {
                 HStack(spacing: DS.Spacing.lg) {
-                    AIOrb(size: 52)
+                    PurrMascot(mood: .assistantIdle, size: 72)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Purrperty Intelligence")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(DS.Colors.textOnBrand)
 
-                        Text("v2 · trained on property operations")
+                        Text("Choose how much Copilot does for you")
                             .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(DS.Colors.textOnBrand)
                     }

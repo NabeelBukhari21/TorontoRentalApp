@@ -100,10 +100,15 @@ struct MaintenanceDetailView: View {
                         .foregroundStyle(DS.Colors.textTertiary)
                 }
 
-                Text(ticket.title)
-                    .font(DS.Typography.title2)
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .center, spacing: DS.Spacing.md) {
+                    Text(ticket.title)
+                        .font(DS.Typography.title2)
+                        .foregroundStyle(DS.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // Purr follows the request through its workflow.
+                    PurrMascot(mood: ticket.purrMood, size: 92)
+                }
 
                 if !ticket.description.isEmpty {
                     Text(ticket.description)

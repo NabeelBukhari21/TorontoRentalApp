@@ -29,16 +29,16 @@ struct AuthCard<Content: View>: View {
 
 // MARK: - Header
 
-/// Mini logo tile + title + subtitle above each form.
+/// Purr acting out the step, with a title and subtitle above each form.
 struct AuthHeader: View {
 
     let title: String
     let subtitle: String
+    let mood: PurrMood
 
     var body: some View {
         VStack(spacing: DS.Spacing.md) {
-            PurrpertyLogoTile(size: 64)
-                .dsFloating(amplitude: 4, duration: 3.6)
+            PurrMascot(mood: mood, size: 128)
 
             VStack(spacing: DS.Spacing.xs) {
                 Text(title)
@@ -190,46 +190,6 @@ struct AuthBackButton: View {
     }
 }
 
-// MARK: - Success Badge
-
-/// Ring that draws itself, then a checkmark springs in. For success states.
-struct AuthSuccessBadge: View {
-
-    var tint: Color = DS.Colors.success
-
-    @State private var ringProgress: CGFloat = 0
-    @State private var checkVisible = false
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(tint.opacity(0.15))
-                .frame(width: 92, height: 92)
-                .blur(radius: 8)
-
-            Circle()
-                .trim(from: 0, to: ringProgress)
-                .stroke(tint, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                .frame(width: 76, height: 76)
-                .rotationEffect(.degrees(-90))
-
-            Image(systemName: "checkmark")
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(tint)
-                .scaleEffect(checkVisible ? 1 : 0.3)
-                .opacity(checkVisible ? 1 : 0)
-        }
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.6)) {
-                ringProgress = 1
-            }
-            withAnimation(DS.Motion.bouncy.delay(0.45)) {
-                checkVisible = true
-            }
-        }
-    }
-}
-
 // MARK: - Form Error
 
 /// Whole-form failure banner — wrong credentials, taken email, network.
@@ -370,11 +330,10 @@ struct AuthDemoHint: View {
         SplashBackground()
 
         VStack(spacing: DS.Spacing.xl) {
-            AuthHeader(title: "Welcome back", subtitle: "Sign in to manage your portfolio")
+            AuthHeader(title: "Welcome back", subtitle: "Sign in to manage your portfolio", mood: .login)
             AuthSocialButton(provider: .apple) {}
             AuthSocialButton(provider: .google) {}
             AuthDivider()
-            AuthSuccessBadge()
             AuthFooterLink(prompt: "New here?", actionTitle: "Create account") {}
         }
         .padding(DS.Spacing.xxl)

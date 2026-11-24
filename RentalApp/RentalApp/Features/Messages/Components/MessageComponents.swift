@@ -340,6 +340,10 @@ struct TypingIndicatorBubble: View {
             .background(DS.Colors.surfaceRaised, in: Capsule())
             .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
 
+            // Purr types along while you wait.
+            PurrMascot(mood: .typing, size: 48, isInteractive: false)
+                .padding(.vertical, -4)
+
             Spacer(minLength: 48)
         }
         .transition(.scale(scale: 0.7, anchor: .bottomLeading).combined(with: .opacity))

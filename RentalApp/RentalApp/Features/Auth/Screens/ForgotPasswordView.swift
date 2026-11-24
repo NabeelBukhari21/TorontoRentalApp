@@ -31,7 +31,8 @@ struct ForgotPasswordView: View {
         VStack(spacing: DS.Spacing.xxl) {
             AuthHeader(
                 title: "Forgot password?",
-                subtitle: "Enter your email and we'll send you a reset link"
+                subtitle: "Enter your email and we'll send you a reset link",
+                mood: .forgotPassword
             )
             .dsEntrance(index: 0)
 
@@ -82,7 +83,7 @@ struct ForgotPasswordView: View {
 
     private var successContent: some View {
         VStack(spacing: DS.Spacing.xxl) {
-            AuthSuccessBadge()
+            PurrMascot(mood: .resetEmailSent, size: 150)
 
             VStack(spacing: DS.Spacing.sm) {
                 Text("Check your inbox")

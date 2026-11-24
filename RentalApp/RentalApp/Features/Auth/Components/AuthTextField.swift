@@ -41,6 +41,8 @@ struct AuthTextField: View {
     /// Shows an animated checkmark when true (e.g. live email validity).
     var showsValidCheck: Bool = false
     var shakeTrigger: Int = 0
+    /// Focus moving in or out, so Purr can look away from a password.
+    var onFocusChange: ((Bool) -> Void)? = nil
 
     @FocusState private var isFocused: Bool
     @State private var isPasswordVisible = false
@@ -83,6 +85,7 @@ struct AuthTextField: View {
                     .textInputAutocapitalization(keyboardType == .emailAddress ? .never : .sentences)
                     .autocorrectionDisabled(keyboardType == .emailAddress || isSecure)
                     .focused($isFocused)
+                    .onChange(of: isFocused) { _, focused in onFocusChange?(focused) }
                     // The floating label is a separate `Text`, so the field
                     // itself has no visible name — give VoiceOver one.
                     .accessibilityLabel(label)

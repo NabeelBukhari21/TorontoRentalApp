@@ -14,8 +14,6 @@
 //
 
 #if DEBUG
-import Combine
-import RiveRuntime
 import SwiftUI
 
 struct PurrStillStudio: View {
@@ -36,17 +34,17 @@ struct PurrStillStudio: View {
 
     let request: Request
 
-    @StateObject private var controller: PurrController
+    @State private var controller: PurrController
     @State private var isDark = false
 
     init(request: Request) {
         self.request = request
-        _controller = StateObject(wrappedValue: PurrController(mood: request.mood, style: request.style))
+        _controller = State(initialValue: PurrController(mood: request.mood, style: request.style))
     }
 
     var body: some View {
         GeometryReader { proxy in
-            controller.riveViewModel.view()
+            PurrRigView(controller: controller)
                 .frame(width: proxy.size.width, height: proxy.size.width)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -54,9 +52,9 @@ struct PurrStillStudio: View {
         .ignoresSafeArea()
         .statusBarHidden()
         .task {
-            controller.set(request.mood)
+            await controller.load()
             try? await Task.sleep(for: .seconds(1.6))
-            controller.riveViewModel.pause()
+            controller.isPaused = true
             try? await Task.sleep(for: .seconds(1.4))
             isDark = true
         }

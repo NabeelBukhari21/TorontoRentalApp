@@ -100,6 +100,9 @@ struct SettingsHubView: View {
                     .disabled(session.isSigningOut)
                     .dsEntrance(index: 5)
 
+                    PurrMascot(mood: session.isSigningOut || showSignOutDialog ? .signOut : .settings, size: 120, surprisesOnTap: true)
+                        .frame(maxWidth: .infinity)
+
                     Text("Purrperty 1.0 · Made in Toronto")
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(DS.Colors.textTertiary)

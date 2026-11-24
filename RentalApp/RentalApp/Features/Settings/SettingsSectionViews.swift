@@ -18,7 +18,10 @@ struct SettingsSectionView: View {
             DSAmbientBackground()
 
             ScrollView(showsIndicators: false) {
-                Group {
+                VStack(spacing: DS.Spacing.lg) {
+                    if let mood = section.purrMood {
+                        PurrMascot(mood: mood, size: 120)
+                    }
                     switch section {
                     case .profile: SettingsProfilePage()
                     case .organization: SettingsOrganizationPage()
@@ -37,6 +40,21 @@ struct SettingsSectionView: View {
         }
         .navigationTitle(section.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private extension SettingsSection {
+    /// Purr at the top of the page. Nil where the page already leads with
+    /// a face (the avatar, Purr's looks, Copilot).
+    var purrMood: PurrMood? {
+        switch self {
+        case .profile, .appearance, .aiPreferences: nil
+        case .organization:  .properties
+        case .team:          .inviteFriends
+        case .billing:       .receipt
+        case .notifications: .notifications
+        case .integrations:  .comingSoon
+        }
     }
 }
 

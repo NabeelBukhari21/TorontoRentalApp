@@ -30,7 +30,8 @@ struct MFAChallengeView: View {
             AuthHeader(
                 title: "Verify it's you",
                 subtitle: challenge.hint.map { "\(challenge.method.instruction) \($0)" }
-                    ?? challenge.method.instruction
+                    ?? challenge.method.instruction,
+                mood: session.mfaError == nil ? .twoFactor : .loginFailed
             )
             .dsEntrance(index: 0)
 
