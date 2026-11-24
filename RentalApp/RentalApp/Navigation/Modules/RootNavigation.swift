@@ -144,6 +144,7 @@ struct RootNavigation: View {
                 onSignedUp: { session.finishOnboarding(with: $0) },
                 onSignIn: { session.completeOnboarding() }
             )
+            .id(session.onboardingRun)
             .transition(.opacity)
 
         case .unauthenticated:

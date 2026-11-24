@@ -26,6 +26,11 @@
 //  are left untouched, so removing the argument returns to normal launch.
 //  It exists in DEBUG builds only — release builds can't be steered.
 //
+//  An onboarding-only build needs no argument (so it works from the Home
+//  Screen icon): build with the ONBOARDING_ONLY compilation condition and
+//  the app opens at onboarding every time, runs it through to the trial,
+//  and starts again instead of going into the app.
+//
 //  Set it in Xcode via the "RentalApp (Onboarding)" scheme, or
 //  Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Arguments.
 //
@@ -45,10 +50,20 @@ enum DebugLaunchOverride: String, CaseIterable, Sendable {
     /// `UserDefaults` argument domain, so no parsing is needed.
     static let argumentKey = "PurrpertyStartAt"
 
+    /// This build is only onboarding. See the note above.
+    static var isOnboardingOnly: Bool {
+        #if DEBUG && ONBOARDING_ONLY
+        true
+        #else
+        false
+        #endif
+    }
+
     /// The override for this launch, if any. Always `nil` outside DEBUG.
     static var current: DebugLaunchOverride? {
         #if DEBUG
-        UserDefaults.standard.string(forKey: argumentKey).flatMap(DebugLaunchOverride.init(rawValue:))
+        if isOnboardingOnly { return .onboarding }
+        return UserDefaults.standard.string(forKey: argumentKey).flatMap(DebugLaunchOverride.init(rawValue:))
         #else
         nil
         #endif

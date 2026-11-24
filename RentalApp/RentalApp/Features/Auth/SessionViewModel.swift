@@ -30,6 +30,9 @@ final class SessionViewModel {
 
     private(set) var state: AuthState = .checking
 
+    /// Counts restarts in an onboarding-only build, so each begins afresh.
+    private(set) var onboardingRun = 0
+
     /// Non-nil while a sign-out is in flight, so the UI can disable
     /// controls without inventing its own flag.
     private(set) var isSigningOut = false
@@ -276,6 +279,8 @@ final class SessionViewModel {
     private func apply(_ override: DebugLaunchOverride) async {
         switch override {
         case .onboarding:
+            // A fresh start, not the last run's answers.
+            if DebugLaunchOverride.isOnboardingOnly { onboarding.profile = OnboardingProfile() }
             transition(to: .onboarding)
         case .login:
             transition(to: .unauthenticated)
@@ -331,6 +336,14 @@ final class SessionViewModel {
     }
 
     private func transition(to next: AuthState, animated: Bool = true) {
+        if DebugLaunchOverride.isOnboardingOnly {
+            switch next {
+            case .unauthenticated, .awaitingMFA, .authenticated:
+                return restartOnboarding()
+            case .checking, .onboarding, .needsOrganization, .gettingStarted:
+                break
+            }
+        }
         guard next != state else { return }
         // Before the new state renders, so its first screen reads the
         // right account's data.
@@ -340,6 +353,15 @@ final class SessionViewModel {
         } else {
             state = next
         }
+    }
+
+    /// Onboarding-only builds: anywhere past onboarding leads back to its
+    /// start, with the answers cleared.
+    private func restartOnboarding() {
+        onboarding.profile = OnboardingProfile()
+        onboarding.pendingActivationUserID = nil
+        onboardingRun += 1
+        transition(to: .onboarding)
     }
 
     private func message(for error: Error) -> String {
