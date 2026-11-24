@@ -24,6 +24,7 @@ struct OnboardingScene: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.feedback) private var feedback
 
     /// Measured heights, per step, so Purr can fill what's left.
     @State private var topHeights: [OnboardingStep: CGFloat] = [:]
@@ -33,6 +34,8 @@ struct OnboardingScene: View {
     @State private var sceneHeight: CGFloat = 800
     @State private var hasEntered = false
     @State private var reaction: PurrMood?
+    /// Sign-ups refused so far; each one shakes the form.
+    @State private var refusals = 0
     @FocusState private var focus: OnboardingField?
     @AccessibilityFocusState private var titleIsFocused: Bool
 
@@ -55,10 +58,10 @@ struct OnboardingScene: View {
                 .background { backdrop }
             }
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: step)
-        .sensoryFeedback(.success, trigger: step == .unlocked) { _, arrived in arrived }
+        .modifier(OnboardingCues(viewModel: viewModel, focus: focus))
         .task(id: step) {
             titleIsFocused = true
+            reaction = nil
             try? await Task.sleep(for: .seconds(1))
             if !Task.isCancelled { settledStep = step }
         }
@@ -81,6 +84,7 @@ struct OnboardingScene: View {
     }
 
     private func tickle() {
+        feedback?.play(.purr)
         guard reaction == nil, let move = PurrMood.signatureMoves.randomElement() else { return }
         reaction = move
         Task {
@@ -186,8 +190,10 @@ struct OnboardingScene: View {
                 side = min(max((edge - top) / 0.36, 170), 300)
                 y = edge - side * 0.55
             } else {
-                side = min(max((edge - top - 14) / 0.61, 170), width * 1.1)
-                y = max(top + 14 - side * 0.19, edge - side * 0.9)
+                // His happy hop on sign-up needs more headroom.
+                let headroom: CGFloat = step == .signUp ? 30 : 14
+                side = min(max((edge - top - headroom) / 0.61, 170), width * 1.1)
+                y = max(top + headroom - side * 0.19, edge - side * 0.9)
             }
         case .giant where step == .building:
             side = min((size.height + 30 - top) / 0.78, width * 1.6)
@@ -215,7 +221,7 @@ struct OnboardingScene: View {
                     .frame(width: 44, height: 44)
                     .glassEffect(.regular.interactive(), in: .circle)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(SquishStyle(scale: 0.86))
             .opacity(step.allowsBack ? 1 : 0)
             .disabled(!step.allowsBack)
             .accessibilityLabel("Back")
@@ -261,7 +267,7 @@ struct OnboardingScene: View {
                 .accessibilityFocused($titleIsFocused)
             if !viewModel.sceneLine.isEmpty {
                 Text(viewModel.sceneLine)
-                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                    .font(DS.Typography.brand(.subheadline))
                     .contentTransition(.opacity)
                     .fixedSize(horizontal: false, vertical: true)
                     .modifier(GlassLine(isOn: staging == .orbit))
@@ -402,6 +408,7 @@ struct OnboardingScene: View {
                 .id(step)
                 .transition(.drift)
         }
+        .shake(on: refusals)
         .frame(maxWidth: 560)
         .padding(.horizontal, 16)
         .padding(.top, 18)
@@ -454,7 +461,54 @@ struct OnboardingScene: View {
     // MARK: - Actions
 
     private var actions: some View {
-        OnboardingActions(viewModel: viewModel, onSignedUp: onSignedUp) { focus = nil }
+        OnboardingActions(viewModel: viewModel, onSignedUp: onSignedUp, onRefused: { refusals += 1 }) { focus = nil }
+    }
+}
+
+// MARK: - Cues
+
+/// What the scene sounds and feels like: moving between steps, answering,
+/// the build, the password rules.
+private struct OnboardingCues: ViewModifier {
+
+    let viewModel: OnboardingFlowViewModel
+    let focus: OnboardingField?
+
+    @Environment(\.feedback) private var feedback
+
+    /// The answers of one step, so a change of step isn't heard as answers.
+    private struct Answers: Equatable {
+        let step: OnboardingStep
+        let picked: [Bool]
+    }
+
+    private var answers: Answers { Answers(step: viewModel.step, picked: viewModel.choices.map(\.isSelected)) }
+    private var tasksDone: Int { viewModel.buildTasks.count { $0.state == .done } }
+    private var rulesMet: Int { viewModel.auth.passwordRequirements.count { $0.isMet } }
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: viewModel.step) { _, step in
+                feedback?.play(step == .unlocked ? .celebrate : viewModel.movesForward ? .advance : .back)
+            }
+            .onChange(of: answers) { old, new in
+                guard old.step == new.step, old.picked.count == new.picked.count else { return }
+                if let index = new.picked.indices.first(where: { new.picked[$0] && !old.picked[$0] }) {
+                    feedback?.play(.select(index))
+                } else if old != new {
+                    feedback?.play(.deselect)
+                }
+            }
+            .onChange(of: tasksDone) { old, new in
+                guard new > old else { return }
+                feedback?.play(new == viewModel.buildTasks.count ? .flood : .taskDone(new - 1))
+            }
+            .onChange(of: rulesMet) { old, new in
+                if new > old { feedback?.play(.tick) }
+            }
+            .onChange(of: focus) { _, field in
+                if field != nil { feedback?.play(.focus) }
+            }
     }
 }
 

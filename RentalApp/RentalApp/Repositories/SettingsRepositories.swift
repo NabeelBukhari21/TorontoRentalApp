@@ -148,6 +148,13 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var purrStyle: PurrStyle = InMemoryPreferencesRepository.storedPurrStyle {
         didSet { UserDefaults.standard.set(purrStyle.rawValue, forKey: Self.purrStyleKey) }
     }
+    /// Persisted: turning sound off has to stay off.
+    var soundEffectsEnabled = InMemoryPreferencesRepository.storedFlag(soundEffectsKey) {
+        didSet { UserDefaults.standard.set(soundEffectsEnabled, forKey: Self.soundEffectsKey) }
+    }
+    var hapticsEnabled = InMemoryPreferencesRepository.storedFlag(hapticsKey) {
+        didSet { UserDefaults.standard.set(hapticsEnabled, forKey: Self.hapticsKey) }
+    }
     var reduceGlassEffects = false
     var showPortfolioValueOnHome = true
 
@@ -164,6 +171,14 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
 
     private static let themeKey = "appearance.theme.v1"
     private static let purrStyleKey = "appearance.purrStyle.v1"
+
+    private static let soundEffectsKey = "feedback.sounds.v1"
+    private static let hapticsKey = "feedback.haptics.v1"
+
+    /// On until someone turns it off.
+    private static func storedFlag(_ key: String) -> Bool {
+        UserDefaults.standard.object(forKey: key) as? Bool ?? true
+    }
 
     private static var storedPurrStyle: PurrStyle {
         UserDefaults.standard.string(forKey: purrStyleKey).flatMap(PurrStyle.init(rawValue:)) ?? .classic

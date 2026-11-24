@@ -712,6 +712,9 @@ protocol PreferencesRepositoryProtocol: AnyObject {
     var theme: AppTheme { get set }
     /// Which of Purr's four looks the app shows. Classic by default.
     var purrStyle: PurrStyle { get set }
+    /// Sounds and haptics that go with taps and moments.
+    var soundEffectsEnabled: Bool { get set }
+    var hapticsEnabled: Bool { get set }
     var reduceGlassEffects: Bool { get set }
     var showPortfolioValueOnHome: Bool { get set }
 

@@ -78,6 +78,7 @@ struct LaunchSequenceView: View {
     @State private var start = Date.now
     @State private var readyAt: Double?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.feedback) private var feedback
 
     private var mood: PurrMood { mode == .full ? .splash : .welcomeBack }
 
@@ -104,6 +105,12 @@ struct LaunchSequenceView: View {
         .accessibilityLabel(Text(verbatim: "Purrperty"))
         .accessibilityAddTraits(.isImage)
         .onAppear { if isReady { readyAt = 0 } }
+        // The drop landing. Only the first launch; every launch would grate.
+        .task {
+            guard mode == .full, !reduceMotion else { return }
+            try? await Task.sleep(for: .seconds(timeline.impact))
+            if !Task.isCancelled { feedback?.play(.drop) }
+        }
         .onChange(of: isReady) { _, ready in
             if ready, readyAt == nil { readyAt = Date.now.timeIntervalSince(start) }
         }

@@ -127,13 +127,13 @@ struct OnboardingIntroStep: View {
             if !reduceMotion {
                 Button { finish(skipped: true) } label: {
                     Text("Skip")
-                        .font(.subheadline.weight(.bold))
+                        .font(DS.Typography.brand(.subheadline, weight: .semibold))
                         .foregroundStyle(DS.Colors.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .glassEffect(.regular.interactive(), in: .capsule)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SquishStyle())
                 .padding(.top, 8)
                 .padding(.trailing, 16)
             }

@@ -317,6 +317,8 @@ extension DS.Colors {
     /// retuned to match it — partner guidelines fix them — but they still
     /// live here so no hex literal sits in a feature file.
     enum Partner {
+        /// Apple's logo: black on light, white on dark.
+        static let appleMark = Color(light: Color(hex: 0x000000), dark: Color(hex: 0xFFFFFF))
         static let googleBlue  = Color(hex: 0x4285F4)
         static let googleGreen = Color(hex: 0x34A853)
     }

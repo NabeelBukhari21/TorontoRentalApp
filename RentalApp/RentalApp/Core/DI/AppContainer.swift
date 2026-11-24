@@ -36,6 +36,7 @@ final class AppContainer {
     let dashboard: DashboardRepositoryProtocol
     let profile: ProfileRepositoryProtocol
     let preferences: PreferencesRepositoryProtocol
+    let feedback: FeedbackPlayer
     let billing: BillingRepositoryProtocol
     let integrations: IntegrationsRepositoryProtocol
     let copilot: CopilotRepositoryProtocol
@@ -174,6 +175,7 @@ final class AppContainer {
         self.dashboard = dashboard
         self.profile = profile
         self.preferences = preferences
+        self.feedback = FeedbackPlayer(preferences: preferences)
         self.billing = billing
         self.integrations = integrations
         self.copilot = copilot

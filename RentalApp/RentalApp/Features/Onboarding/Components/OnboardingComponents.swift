@@ -31,13 +31,13 @@ struct OnboardingHeader: View {
             PurrMascot(mood: mood, size: typeSize.isAccessibilitySize ? mascotSize * 0.6 : mascotSize)
 
             Text(title)
-                .font(.largeTitle.bold())
+                .font(DS.Typography.brand(.largeTitle, weight: .bold))
                 .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
 
             if let message {
                 Text(message)
-                    .font(.body)
+                    .font(DS.Typography.brand(.body, weight: .regular))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }

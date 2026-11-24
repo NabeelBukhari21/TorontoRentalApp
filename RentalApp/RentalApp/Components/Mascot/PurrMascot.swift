@@ -76,6 +76,7 @@ private struct PurrCanvas: View {
     @State private var controller: PurrController
     @State private var reaction: PurrMood?
     @State private var taps = 0
+    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(mood: PurrMood, style: PurrStyle, isInteractive: Bool, surprisesOnTap: Bool, onTap: (() -> Void)?) {
@@ -95,6 +96,7 @@ private struct PurrCanvas: View {
             .onTapGesture {
                 guard isInteractive else { return }
                 taps += 1
+                if surprisesOnTap { feedback?.play(.purr) }
                 react()
                 onTap?()
             }

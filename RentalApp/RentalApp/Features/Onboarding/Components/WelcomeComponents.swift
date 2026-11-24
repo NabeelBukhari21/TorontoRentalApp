@@ -45,7 +45,7 @@ struct WelcomeFeatureCard: View {
                 if let initials = feature.initials {
                     Circle().fill(feature.accent.tint)
                     Text(verbatim: initials)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(DS.Typography.brandFixed(12))
                         .foregroundStyle(feature.accent.ink)
                 } else {
                     RoundedRectangle(cornerRadius: 9, style: .continuous).fill(feature.accent.tint)
@@ -58,10 +58,10 @@ struct WelcomeFeatureCard: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(feature.title)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(DS.Typography.brandFixed(13.5, weight: .semibold))
                     .foregroundStyle(DS.Colors.textPrimary)
                 Text(feature.detail)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(DS.Typography.brandFixed(11.5, weight: .regular))
                     .foregroundStyle(DS.Colors.textSecondary)
             }
             .lineLimit(1)
@@ -144,6 +144,7 @@ struct PawFillButton: View {
 
     @State private var level: CGFloat = 0
     @State private var isPressed = false
+    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -157,21 +158,23 @@ struct PawFillButton: View {
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(level > 0.55 ? Color.white : DS.Colors.brand)
                     .contentTransition(.symbolEffect(.replace))
+                    // Waves while it waits to be pressed.
+                    .symbolEffect(.wiggle.clockwise, options: .repeat(.periodic(delay: 2.2)), isActive: !isPressed && !reduceMotion)
             }
             .frame(width: 200, height: 62)
             .clipShape(.capsule)
             .contentShape(.capsule)
             .glassEffect(.regular.interactive(), in: .capsule)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SquishStyle(scale: 0.94, cue: .press))
         .disabled(isPressed)
         .accessibilityLabel("Get started")
-        .sensoryFeedback(.impact(weight: .medium), trigger: isPressed)
     }
 
     private func press() {
         guard !isPressed else { return }
         isPressed = true
+        feedback?.play(.fill)
         let fill = reduceMotion ? 0.15 : 0.45
         withAnimation(.easeInOut(duration: fill)) { level = 1 }
         Task {
@@ -214,22 +217,26 @@ private struct LiquidLevel: Shape {
 /// "By continuing you agree to our" and a glass chip that opens the
 /// Terms of Service or the Privacy Policy.
 struct WelcomeTermsChip: View {
+
+    @Environment(\.feedback) private var feedback
+
     var body: some View {
         VStack(spacing: 6) {
             Text("By continuing you agree to our")
-                .font(.footnote)
+                .font(DS.Typography.brand(.footnote, weight: .regular))
                 .foregroundStyle(DS.Colors.textSecondary)
             Menu {
                 Link(LegalDocument.termsOfService.title, destination: LegalDocument.termsOfService.url())
                 Link(LegalDocument.privacyPolicy.title, destination: LegalDocument.privacyPolicy.url())
             } label: {
                 Label("Terms · Privacy", systemImage: "info.circle")
-                    .font(.footnote.weight(.semibold))
+                    .font(DS.Typography.brand(.footnote))
                     .foregroundStyle(DS.Colors.textSecondary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
                     .glassEffect(.regular.interactive(), in: .capsule)
             }
+            .simultaneousGesture(TapGesture().onEnded { feedback?.play(.tap) })
             .accessibilityLabel("Terms of Service and Privacy Policy")
         }
         .multilineTextAlignment(.center)
@@ -244,12 +251,14 @@ struct SleepyPurrSignInButton: View {
     let action: () -> Void
 
     @State private var isAwake = false
+    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button {
             guard !isAwake else { return }
             isAwake = true
+            feedback?.play(.purr)
             Task {
                 try? await Task.sleep(for: .milliseconds(reduceMotion ? 0 : 380))
                 action()
@@ -260,7 +269,7 @@ struct SleepyPurrSignInButton: View {
                 PurrMascot(mood: isAwake ? .welcomeBack : .idleTimeout, size: 40, isInteractive: false)
                     .padding(-4)
                 Text("Sign in")
-                    .font(.subheadline.weight(.bold))
+                    .font(DS.Typography.brand(.subheadline, weight: .semibold))
                     .foregroundStyle(DS.Colors.brandInk)
             }
             .padding(.leading, 6)
@@ -268,9 +277,8 @@ struct SleepyPurrSignInButton: View {
             .padding(.vertical, 6)
             .glassEffect(.regular.interactive(), in: .capsule)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SquishStyle(scale: 0.93))
         .accessibilityLabel("Sign in")
         .accessibilityHint("For people who already have an account")
-        .sensoryFeedback(.selection, trigger: isAwake)
     }
 }

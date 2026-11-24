@@ -2,8 +2,8 @@
 //  Clay.swift
 //  RentalApp (Purrperty)
 //
-//  Components/Core — Soft moulded surfaces: the clay fill, clay icon
-//  tokens and the button style that presses into its own edge.
+//  Components/Core — Soft moulded surfaces: the clay fill and clay
+//  icon tokens. (Their press style is in `ButtonMotion`.)
 //
 
 import SwiftUI
@@ -37,23 +37,5 @@ struct ClayToken: View {
                     .foregroundStyle(accent.onFill)
             }
             .accessibilityHidden(true)
-    }
-}
-
-// MARK: - Press
-
-/// A key-like button: a face on a darker edge that sinks when pressed.
-struct PressableDepthStyle: ButtonStyle {
-    var edge: Color
-    var depth: CGFloat = 6
-    var shape = RoundedRectangle(cornerRadius: 30, style: .continuous)
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .offset(y: configuration.isPressed ? depth : 0)
-            .background(shape.fill(edge).offset(y: depth))
-            .contentShape(shape)
-            .animation(.spring(response: 0.2, dampingFraction: 0.6), value: configuration.isPressed)
-            .sensoryFeedback(.impact(weight: .medium), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 }

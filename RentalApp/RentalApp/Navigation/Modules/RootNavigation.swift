@@ -96,6 +96,8 @@ struct RootNavigation: View {
         .preferredColorScheme(container.preferences.theme.colorScheme)
         // Purr's look, everywhere he appears (Settings ▸ Appearance).
         .environment(\.purrStyle, container.preferences.purrStyle)
+        // Haptics and sounds (Settings ▸ Appearance).
+        .environment(\.feedback, container.feedback)
         .environment(session)
         .environment(\.toasts, toasts)
         .dsToastLayer()
@@ -108,6 +110,7 @@ struct RootNavigation: View {
         .dsConflictResolution(container.conflicts)
         // The session check runs while the launch background shows.
         .task { await session.bootstrap() }
+        .task { await container.feedback.prepare() }
         // Widgets follow the session: a staff account's numbers, or nothing.
         .task(id: session.state) { await updateWidgets() }
         // Deep links land on the shared router; one that arrives during

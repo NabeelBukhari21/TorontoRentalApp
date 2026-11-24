@@ -102,6 +102,15 @@ colourful, for students, on a white background.
   `Components/Motion/LiquidMotion.swift`. Clips that ship as video (the
   intro fly-over) are rendered there and played with `VideoClipPlayer`.
 
+## Sound and haptics
+- `FeedbackPlayer` (`Core/Feedback`, via `\.feedback`) plays a
+  `FeedbackCue`: its haptic and its sound together. Don't add
+  `sensoryFeedback` where a cue fires. Sounds are synthesized by
+  `tools/sound/make_sounds.py` and follow the silent switch; both are
+  switchable in Settings ▸ Appearance.
+- Press styles and button motion: `Components/Motion/ButtonMotion.swift`.
+- Onboarding text is all Fredoka: `DS.Typography.brand(_ style:)`.
+
 ## Rules
 - After every change: build, fix all errors **and warnings**, and run on
   the simulator to check UI work. Use screenshots for UI.

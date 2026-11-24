@@ -14,12 +14,30 @@ extension DS {
 
         // MARK: Brand
 
-        /// Fredoka, the brand face: the wordmark, the launch and the
-        /// welcome screen. Bundled (`Resources/Fonts`, OFL) and scaled with
+        /// Fredoka, the brand face: the wordmark, the launch and
+        /// onboarding. Bundled (`Resources/Fonts`, OFL) and scaled with
         /// Dynamic Type relative to `style`. Everything else stays on the
         /// system faces.
         static func brand(_ size: CGFloat, weight: Font.Weight = .bold, relativeTo style: Font.TextStyle = .largeTitle) -> Font {
             Font.custom("Fredoka", size: size, relativeTo: style).weight(weight)
+        }
+
+        /// Fredoka at a system text style's size: body copy on the
+        /// onboarding screens, which are in the brand face throughout.
+        static func brand(_ style: Font.TextStyle, weight: Font.Weight = .medium) -> Font {
+            let size: CGFloat = switch style {
+            case .largeTitle: 34
+            case .title: 28
+            case .title2: 22
+            case .title3: 20
+            case .callout: 16
+            case .subheadline: 15
+            case .footnote: 13
+            case .caption: 12
+            case .caption2: 11
+            default: 17
+            }
+            return brand(size, weight: weight, relativeTo: style)
         }
 
         /// Fixed-size Fredoka, for art that is laid out to the point (the

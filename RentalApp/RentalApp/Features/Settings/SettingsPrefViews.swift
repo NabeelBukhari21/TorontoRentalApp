@@ -259,6 +259,21 @@ struct SettingsAppearancePage: View {
             purrLook
                 .dsEntrance(index: 1)
 
+            SettingsSectionCard(title: "Sound & haptics") {
+                SettingsToggleRow(
+                    icon: "speaker.wave.2.fill", title: "Sound effects",
+                    subtitle: "Follow the Ring/Silent switch",
+                    tint: DS.Colors.accentGoldInk, isOn: $viewModel.soundEffectsEnabled
+                )
+                SettingsRowDivider()
+                SettingsToggleRow(
+                    icon: "iphone.radiowaves.left.and.right", title: "Haptics",
+                    subtitle: "Taps you can feel",
+                    tint: DS.Colors.accentBlushInk, isOn: $viewModel.hapticsEnabled
+                )
+            }
+            .dsEntrance(index: 2)
+
             SettingsSectionCard(title: "Display") {
                 SettingsToggleRow(
                     icon: "circle.hexagongrid.fill", title: "Reduce glass effects",

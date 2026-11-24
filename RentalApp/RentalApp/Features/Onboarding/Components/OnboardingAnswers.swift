@@ -25,13 +25,14 @@ struct OnboardingAnswerCard: View {
                     .shadow(color: DS.Colors.groundShadow, radius: 4, y: 4)
                     .rotationEffect(.degrees(choice.isSelected ? -10 : 0))
                     .scaleEffect(choice.isSelected ? 1.15 : 1)
+                    .background { DropletBurst(isOn: choice.isSelected, color: choice.accent.fill, radius: 54) }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(choice.title)
                         .font(DS.Typography.brand(isCompact ? 17 : 20, weight: .semibold, relativeTo: .headline))
                         .foregroundStyle(DS.Colors.textPrimary)
                         .minimumScaleFactor(0.8).lineLimit(typeSize.isAccessibilitySize ? nil : isCompact && choice.subtitle.isEmpty ? 2 : 1)
                     if !choice.subtitle.isEmpty {
-                        Text(choice.subtitle).font(.footnote).foregroundStyle(DS.Colors.textSecondary).lineLimit(typeSize.isAccessibilitySize ? nil : isCompact ? 2 : 1).minimumScaleFactor(0.75)
+                        Text(choice.subtitle).font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(DS.Colors.textSecondary).lineLimit(typeSize.isAccessibilitySize ? nil : isCompact ? 2 : 1).minimumScaleFactor(0.75)
                     }
                 }
                 Spacer(minLength: 0)
@@ -59,6 +60,8 @@ struct OnboardingAnswerCard: View {
             }
         }
         .buttonStyle(PressableDepthStyle(edge: choice.isSelected ? choice.accent.fill : DS.Colors.track, depth: 4, shape: .init(cornerRadius: 24, style: .continuous)))
+        .jelly(on: choice.isSelected, strength: isCompact ? 0.5 : 0.3)
+        .zIndex(choice.isSelected ? 1 : 0)
         .accessibilityAddTraits(choice.isSelected ? .isSelected : [])
     }
 }
@@ -80,7 +83,7 @@ struct OnboardingAnswerKey: View {
                     .font(DS.Typography.brand(17, weight: .semibold, relativeTo: .headline))
                     .multilineTextAlignment(.center).minimumScaleFactor(0.75).lineLimit(2)
                 if !choice.subtitle.isEmpty {
-                    Text(choice.subtitle).font(.system(.caption, design: .rounded, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                    Text(choice.subtitle).font(DS.Typography.brand(.caption)).lineLimit(1).minimumScaleFactor(0.8)
                 }
             }
             .foregroundStyle(choice.isSelected ? choice.accent.onFill : DS.Colors.textPrimary)
@@ -92,6 +95,9 @@ struct OnboardingAnswerKey: View {
         }
         .buttonStyle(PressableDepthStyle(edge: choice.accent.ink, depth: 9))
         .shadow(color: .black.opacity(0.16), radius: 10, y: 12)
+        .background { DropletBurst(isOn: choice.isSelected, color: choice.accent.fill, radius: 82) }
+        .jelly(on: choice.isSelected)
+        .zIndex(choice.isSelected ? 1 : 0)
         .accessibilityAddTraits(choice.isSelected ? .isSelected : [])
     }
 }
@@ -143,9 +149,10 @@ struct OnboardingAnswerBubble: View {
             .frame(width: diameter, height: diameter)
             .scaleEffect(choice.isSelected ? 1.1 : 1)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SquishStyle(scale: 0.88, cue: .press))
         .contentShape(.circle)
-        .sensoryFeedback(.impact(weight: .medium), trigger: choice.isSelected)
+        .background { DropletBurst(isOn: choice.isSelected, color: choice.accent.fill, radius: diameter * 0.82) }
+        .jelly(on: choice.isSelected)
         .accessibilityHint(choice.subtitle)
         .accessibilityAddTraits(choice.isSelected ? .isSelected : [])
     }

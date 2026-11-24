@@ -51,9 +51,13 @@ struct OnboardingActions: View {
 
     let viewModel: OnboardingFlowViewModel
     let onSignedUp: (SignInOutcome) -> Void
+    let onRefused: () -> Void
     let endEditing: () -> Void
 
+    @Environment(\.feedback) private var feedback
+
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isSignUp: Bool { viewModel.step == .signUp }
     private var isHidden: Bool { viewModel.step == .building }
@@ -76,8 +80,8 @@ struct OnboardingActions: View {
         layout {
             if isSignUp {
                 HStack(spacing: 12) {
-                    OnboardingSocialButton(symbol: "apple.logo", label: "Continue with Apple") { signIn(with: .apple) }
-                    OnboardingSocialButton(symbol: "g.circle.fill", label: "Continue with Google") { signIn(with: .google) }
+                    OnboardingSocialButton(provider: .apple) { signIn(with: .apple) }
+                    OnboardingSocialButton(provider: .google) { signIn(with: .google) }
                 }
                 .transition(.scale.combined(with: .opacity))
             }
@@ -88,7 +92,10 @@ struct OnboardingActions: View {
                     } else {
                         HStack(spacing: 8) {
                             Text(title).lineLimit(1).minimumScaleFactor(0.8)
-                            Image(systemName: "chevron.forward").font(.system(size: 15, weight: .heavy))
+                            Image(systemName: "chevron.forward")
+                                .font(.system(size: 15, weight: .heavy))
+                                // Nudges onward once the answer is in.
+                                .symbolEffect(.wiggle.forward, options: .repeat(.periodic(delay: 2.6)), isActive: viewModel.canContinue && !reduceMotion)
                         }
                         .id(title)
                         .transition(.blurReplace)
@@ -99,8 +106,10 @@ struct OnboardingActions: View {
                 .padding(.horizontal, isSignUp ? 24 : 34)
                 .frame(minHeight: 58)
                 .background(Capsule().fill(.clay(palette.fill, shade: palette.edge, size: 58)))
+                .sheen(isOn: viewModel.canContinue && !viewModel.auth.isLoading && viewModel.step.staging != .giant)
             }
             .buttonStyle(PressableDepthStyle(edge: palette.edge))
+            .jelly(on: viewModel.canContinue)
             .shadow(color: DS.Colors.groundShadow, radius: 14, y: 12)
             .disabled(!viewModel.canContinue || viewModel.auth.isLoading)
         }
@@ -115,14 +124,24 @@ struct OnboardingActions: View {
         guard isSignUp else { return viewModel.advance() }
         endEditing()
         Task {
-            if let outcome = await viewModel.signUp() { onSignedUp(outcome) }
+            finish(await viewModel.signUp())
+        }
+    }
+
+    private func finish(_ outcome: SignInOutcome?) {
+        if let outcome {
+            feedback?.play(.celebrate)
+            onSignedUp(outcome)
+        } else {
+            feedback?.play(.error)
+            onRefused()
         }
     }
 
     private func signIn(with provider: SocialProvider) {
         endEditing()
         Task {
-            if let outcome = await viewModel.signIn(with: provider) { onSignedUp(outcome) }
+            finish(await viewModel.signIn(with: provider))
         }
     }
 }
@@ -149,7 +168,7 @@ struct OnboardingBuildPill: View {
         .shadow(color: DS.Colors.groundShadow, radius: 10, y: 8)
         .scaleEffect(task.state == .running ? 1.05 : 1)
         .opacity(task.state == .pending ? 0.6 : 1)
-        .sensoryFeedback(.success, trigger: task.state == .done)
+        .jelly(on: task.state == .done)
         .accessibilityElement(children: .combine)
         .accessibilityValue(task.state == .done ? "Done" : task.state == .running ? "In progress" : "Waiting")
     }
@@ -161,6 +180,7 @@ struct OnboardingBuildPill: View {
 struct OnboardingUnlockList: View {
     let unlocks: [OnboardingUnlock]
     @State private var shown = 0
+    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -174,7 +194,7 @@ struct OnboardingUnlockList: View {
                             .font(DS.Typography.brand(18, weight: .semibold, relativeTo: .headline))
                             .foregroundStyle(DS.Colors.textPrimary)
                         Text(unlock.detail)
-                            .font(.footnote)
+                            .font(DS.Typography.brand(.footnote, weight: .regular))
                             .foregroundStyle(DS.Colors.textSecondary)
                     }
                     Spacer(minLength: 0)
@@ -188,9 +208,10 @@ struct OnboardingUnlockList: View {
             }
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(450))
+            try? await Task.sleep(for: .milliseconds(650))
             for count in 1...max(unlocks.count, 1) {
                 withAnimation(DS.Motion.bouncy) { shown = count }
+                if !unlocks.isEmpty { feedback?.play(.deal(count - 1)) }
                 try? await Task.sleep(for: .milliseconds(110))
             }
         }
@@ -217,6 +238,7 @@ struct OnboardingPlainPage<Actions: View>: View {
                         Button("Back", systemImage: "chevron.backward") { viewModel.goBack() }
                             .labelStyle(.iconOnly)
                             .frame(width: 44, height: 44)
+                            .buttonStyle(SquishStyle())
                     }
                     OnboardingProgressTube(progress: viewModel.progress, label: viewModel.stepLabel, fill: DS.Colors.brand, track: DS.Colors.track)
                 }
@@ -225,7 +247,7 @@ struct OnboardingPlainPage<Actions: View>: View {
                     .font(DS.Typography.brand(34))
                     .accessibilityAddTraits(.isHeader)
                 if !viewModel.sceneLine.isEmpty {
-                    Text(viewModel.sceneLine).foregroundStyle(DS.Colors.textSecondary)
+                    Text(viewModel.sceneLine).font(DS.Typography.brand(.body, weight: .regular)).foregroundStyle(DS.Colors.textSecondary)
                 }
                 content
             }

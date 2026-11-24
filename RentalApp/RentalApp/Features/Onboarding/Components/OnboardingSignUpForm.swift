@@ -58,7 +58,7 @@ struct OnboardingSignUpForm: View {
 
             ForEach(errors, id: \.self) { error in
                 Label(error, symbol: .caution)
-                    .font(.footnote)
+                    .font(DS.Typography.brand(.footnote))
                     .foregroundStyle(DS.Colors.danger)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -72,8 +72,9 @@ struct OnboardingSignUpForm: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(DS.Colors.brandInk)
                         .frame(minHeight: 36)
+                        .buttonStyle(SquishStyle(scale: 0.95))
                 }
-                .font(.footnote)
+                .font(DS.Typography.brand(.footnote, weight: .regular))
                 .multilineTextAlignment(.center)
             }
         }
@@ -92,7 +93,7 @@ struct OnboardingSignUpForm: View {
                 .frame(width: 24)
                 .accessibilityHidden(true)
             input()
-                .font(.system(.body, design: .rounded, weight: .medium))
+                .font(DS.Typography.brand(.body))
                 .multilineTextAlignment(.leading)
         }
         .padding(.horizontal, 16)
@@ -115,33 +116,36 @@ private struct OnboardingRequirementChip: View {
                 .contentTransition(.symbolEffect(.replace))
             Text(requirement.rule.title).lineLimit(1).minimumScaleFactor(0.75)
         }
-        .font(.system(.caption, design: .rounded, weight: .semibold))
+        .font(DS.Typography.brand(.caption))
         .foregroundStyle(requirement.isMet ? DSAccent.mint.ink : DS.Colors.textSecondary)
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
         .background(Capsule().fill(requirement.isMet ? DSAccent.mint.tint : DS.Colors.surface))
         .scaleEffect(requirement.isMet ? 1.04 : 1)
-        .sensoryFeedback(.impact(weight: .light), trigger: requirement.isMet) { _, met in met }
+        .jelly(on: requirement.isMet)
         .accessibilityElement(children: .combine)
         .accessibilityValue(requirement.isMet ? "Met" : "Not met")
     }
 }
 
-/// Continue with Apple or Google, as a round clay button.
+/// Continue with Apple or Google, as a round clay button with the
+/// partner's own logo.
 struct OnboardingSocialButton: View {
-    let symbol: String
-    let label: String
+    let provider: SocialProvider
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .frame(width: 56, height: 56)
-                .background(Circle().fill(.clay(DS.Colors.surfaceRaised, shade: DS.Colors.textTertiary, size: 56)))
+            ZStack {
+                switch provider {
+                case .apple: AppleLogo(size: 25).offset(y: -1)
+                case .google: GoogleLogo(size: 23)
+                }
+            }
+            .frame(width: 56, height: 56)
+            .background(Circle().fill(.clay(DS.Colors.surfaceRaised, shade: DS.Colors.textTertiary, size: 56)))
         }
         .buttonStyle(PressableDepthStyle(edge: DS.Colors.track, depth: 5))
-        .accessibilityLabel(label)
+        .accessibilityLabel(provider.title)
     }
 }

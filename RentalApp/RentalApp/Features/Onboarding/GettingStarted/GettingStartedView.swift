@@ -16,6 +16,7 @@ struct GettingStartedView: View {
     @State private var viewModel: GettingStartedViewModel
     private let container: AppContainer
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.feedback) private var feedback
 
     init(
         container: AppContainer,
@@ -43,6 +44,11 @@ struct GettingStartedView: View {
                     .transition(reduceMotion ? .opacity : .push(from: viewModel.movesForward ? .trailing : .leading))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar { toolbar }
+            }
+            // The brand face for everything that doesn't set its own.
+            .font(DS.Typography.brand(.body, weight: .regular))
+            .onChange(of: viewModel.step) { _, step in
+                feedback?.play(step == .celebration ? .celebrate : viewModel.movesForward ? .advance : .back)
             }
             .overlay {
                 if viewModel.step == .celebration {
@@ -244,8 +250,6 @@ private struct GettingStartedCelebration: View {
     let firstName: String
     let onContinue: () -> Void
 
-    @State private var celebrated = false
-
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -253,7 +257,7 @@ private struct GettingStartedCelebration: View {
 
                 VStack(spacing: 8) {
                     Text("\(propertyName) is live")
-                        .font(.largeTitle.bold())
+                        .font(DS.Typography.brand(.largeTitle, weight: .bold))
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
                     Text("Your first property is on Purrperty.")
@@ -273,8 +277,6 @@ private struct GettingStartedCelebration: View {
         .primaryActionBar {
             PrimaryActionButton(title: "Continue", action: onContinue)
         }
-        .sensoryFeedback(.success, trigger: celebrated)
-        .onAppear { celebrated = true }
     }
 }
 
@@ -286,17 +288,17 @@ private struct FounderNoteCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Hi \(firstName),")
-                .font(.headline)
+                .font(DS.Typography.brand(.headline, weight: .semibold))
 
             Text("Thanks for giving Purrperty a try. I built it so looking after your rentals takes minutes, not evenings. I hope it does exactly that for you.")
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(FounderNote.signature)
-                    .font(.title3.italic())
+                    .font(DS.Typography.brand(.title3, weight: .semibold))
                     .foregroundStyle(.tint)
                 Text(FounderNote.title)
-                    .font(.footnote)
+                    .font(DS.Typography.brand(.footnote, weight: .regular))
                     .foregroundStyle(.secondary)
             }
         }
@@ -331,7 +333,7 @@ private struct GettingStartedNotificationPriming: View {
 
                 VStack(spacing: 8) {
                     Text("Never miss a rent payment")
-                        .font(.largeTitle.bold())
+                        .font(DS.Typography.brand(.largeTitle, weight: .bold))
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
                     Text("Get a nudge when rent lands, a repair comes in or a tenant messages you. You choose which in Settings.")
@@ -361,13 +363,13 @@ private struct GettingStartedNotificationPriming: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("Purrperty").font(.subheadline.weight(.semibold))
+                    Text("Purrperty").font(DS.Typography.brand(.subheadline, weight: .semibold))
                     Spacer()
-                    Text("now").font(.footnote).foregroundStyle(.secondary)
+                    Text("now").font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(.secondary)
                 }
-                Text("Rent received").font(.subheadline.weight(.semibold))
+                Text("Rent received").font(DS.Typography.brand(.subheadline, weight: .semibold))
                 Text(propertyName.map { "Unit 1 at \($0) just paid this month's rent." } ?? "Unit 2 just paid this month's rent.")
-                    .font(.subheadline)
+                    .font(DS.Typography.brand(.subheadline, weight: .regular))
                     .foregroundStyle(.secondary)
             }
         }

@@ -190,6 +190,12 @@ final class PreferencesSettingsViewModel {
     var purrStyle: PurrStyle {
         get { repo.purrStyle } set { repo.purrStyle = newValue }
     }
+    var soundEffectsEnabled: Bool {
+        get { repo.soundEffectsEnabled } set { repo.soundEffectsEnabled = newValue }
+    }
+    var hapticsEnabled: Bool {
+        get { repo.hapticsEnabled } set { repo.hapticsEnabled = newValue }
+    }
     var reduceGlassEffects: Bool {
         get { repo.reduceGlassEffects } set { repo.reduceGlassEffects = newValue }
     }

@@ -99,20 +99,8 @@ struct AuthSocialButton: View {
     @ViewBuilder
     private var logo: some View {
         switch provider {
-        case .apple:
-            Image(systemName: "apple.logo")
-                .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(DS.Colors.textPrimary)
-        case .google:
-            Text("G")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [DS.Colors.Partner.googleBlue, DS.Colors.Partner.googleGreen],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+        case .apple: AppleLogo(size: 19)
+        case .google: GoogleLogo(size: 18)
         }
     }
 }
