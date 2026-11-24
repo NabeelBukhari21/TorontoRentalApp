@@ -285,20 +285,14 @@ struct LaunchSequenceView: View {
         }
     }
 
-    /// The tile turns white as the street of homes builds itself in it,
+    /// The tile turns cream as the house rises and Purr pops up behind it,
     /// then the name springs up letter by letter.
     private func logo(t: Double, g: Double, c: CGPoint, s: CGFloat) -> some View {
         let tl = timeline
         let whiten = LiquidMotion.progress(t, from: tl.whiten(g), to: tl.whiten(g) + 0.4)
         let side = 150 * s
         return ZStack {
-            RoundedRectangle(cornerRadius: side * 0.23, style: .continuous)
-                .fill(PurrpertyBrand.white)
-                .frame(width: side, height: side)
-                .overlay {
-                    PurrpertyLogoMark(size: side * 0.93, isBuilt: t >= tl.build(g))
-                }
-                .shadow(color: PurrpertyBrand.cherry.opacity(0.25), radius: 26 * s, y: 10 * s)
+            PurrpertyLogoTile(size: side, isBuilt: t >= tl.build(g))
                 .opacity(whiten)
                 .position(c)
 
@@ -316,10 +310,7 @@ struct LaunchSequenceView: View {
         let c = center(in: size)
         if mode == .full {
             ZStack {
-                RoundedRectangle(cornerRadius: 150 * s * 0.23, style: .continuous)
-                    .fill(PurrpertyBrand.white)
-                    .frame(width: 150 * s, height: 150 * s)
-                    .overlay { PurrpertyLogoMark(size: 140 * s, animates: false) }
+                PurrpertyLogoTile(size: 150 * s, animates: false)
                     .position(c)
                 PurrpertyWordmark(fontSize: 50 * s)
                     .position(x: c.x, y: c.y + 120 * s)

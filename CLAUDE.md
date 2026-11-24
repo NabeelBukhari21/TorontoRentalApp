@@ -141,6 +141,8 @@ colourful, for students, on a white background.
     Fredoka (`DS.Typography.brand`, bundled, OFL). Screens 1.3–1.11 are
     the next round.
   - Rive Purr in four looks, red and gold palette
+  - "Peek-a-roof" logo: layered Liquid Glass `AppIcon.icon` plus the
+    in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`
 - Missing features, built step by step per `docs/FEATURES_PLAN.md`:
   1. New maintenance request form — done
   2. Lease renewal and move to another unit (Ontario rules in
@@ -164,8 +166,6 @@ colourful, for students, on a white background.
   2. Fix the Home UI.
   3. Build new features.
 - Open items:
-  - Logo and app icon still show the old street scene; two glass options
-    (`tools/mascot/logo_icon.py`) wait for the user's pick.
   - The "Reduce glass effects" setting is now a no-op.
   - AI tasks aren't wired to any screens.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in

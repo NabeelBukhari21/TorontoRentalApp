@@ -26,7 +26,7 @@ struct RepairVisitLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     Label("Repair", systemImage: "wrench.and.screwdriver.fill")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(Color.brand)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     StatusText(state: context.state)
@@ -47,12 +47,12 @@ struct RepairVisitLiveActivity: Widget {
                 }
             } compactLeading: {
                 Image(systemName: "wrench.and.screwdriver.fill")
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(Color.brand)
             } compactTrailing: {
                 CompactStatus(state: context.state)
             } minimal: {
                 Image(systemName: context.state.stage == .done ? "checkmark" : "wrench.and.screwdriver.fill")
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(Color.brand)
             }
             .widgetURL(URL(string: "rentos://maintenance/\(context.attributes.requestID)"))
         }
@@ -73,7 +73,7 @@ private struct LockScreenView: View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: context.state.stage == .done ? "checkmark.circle.fill" : "wrench.and.screwdriver.fill")
                 .font(.title2)
-                .foregroundStyle(context.state.stage == .done ? AnyShapeStyle(.green) : AnyShapeStyle(.tint))
+                .foregroundStyle(context.state.stage == .done ? AnyShapeStyle(.green) : AnyShapeStyle(Color.brand))
                 .frame(width: 36)
                 .accessibilityHidden(true)
 
@@ -147,7 +147,7 @@ private struct CompactStatus: View {
                  ? .dateTime.hour().minute()
                  : .dateTime.weekday(.abbreviated))
                 .monospacedDigit()
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.brand)
         }
     }
 }

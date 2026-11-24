@@ -226,7 +226,7 @@ struct RepairsWidgetView: View {
                                 .lineLimit(1)
                             Text(visit.date, format: .dateTime.weekday(.abbreviated).hour().minute())
                                 .font(.caption2)
-                                .foregroundStyle(.tint)
+                                .foregroundStyle(Color.brand)
                         }
                     }
                 }
@@ -278,7 +278,7 @@ private struct WidgetHeader: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: symbol)
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.brand)
             Text(title)
                 .fontWeight(.semibold)
             Spacer(minLength: 0)
@@ -350,7 +350,7 @@ private struct SignedOutView: View {
         VStack(alignment: .leading, spacing: 6) {
             Label(title, systemImage: symbol)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.brand)
             Spacer(minLength: 0)
             Text("Open Purrperty and sign in as an owner or manager.")
                 .font(.caption)

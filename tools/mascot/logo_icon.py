@@ -4,9 +4,9 @@ Composes layered artwork for Icon Composer (`AppIcon.icon`): each layer is
 a full 1024×1024 PNG so positions are exact, and each group gets Liquid
 Glass in iOS 26. Then `ictool` renders every appearance for review.
 
-    python3 logo_icon.py --stills out/stills --out out/logo [A B]
+    python3 logo_icon.py --stills stills --out out/logo [A B]
 
-Directions:
+The app ships A, chosen 23 Nov 2026 (B is kept for reference):
   A  "Peek-a-roof"  Purr peeks over a glossy cherry roof on a cream tile.
   B  "Key bubble"   Purr with his gold house key in a cream glass bubble
                     on a cherry tile.
@@ -95,11 +95,17 @@ def roof_layer():
     d.polygon([(150 * k, (top + 30) * k), (874 * k, (top + 30) * k), (1010 * k, eave * k), (14 * k, eave * k)], fill=CHERRY + (255,))
     d.rounded_rectangle((-10 * k, (eave - 52) * k, 1034 * k, (eave + 8) * k), radius=30 * k, fill=CHERRY_DEEP + (255,))
     # Roof tiles: two soft rows of scallops.
-    for row, y in enumerate((770, 820)):
-        x = 120 + row * 40
-        while x < 930:
-            d.ellipse(((x - 34) * k, (y - 20) * k, (x + 34) * k, (y + 20) * k), fill=(236, 84, 74, 255))
+    # Masked to the roof, so none poke out past its slopes.
+    tiles = canvas()
+    td = ImageDraw.Draw(tiles)
+    for row, y in enumerate((770, 815)):
+        x = 60 + row * 40
+        while x < 980:
+            td.ellipse(((x - 34) * k, (y - 20) * k, (x + 34) * k, (y + 20) * k), fill=(236, 84, 74, 255))
             x += 80
+    mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(mask).polygon([(190 * k, (top + 30) * k), (834 * k, (top + 30) * k), (950 * k, (eave - 52) * k), (74 * k, (eave - 52) * k)], fill=255)
+    img.paste(tiles, (0, 0), Image.composite(tiles.getchannel("A"), Image.new("L", img.size, 0), mask))
     # A gold ridge cap along the top, like the tag on Purr's collar.
     d.rounded_rectangle((150 * k, (top - 6) * k, 874 * k, (top + 22) * k), radius=14 * k, fill=GOLD + (255,))
     return finish(img)
@@ -155,7 +161,7 @@ def render(icon_path, out_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--stills", default="out/stills")
+    parser.add_argument("--stills", default="stills")
     parser.add_argument("--out", default="out/logo")
     parser.add_argument("options", nargs="*", default=["A", "B"])
     args = parser.parse_args()
