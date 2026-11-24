@@ -65,11 +65,11 @@ final class FeedbackPlayer {
     // MARK: Sound
 
     private func playSound(_ cue: FeedbackCue) {
-        guard let player = sounds[cue.sound] else { return }
+        guard let name = cue.sound, let player = sounds[name] else { return }
         // Again before it's finished: start over, rather than miss one.
         player.currentTime = 0
         let started = player.play()
-        AppLog.app.debug("Feedback: \(cue.sound, privacy: .public) \(started ? "played" : "refused", privacy: .public)")
+        AppLog.app.debug("Feedback: \(name, privacy: .public) \(started ? "played" : "refused", privacy: .public)")
     }
 
     // MARK: Music

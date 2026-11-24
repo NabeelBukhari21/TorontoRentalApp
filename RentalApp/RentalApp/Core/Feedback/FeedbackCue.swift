@@ -41,9 +41,12 @@ enum FeedbackCue: Equatable, Sendable {
     case stamp
     /// Pull to refresh: far enough, and let go.
     case stretch, pounce
+    /// Felt, not heard: a dial tick while scrolling (0…1, how fast), the
+    /// end of a list, and a finger crossing a tab.
+    case scrollTick(Float), scrollEnd, scrub
 
-    /// The sound's file name.
-    var sound: String {
+    /// The sound's file name; nil is only felt.
+    var sound: String? {
         switch self {
         case .press: "press"
         case .tap: "tap"
@@ -65,6 +68,7 @@ enum FeedbackCue: Equatable, Sendable {
         case .stamp: "stamp"
         case .stretch: "tap"
         case .pounce: "pounce"
+        case .scrollTick, .scrollEnd, .scrub: nil
         }
     }
 
@@ -72,7 +76,7 @@ enum FeedbackCue: Equatable, Sendable {
     static let allSounds: [String] = {
         let single: [FeedbackCue] = [.press, .tap, .focus, .deselect, .advance, .back, .tick, .flood, .fill, .drop, .celebrate, .error, .purr, .stamp, .pounce]
         let runs = (0..<5).map(FeedbackCue.select) + (0..<3).map(FeedbackCue.taskDone) + (0..<7).map(FeedbackCue.deal) + (0..<3).map(FeedbackCue.coin)
-        return (single + runs).map(\.sound)
+        return (single + runs).compactMap(\.sound)
     }()
 
     /// One beat of a haptic: a tap, or a rumble if it has a duration.
@@ -105,6 +109,9 @@ enum FeedbackCue: Equatable, Sendable {
         case .error: [.init(time: 0, intensity: 0.8, sharpness: 0.2), .init(time: 0.12, intensity: 0.8, sharpness: 0.2)]
         case .coin: [.init(time: 0, intensity: 0.55, sharpness: 0.95)]
         case .stamp: [.init(time: 0, duration: 0.12, intensity: 0.05, sharpness: 0.1, endIntensity: 0.3), .init(time: 0.13, intensity: 1, sharpness: 0.15), .init(time: 0.16, intensity: 0.5, sharpness: 0.1)]
+        case .scrollTick(let speed): [.init(time: 0, intensity: 0.22 + 0.25 * speed, sharpness: 0.75)]
+        case .scrollEnd: [.init(time: 0, intensity: 0.55, sharpness: 0.25)]
+        case .scrub: [.init(time: 0, intensity: 0.5, sharpness: 0.8)]
         case .stretch: [.init(time: 0, intensity: 0.5, sharpness: 0.7)]
         case .pounce: [.init(time: 0.02, intensity: 0.4, sharpness: 0.5), .init(time: 0.2, intensity: 0.9, sharpness: 0.2)]
         case .purr:

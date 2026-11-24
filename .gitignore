@@ -52,3 +52,5 @@ tools/mascot/out/
 # Recordings for the onboarding gallery (re-record from the studio)
 tools/motion/gallery/onboarding/*.mp4
 tools/motion/gallery/onboarding/*.jpg
+tools/motion/gallery/tabbar/*.mp4
+tools/motion/gallery/tabbar/*.jpg

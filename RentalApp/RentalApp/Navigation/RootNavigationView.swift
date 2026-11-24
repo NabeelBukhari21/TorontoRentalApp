@@ -26,6 +26,12 @@ struct RootNavigationView: View {
     /// previews of this shell — and of any screen inside it — work
     /// standalone instead of trapping on a missing environment value.
     @Environment(SessionViewModel.self) private var providedSession: SessionViewModel?
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.feedback) private var feedback
+
+    /// The paw bar, on iPhone; the system bar (or iPad sidebar) otherwise.
+    @State private var tabBar = TabBarModel()
+    private var pawStyle: PawTabStyle? { sizeClass == .compact ? PawTabStyle.current : nil }
 
     /// - Parameter accountID: the signed-in account. Navigation restored
     ///   from a different account is cleared before any stack is built.
@@ -55,6 +61,17 @@ struct RootNavigationView: View {
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.onScrollDown)
+        .overlay(alignment: .bottom) {
+            if let pawStyle {
+                PawTabBar(style: pawStyle, selection: tabSelection, model: tabBar)
+                    .ignoresSafeArea(.keyboard)
+            }
+        }
+        .onAppear { tabBar.feedback = feedback }
+        #if DEBUG
+        .task { await runTabDemo() }
+        #endif
+        .onChange(of: router.selectedTab) { _, _ in tabBar.reset() }
         .sheet(item: $router.activeSheet) { route in
             SheetRouteView(route: route)
         }
@@ -77,12 +94,37 @@ struct RootNavigationView: View {
         )
     }
 
+    #if DEBUG
+    /// `-PurrpertyTabDemo YES` walks the tabs by itself, for recordings.
+    private func runTabDemo() async {
+        guard UserDefaults.standard.bool(forKey: "PurrpertyTabDemo"), pawStyle != nil else { return }
+        try? await Task.sleep(for: .seconds(6))
+        for tab in [AppTab.properties, .messages, .search, .maintenance, .properties, .dashboard] {
+            withAnimation(DS.Motion.bouncy) { tabBar.hovered = tab }
+            feedback?.play(.press)
+            try? await Task.sleep(for: .milliseconds(220))
+            withAnimation(DS.Motion.bouncy) {
+                tabBar.hovered = nil
+                router.select(tab)
+            }
+            try? await Task.sleep(for: .milliseconds(1500))
+        }
+        print("TABDEMO done")
+    }
+    #endif
+
     private func stack(for tab: AppTab) -> some View {
         NavigationStack(path: router.pathBinding(for: tab)) {
             TabRootView(tab: tab)
+                .reportsScroll(to: pawStyle == nil ? nil : tabBar)
+                .toolbar(pawStyle == nil ? .automatic : .hidden, for: .tabBar)
                 .navigationDestination(for: AppRoute.self) { route in
                     RouteDestinationView(route: route)
+                        .reportsScroll(to: pawStyle == nil ? nil : tabBar)
+                        .toolbar(pawStyle == nil ? .automatic : .hidden, for: .tabBar)
+                        .safeAreaPadding(.bottom, pawStyle?.height ?? 0)
                 }
+                .safeAreaPadding(.bottom, pawStyle?.height ?? 0)
         }
     }
 }
