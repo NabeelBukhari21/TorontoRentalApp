@@ -10,54 +10,9 @@
 import Observation
 import SwiftUI
 
-/// The five designs on trial.
-enum PawTabStyle: String, CaseIterable, Sendable {
-    case liquid, notch, clay, peek, bigPaw
-
-    /// Which one this launch shows; nil is the system bar.
-    static var current: PawTabStyle? {
-        #if DEBUG
-        UserDefaults.standard.string(forKey: "PurrpertyTabBar").flatMap(PawTabStyle.init(rawValue:))
-        #else
-        nil
-        #endif
-    }
-
-    /// Room the screen leaves for it.
-    var height: CGFloat {
-        switch self {
-        case .liquid: 78
-        case .notch: 88
-        case .clay: 84
-        case .peek: 82
-        case .bigPaw: 134
-        }
-    }
-}
-
 extension AppTab {
     /// Properties in the middle.
     static let pawOrder: [AppTab] = [.dashboard, .maintenance, .properties, .messages, .search]
-
-    var accent: DSAccent {
-        switch self {
-        case .dashboard: .gold
-        case .maintenance: .blush
-        case .properties: .cherry
-        case .messages: .sky
-        case .search: .mint
-        }
-    }
-
-    var purrMood: PurrMood {
-        switch self {
-        case .dashboard: .welcomeBack
-        case .maintenance: .builder
-        case .properties: .properties
-        case .messages: .newMessage
-        case .search: .searching
-        }
-    }
 }
 
 @MainActor

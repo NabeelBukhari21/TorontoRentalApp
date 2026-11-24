@@ -58,7 +58,7 @@ final class FeedbackPlayer {
     }
 
     func play(_ cue: FeedbackCue) {
-        if preferences.hapticsEnabled { playHaptic(cue) }
+        if preferences.hapticsEnabled, !cue.isFromScrolling || preferences.scrollHapticsEnabled { playHaptic(cue) }
         if preferences.soundEffectsEnabled, !UIAccessibility.isVoiceOverRunning { playSound(cue) }
     }
 

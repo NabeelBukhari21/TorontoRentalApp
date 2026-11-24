@@ -271,6 +271,14 @@ struct SettingsAppearancePage: View {
                     subtitle: "Taps you can feel",
                     tint: DS.Colors.accentBlushInk, isOn: $viewModel.hapticsEnabled
                 )
+                SettingsRowDivider()
+                SettingsToggleRow(
+                    icon: "arrow.up.and.down", title: "Scrolling haptics",
+                    subtitle: "Ticks as you scroll, on top of Haptics",
+                    tint: DS.Colors.accentSkyInk, isOn: $viewModel.scrollHapticsEnabled
+                )
+                .disabled(!viewModel.hapticsEnabled)
+                .opacity(viewModel.hapticsEnabled ? 1 : 0.5)
             }
             .dsEntrance(index: 2)
 

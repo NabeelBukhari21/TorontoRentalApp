@@ -193,6 +193,9 @@ final class PreferencesSettingsViewModel {
     var soundEffectsEnabled: Bool {
         get { repo.soundEffectsEnabled } set { repo.soundEffectsEnabled = newValue }
     }
+    var scrollHapticsEnabled: Bool {
+        get { repo.scrollHapticsEnabled } set { repo.scrollHapticsEnabled = newValue }
+    }
     var hapticsEnabled: Bool {
         get { repo.hapticsEnabled } set { repo.hapticsEnabled = newValue }
     }

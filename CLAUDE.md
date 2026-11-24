@@ -167,6 +167,10 @@ colourful, for students, on a white background.
     `HomeScene` (Toronto sky; Open-Meteo weather, no user data sent, free
     tier is non-commercial), `PurrOutfit` wardrobe (the rig's own
     costumes; always-on hats need the Rive CLI updated), fly-over score
+  - paw tab bar (`Navigation/TabBar`): glass cradle, liquid highlight,
+    Properties in the middle; `TabBarModel` also drives scroll haptics
+    (own switch in Settings ▸ Appearance). System bar at accessibility
+    text sizes, sidebar on iPad
 - Missing features, built step by step per `docs/FEATURES_PLAN.md`:
   1. New maintenance request form — done
   2. Lease renewal and move to another unit (Ontario rules in

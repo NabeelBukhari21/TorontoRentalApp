@@ -148,6 +148,9 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var purrStyle: PurrStyle = InMemoryPreferencesRepository.storedPurrStyle {
         didSet { UserDefaults.standard.set(purrStyle.rawValue, forKey: Self.purrStyleKey) }
     }
+    var scrollHapticsEnabled = InMemoryPreferencesRepository.storedFlag(scrollHapticsKey) {
+        didSet { UserDefaults.standard.set(scrollHapticsEnabled, forKey: Self.scrollHapticsKey) }
+    }
     /// Persisted: turning sound off has to stay off.
     var soundEffectsEnabled = InMemoryPreferencesRepository.storedFlag(soundEffectsKey) {
         didSet { UserDefaults.standard.set(soundEffectsEnabled, forKey: Self.soundEffectsKey) }
@@ -177,6 +180,7 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
 
     private static let soundEffectsKey = "feedback.sounds.v1"
     private static let weatherKey = "home.weather.v1"
+    private static let scrollHapticsKey = "feedback.scrollHaptics.v1"
     private static let hapticsKey = "feedback.haptics.v1"
 
     /// On until someone turns it off.

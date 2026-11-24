@@ -715,6 +715,8 @@ protocol PreferencesRepositoryProtocol: AnyObject {
     /// Sounds and haptics that go with taps and moments.
     var soundEffectsEnabled: Bool { get set }
     var hapticsEnabled: Bool { get set }
+    /// The ticks while scrolling, apart from the rest.
+    var scrollHapticsEnabled: Bool { get set }
     /// Toronto's weather in the sky on Home.
     var showsWeather: Bool { get set }
     var reduceGlassEffects: Bool { get set }

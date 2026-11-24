@@ -72,6 +72,14 @@ enum FeedbackCue: Equatable, Sendable {
         }
     }
 
+    /// Comes from the screen moving, not from something chosen.
+    var isFromScrolling: Bool {
+        switch self {
+        case .scrollTick, .scrollEnd: true
+        default: false
+        }
+    }
+
     /// Every sound file, for loading ahead.
     static let allSounds: [String] = {
         let single: [FeedbackCue] = [.press, .tap, .focus, .deselect, .advance, .back, .tick, .flood, .fill, .drop, .celebrate, .error, .purr, .stamp, .pounce]
