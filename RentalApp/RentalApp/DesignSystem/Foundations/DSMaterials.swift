@@ -13,7 +13,7 @@
 //  is just a slightly grey rectangle.
 //
 //  This theme is clean, solid cards: an opaque fill, a faint hairline so
-//  the edge survives on white, a soft shadow tinted with the brand violet
+//  the edge survives on white, a soft shadow tinted warm brown
 //  rather than black, and a generous corner radius. Friendlier, crisper,
 //  and considerably cheaper to render than live blur.
 //
@@ -92,7 +92,7 @@ struct DSHeroSurfaceModifier: ViewModifier {
 
 extension View {
 
-    /// Applies a gradient hero card. Defaults to violet → sky.
+    /// Applies a gradient hero card. Defaults to cherry → ember.
     func dsHeroSurface(
         cornerRadius: CGFloat = DS.Radius.xl,
         gradient: LinearGradient = DS.Gradients.hero,

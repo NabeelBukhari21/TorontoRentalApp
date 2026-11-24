@@ -52,7 +52,7 @@ extension DS {
         /// Cherry → deeper cherry, so white labels pass at both ends
         /// (5.25, 6.63) while still reading as a gradient.
         static var brand: LinearGradient { LinearGradient(
-            colors: [DS.Colors.brand, DS.Colors.brandInk],
+            colors: [DS.Colors.brand, DS.Colors.brandDeep],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         ) }
@@ -71,7 +71,7 @@ extension DS {
         /// Filled highlight — sent message bubbles, unread pills, selected
         /// chips, confirmed states. Text: `onHighlight` (white, 5.25–6.63).
         static var highlight: LinearGradient { LinearGradient(
-            colors: [DS.Colors.brand, DS.Colors.brandInk],
+            colors: [DS.Colors.brand, DS.Colors.brandDeep],
             startPoint: .top,
             endPoint: .bottom
         ) }

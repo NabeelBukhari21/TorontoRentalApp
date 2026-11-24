@@ -6,7 +6,7 @@
 //
 //  Shared by splash, onboarding, auth, org setup and MFA so the whole
 //  launch flow feels like one continuous space. White first, with soft
-//  violet, sky, coral and sunny light drifting behind the content — the
+//  cherry, gold and blush light drifting behind the content — the
 //  launch flow's equivalent of `DSAmbientBackground`, a little bolder
 //  because there is less content on screen competing with it.
 //

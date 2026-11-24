@@ -124,9 +124,9 @@ struct WelcomeBackground: View {
                 [0, 1], [0.5, 1], [1, 1],
             ],
             colors: [
-                DSAccent.cherry.fill.opacity(0.16), .clear, DSAccent.blush.fill.opacity(0.12),
+                DSAccent.blush.fill.opacity(0.16), .clear, DSAccent.gold.fill.opacity(0.22),
                 .clear, .clear, .clear,
-                DSAccent.mint.fill.opacity(0.16), .clear, DSAccent.sky.fill.opacity(0.14),
+                DSAccent.gold.fill.opacity(0.22), .clear, DSAccent.blush.fill.opacity(0.14),
             ]
         )
         .background(DS.Colors.background)
@@ -151,7 +151,7 @@ struct PawFillButton: View {
             ZStack {
                 TimelineView(.animation(paused: reduceMotion || level == 0)) { context in
                     LiquidLevel(level: level, phase: context.date.timeIntervalSinceReferenceDate * 9)
-                        .fill(LinearGradient(colors: [DS.Colors.brand, DS.Colors.accentSky], startPoint: .leading, endPoint: .trailing))
+                        .fill(LinearGradient(colors: [DS.Colors.brand, DS.Colors.accentEmber], startPoint: .leading, endPoint: .trailing))
                 }
                 Image(systemName: "pawprint.fill")
                     .font(.system(size: 26, weight: .bold))

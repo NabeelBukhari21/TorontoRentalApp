@@ -23,7 +23,7 @@ const seeded = (seed: number) => () => {
 
 type Block = {x: number; z: number; w: number; d: number; h: number; color: string};
 
-const WALLS = ['#FFFFFF', '#EDEBFA', brand.wallViolet, brand.wallSky, brand.wallMint, brand.wallSunny, '#F6F7FB'];
+const WALLS = ['#FFFFFF', '#FFF1E0', brand.wallViolet, brand.wallSky, brand.wallMint, brand.wallSunny, '#FFF8EE'];
 const CELL = 14;
 
 /** A low-poly neighbourhood: a grid of blocks, taller toward the lake like downtown. */
@@ -64,12 +64,12 @@ const City: React.FC = () => {
       {/* Ground, roads and the lake. */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[600, 600]} />
-        <meshStandardMaterial color="#E9E6F6" />
+        <meshStandardMaterial color="#F8ECDD" />
       </mesh>
       {Array.from({length: 16}).map((_, i) => (
         <mesh key={`r${i}`} rotation-x={-Math.PI / 2} position={[(i - 7.5) * CELL, 0.02, -40]}>
           <planeGeometry args={[2.4, 260]} />
-          <meshStandardMaterial color="#DCD8EE" />
+          <meshStandardMaterial color="#EEDDC9" />
         </mesh>
       ))}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.05, 140]}>
@@ -86,7 +86,7 @@ const City: React.FC = () => {
       <group position={[-34, 0, 40]}>
         <mesh position={[0, 22, 0]} castShadow>
           <cylinderGeometry args={[0.7, 2.2, 44, 6]} />
-          <meshStandardMaterial color="#F7F6FD" />
+          <meshStandardMaterial color="#FFFDF8" />
         </mesh>
         <mesh position={[0, 34, 0]} castShadow>
           <cylinderGeometry args={[3, 3, 3, 16]} />
@@ -94,7 +94,7 @@ const City: React.FC = () => {
         </mesh>
         <mesh position={[0, 52, 0]}>
           <cylinderGeometry args={[0.15, 0.5, 18, 6]} />
-          <meshStandardMaterial color="#F7F6FD" />
+          <meshStandardMaterial color="#FFFDF8" />
         </mesh>
       </group>
     </group>
@@ -195,7 +195,7 @@ const HeroBuilding: React.FC<{xray: number; lit: number; explode: number; pins: 
                   <mesh position={[ux, FLOOR_H / 2, uz]}>
                     <boxGeometry args={[unit, FLOOR_H - 0.6, unit]} />
                     <meshStandardMaterial
-                      color={on > 0 ? color : '#F1EFFA'}
+                      color={on > 0 ? color : '#FFF3E3'}
                       emissive={color}
                       emissiveIntensity={on * 0.35}
                       transparent
@@ -252,7 +252,7 @@ const Camera: React.FC<{keys: Key[]; orbit?: number}> = ({keys, orbit = 0}) => {
 
 const Lights: React.FC = () => (
   <>
-    <hemisphereLight args={['#FFFFFF', '#C9C1F2', 0.75]} />
+    <hemisphereLight args={['#FFFFFF', '#F3D3B4', 0.75]} />
     <directionalLight
       position={[70, 110, 30]}
       intensity={2.4}
@@ -273,9 +273,9 @@ const Stage: React.FC<{children: React.ReactNode}> = ({children}) => (
     height={SCREEN.height}
     shadows
     camera={{fov: 42, near: 0.5, far: 900, position: [0, 100, 100]}}
-    style={{background: 'linear-gradient(#EAE6FF, #FDFCFF 60%)'}}
+    style={{background: 'linear-gradient(#FFE9CC, #FFFBF5 60%)'}}
   >
-    <fog attach="fog" args={['#F3F0FF', 120, 420]} />
+    <fog attach="fog" args={['#FFF1DF', 120, 420]} />
     <Lights />
     {children}
   </ThreeCanvas>
@@ -341,10 +341,10 @@ const Outro: React.FC<{from: number; withCat?: boolean}> = ({from, withCat}) => 
   const veil = interpolate(frame, [from, from + 14], [0, 1], clamp);
   const pop = spring({frame: frame - from - 6, fps, config: {damping: 10, stiffness: 140}});
   return (
-    <AbsoluteFill style={{background: `rgba(253,252,255,${veil * 0.94})`, alignItems: 'center', justifyContent: 'center'}}>
+    <AbsoluteFill style={{background: `rgba(255,250,242,${veil * 0.94})`, alignItems: 'center', justifyContent: 'center'}}>
       {withCat && (
         <Img
-          src={staticFile('MascotCheer.png')}
+          src={staticFile('PurrCelebrate.png')}
           style={{width: 620, height: 620, transform: `scale(${pop}) translateY(${(1 - pop) * 200}px)`, marginBottom: 20}}
         />
       )}

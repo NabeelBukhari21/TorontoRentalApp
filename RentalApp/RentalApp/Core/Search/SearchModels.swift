@@ -73,7 +73,7 @@ enum SearchKind: String, Codable, Sendable, CaseIterable, Identifiable {
         }
     }
 
-    /// Grouped by domain: portfolio violet, people sky, operations coral,
+    /// Grouped by domain: portfolio cherry, people sky, operations blush,
     /// files sunny, conversation mint.
     var accent: DSAccent {
         switch self {

@@ -25,7 +25,7 @@ struct DSToggleStyle: ToggleStyle {
                         configuration.isOn
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [DS.Colors.brand, DS.Colors.brandInk],
+                                    colors: [DS.Colors.brand, DS.Colors.brandDeep],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )

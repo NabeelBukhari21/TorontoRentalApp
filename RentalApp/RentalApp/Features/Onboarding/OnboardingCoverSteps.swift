@@ -76,7 +76,7 @@ struct OnboardingWelcomeStep: View {
 
     private var brand: some View {
         VStack(spacing: 6) {
-            PurrpertyLogoMark(size: 92)
+            PurrMascot(mood: .welcome, size: 168, surprisesOnTap: true)
             PurrpertyWordmark(fontSize: 52)
             Text("Every rental, under one paw.")
                 .font(DS.Typography.brand(19, weight: .medium, relativeTo: .title3))

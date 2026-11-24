@@ -68,10 +68,12 @@ colourful, for students, on a white background.
   - `AppLog` (OSLog categories)
 
 ## Design system: always use tokens, never hardcoded colours
-- Palette:
-  - bg #FFFFFF, surface #F6F7FB, ink #1B1B2F, secondary #6B7085
-  - primary violet #6C5CE7
-  - coral #FF6B6B, sunny #FFD93D, mint #2ED8A3, sky #4DA8FF
+- Palette (from Classic Purr; values and measured ratios in `DSColors`):
+  - bg #FFFFFF, surface cream #FFF6EC, ink #2B1712, secondary #765A52
+  - primary cherry #CC2E2E (dark #D63535); red text uses `brandInk`,
+    gradient ends under white text use `brandDeep`, white-on-red danger
+    uses `dangerFill`
+  - gold #F2B83A, blush #F07870, mint #2ED8A3, sky #4DA8FF
 - Use `DS.Colors`, `DS.Gradients`, `DS.Spacing` (radii 10/14/20/26/32),
   `DS.Shadows`, `DS.Motion` and `DS.Icons`.
 - Accents have `.fill` and `.ink` pairs. Use the **ink** variant for text
@@ -84,23 +86,21 @@ colourful, for students, on a white background.
   `PurrpertyBrand`.
 
 ## Mascot (Purr)
-- `MascotView(mood:size:)` is the live, animated cat.
-  - Moods: idle, happy, cheer, thinking, concerned, cool, working,
-    sleeping, excited.
-  - Smaller poses fall back to the hi-res sit/cheer poses when they
-    would be upscaled.
-- `MascotGuide` is the cat plus a speech bubble. `showsMascot: false`
-  makes the bubble point up instead.
-- `MascotFaceView(face:)` shows 12 expression tiles, up to about 44pt.
-- `MascotHead` (cut by `tools/mascot/head_cut.py`) is the head alone,
-  for the launch sequence.
-- Motion is designed in Remotion (`tools/motion`, see its README), then
-  rebuilt natively with `Components/Motion/LiquidMotion.swift` (time-based
-  springs, rippling blobs, a gooey Canvas layer). Clips that ship as
-  video (the intro fly-over) are rendered there and played with
-  `VideoClipPlayer`.
-- Assets live in `Resources/Assets.xcassets/Mascot/`. The cut-out
-  pipeline is in `tools/mascot/`.
+- Purr is a Rive rig with 4 looks and 249 moods. `PurrMascot(mood:size:)`
+  is the only mascot view screens use; pick the `PurrMood` that fits the
+  moment. It follows the chosen look (Settings ▸ Appearance), holds still
+  under Reduce Motion and reacts to taps (`surprisesOnTap` plays a random
+  signature move).
+- `MascotGuide` (Purr + speech bubble), `DSEmptyState` / `DSErrorView`
+  (`mood:`), `PurrLabel` (icon for `ContentUnavailableView`), `PurrNote`
+  (a list row) and toasts (`mood:`) all build on it.
+- `PurrRig.swift` is the only file that imports RiveRuntime (its `Image`,
+  `Color` and `File` clash with SwiftUI's). `PurrMood.swift` is generated
+  in `/Users/admin/Projects/Rive/rentos-mascot`; don't edit it here.
+- Stills for art come from the app: `tools/mascot/README.md`.
+- Motion is designed in Remotion (`tools/motion`), then rebuilt with
+  `Components/Motion/LiquidMotion.swift`. Clips that ship as video (the
+  intro fly-over) are rendered there and played with `VideoClipPlayer`.
 
 ## Rules
 - After every change: build, fix all errors **and warnings**, and run on
@@ -140,7 +140,7 @@ colourful, for students, on a white background.
     and the Dollhouse fly-over (`PurrIntroFlyover.mp4`). Brand font:
     Fredoka (`DS.Typography.brand`, bundled, OFL). Screens 1.3–1.11 are
     the next round.
-  - user accent colours (`AccentStore`, `DS.Colors.brand` is computed)
+  - Rive Purr in four looks, red and gold palette
 - Missing features, built step by step per `docs/FEATURES_PLAN.md`:
   1. New maintenance request form — done
   2. Lease renewal and move to another unit (Ontario rules in
@@ -164,7 +164,8 @@ colourful, for students, on a white background.
   2. Fix the Home UI.
   3. Build new features.
 - Open items:
-  - Request 1024px exports of the cool, work, sleep and leap poses.
+  - Logo and app icon still show the old street scene; two glass options
+    (`tools/mascot/logo_icon.py`) wait for the user's pick.
   - The "Reduce glass effects" setting is now a no-op.
   - AI tasks aren't wired to any screens.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in

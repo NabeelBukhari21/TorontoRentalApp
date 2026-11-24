@@ -65,14 +65,14 @@ export type Feature = {glyph: Glyph; title: string; detail: string; tint: string
 // Only things the app does today — the project rule for anything Purr says.
 export const FEATURES: Feature[] = [
   {glyph: 'rent', title: 'Rent recorded', detail: '$2,150 · Unit 4B', tint: '#E2F8F0', fg: ink.mint},
-  {glyph: 'repair', title: 'Repair booked', detail: 'Thu 10 am · Leaky tap', tint: '#FFECEB', fg: ink.coral},
+  {glyph: 'repair', title: 'Repair booked', detail: 'Thu 10 am · Leaky tap', tint: '#FDE6E3', fg: ink.coral},
   {glyph: 'lease', title: 'Lease renews', detail: 'In 60 days · N1 ready', tint: '#E6F2FF', fg: ink.sky},
   {glyph: 'vacant', title: 'Unit 12 is vacant', detail: 'Asking $2,400', tint: '#FFF6D6', fg: ink.sunny},
-  {glyph: 'chat', title: 'Amara O.', detail: '“Thanks, the tap is fixed!”', tint: '#EFEDFD', fg: ink.violet, initials: 'AO'},
+  {glyph: 'chat', title: 'Amara O.', detail: '“Thanks, the tap is fixed!”', tint: '#FBE3DF', fg: ink.violet, initials: 'AO'},
   {glyph: 'ring', title: 'October rent', detail: '$18.4K of $22K in', tint: '#E2F8F0', fg: ink.mint},
   {glyph: 'visit', title: 'Plumber arriving', detail: 'In 25 min · Unit 4B', tint: '#E6F2FF', fg: ink.sky},
   {glyph: 'vendor', title: 'Job accepted', detail: 'Tri-City Plumbing', tint: '#E2F8F0', fg: ink.mint},
-  {glyph: 'check', title: 'Rent increase check', detail: 'Within Ontario guideline', tint: '#EFEDFD', fg: ink.violet},
+  {glyph: 'check', title: 'Rent increase check', detail: 'Within Ontario guideline', tint: '#FBE3DF', fg: ink.violet},
 ];
 
 /** A floating feature card, Luma-style: white, rounded, softly lifted. */

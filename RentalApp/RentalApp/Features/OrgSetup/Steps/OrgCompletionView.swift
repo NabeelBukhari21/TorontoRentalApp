@@ -185,7 +185,7 @@ struct OrgConfettiBurst: View {
     /// Bright fills, not inks: confetti is pure decoration, and the whole
     /// point is that it's loud. No white — on the white completion screen a
     /// white piece is invisible. Six entries so each accent appears, with
-    /// violet (the brand) weighted twice.
+    /// cherry (the brand) weighted twice.
     private static var palette: [Color] { [
         DS.Colors.brand,
         DS.Colors.accentBlush,

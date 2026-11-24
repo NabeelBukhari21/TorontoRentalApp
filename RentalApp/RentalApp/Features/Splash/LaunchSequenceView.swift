@@ -2,7 +2,7 @@
 //  LaunchSequenceView.swift
 //  RentalApp (Purrperty)
 //
-//  Splash — Purr's launch: a drop splashes into a blob, Purr's head pops
+//  Splash — Purr's launch: a drop splashes into a blob, Purr pops
 //  out of it, then melts into six dots that keep turning while the app
 //  checks the session, and finally merge into the logo and name.
 //
@@ -59,7 +59,7 @@ private struct LaunchTimeline {
     /// When the sequence has said everything and can hand over.
     func end(readyAt: Double) -> Double {
         switch mode {
-        case .brief: max(0.75, readyAt + 0.1)
+        case .brief: max(1.1, readyAt + 0.1)
         case .full: max(Self.minimumGather, readyAt) + 1.95
         }
     }
@@ -78,6 +78,8 @@ struct LaunchSequenceView: View {
     @State private var start = Date.now
     @State private var readyAt: Double?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var mood: PurrMood { mode == .full ? .splash : .welcomeBack }
 
     private var timeline: LaunchTimeline {
         LaunchTimeline(mode: mode, gather: readyAt.map { max(LaunchTimeline.minimumGather, $0) })
@@ -129,7 +131,7 @@ struct LaunchSequenceView: View {
         let s = scale(for: size)
         let c = center(in: size)
         let tl = timeline
-        let headSide = 190 * s
+        let headSide = 260 * s
 
         // Splash.
         let blob = LiquidMotion.spring(t - tl.impact, damping: 9, stiffness: 140)
@@ -149,9 +151,7 @@ struct LaunchSequenceView: View {
 
             if isFull { colouredDots(t: t, c: c, s: s, split: split, gather: gather) }
 
-            Image("MascotHead")
-                .resizable()
-                .frame(width: headSide, height: headSide)
+            PurrMascot(mood: mood, size: headSide, isInteractive: false)
                 .scaleEffect(LiquidMotion.mix(0.15, 1, pop) * (1 - melt), anchor: UnitPoint(x: 0.5, y: 0.6))
                 .rotationEffect(.degrees(-25 * melt))
                 .offset(y: LiquidMotion.mix(80, 0, pop) / 3 * s)
@@ -174,7 +174,7 @@ struct LaunchSequenceView: View {
         guard opacity > 0.01 else { return }
         var halo = context
         halo.opacity = opacity
-        halo.liquidLayer(color: PurrpertyBrand.violet, blur: 6 * s) { layer in
+        halo.liquidLayer(color: PurrpertyBrand.cherry, blur: 6 * s) { layer in
             if mode == .full, t < tl.impact + 0.07 {
                 let fall = LiquidMotion.easeInCubic(LiquidMotion.progress(t, from: 0, to: tl.impact))
                 let y = LiquidMotion.mix(-50 * s, c.y, fall)
@@ -215,7 +215,7 @@ struct LaunchSequenceView: View {
 
         var liquid = context
         liquid.opacity = 1 - whiten
-        liquid.liquidLayer(color: PurrpertyBrand.violet, blur: 5 * s) { layer in
+        liquid.liquidLayer(color: PurrpertyBrand.cherry, blur: 5 * s) { layer in
             let core = (23 * drop * (1 - min(split, 1)) + 20 * gather) * s
             if core > 0.5, tileProgress < 0.2 {
                 layer.fill(Path(ellipseIn: CGRect(x: c.x - core, y: c.y - core, width: core * 2, height: core * 2)), with: .color(.black))
@@ -237,8 +237,8 @@ struct LaunchSequenceView: View {
     private struct Dot { let x: CGFloat; let y: CGFloat; let r: CGFloat; let color: Color }
 
     private static let dotColors: [Color] = [
-        PurrpertyBrand.violet, PurrpertyBrand.sky, PurrpertyBrand.mint,
-        PurrpertyBrand.sunny, PurrpertyBrand.coral, PurrpertyBrand.violetLight,
+        PurrpertyBrand.cherry, PurrpertyBrand.gold, PurrpertyBrand.blush,
+        PurrpertyBrand.mint, PurrpertyBrand.sky, PurrpertyBrand.honey,
     ]
 
     /// Six dots in a ring, Cosmos style: the ring turns and each dot
@@ -277,7 +277,7 @@ struct LaunchSequenceView: View {
                 let fade = 1 - LiquidMotion.progress(t, from: tl.sparkles + 0.47 + spot.delay, to: tl.sparkles + 0.87 + spot.delay)
                 Image(systemName: "sparkle")
                     .font(.system(size: 22 * s, weight: .bold))
-                    .foregroundStyle(PurrpertyBrand.sunny)
+                    .foregroundStyle(PurrpertyBrand.gold)
                     .scaleEffect(grow)
                     .opacity(fade)
                     .position(x: c.x + spot.dx * s, y: c.y + spot.dy * s)
@@ -298,7 +298,7 @@ struct LaunchSequenceView: View {
                 .overlay {
                     PurrpertyLogoMark(size: side * 0.93, isBuilt: t >= tl.build(g))
                 }
-                .shadow(color: PurrpertyBrand.violet.opacity(0.25), radius: 26 * s, y: 10 * s)
+                .shadow(color: PurrpertyBrand.cherry.opacity(0.25), radius: 26 * s, y: 10 * s)
                 .opacity(whiten)
                 .position(c)
 
@@ -325,9 +325,7 @@ struct LaunchSequenceView: View {
                     .position(x: c.x, y: c.y + 120 * s)
             }
         } else {
-            Image("MascotHead")
-                .resizable()
-                .frame(width: 190 * s, height: 190 * s)
+            PurrMascot(mood: mood, size: 260 * s, isInteractive: false)
                 .position(c)
         }
     }
@@ -360,7 +358,7 @@ private struct LaunchWordmark: View {
     }
 
     private var purrGradient: LinearGradient {
-        LinearGradient(colors: [PurrpertyBrand.violet, PurrpertyBrand.skyDeep], startPoint: .topLeading, endPoint: .bottomTrailing)
+        LinearGradient(colors: [PurrpertyBrand.cherry, PurrpertyBrand.ember], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 }
 

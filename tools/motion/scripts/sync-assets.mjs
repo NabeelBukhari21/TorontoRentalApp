@@ -1,30 +1,25 @@
-// Copies the mascot art the compositions use from the app's asset catalog
-// into public/, so there is one source of truth for the artwork.
+// Copies the Purr stills the compositions use into public/. They are
+// rendered from the app by tools/mascot/purr_stills.py.
 import {copyFileSync, existsSync, mkdirSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const mascot = join(root, 'RentalApp/RentalApp/Resources/Assets.xcassets/Mascot');
-const out = join(root, 'tools/motion/public');
+const tools = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const stills = join(tools, 'mascot/stills');
+const out = join(tools, 'motion/public');
 mkdirSync(out, {recursive: true});
 
+// The round-1 studies still ask for the old names.
 const files = {
-  'MascotSit.png': join(mascot, 'MascotSit.imageset/MascotSit.png'),
-  'MascotCheer.png': join(mascot, 'MascotCheer.imageset/MascotCheer.png'),
-  'FaceSleepy.png': join(mascot, 'Faces/MascotFaceSleepy.imageset'),
-  'FaceHappy.png': join(mascot, 'Faces/MascotFaceHappy.imageset'),
-  // Cut by tools/mascot/head_cut.py; lives in the catalog once the app uses it.
-  'MascotHead.png': existsSync(join(mascot, 'MascotHead.imageset/MascotHead.png'))
-    ? join(mascot, 'MascotHead.imageset/MascotHead.png')
-    : join(root, 'tools/mascot/out/MascotHead.png'),
+  'PurrCelebrate.png': 'classic_celebrate.png',
+  'MascotHead.png': 'classic_dashboard.png',
+  'MascotSit.png': 'classic_dashboard.png',
+  'FaceSleepy.png': 'classic_blobSleep.png',
+  'FaceHappy.png': 'classic_welcome.png',
 };
 
 for (const [name, source] of Object.entries(files)) {
-  // Face image sets name their PNG after the set.
-  const file = source.endsWith('.imageset')
-    ? join(source, source.split('/').pop().replace('.imageset', '.png'))
-    : source;
+  const file = join(stills, source);
   if (!existsSync(file)) {
     console.error(`Missing ${file}`);
     process.exit(1);

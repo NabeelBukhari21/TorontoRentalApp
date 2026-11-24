@@ -19,7 +19,7 @@
 //  disagreeing.
 //
 //  The launch screen is the system-generated one in the launch
-//  lavender (`UILaunchScreen` → `LaunchBackground`). Over whatever the
+//  cream (`UILaunchScreen` → `LaunchBackground`). Over whatever the
 //  session resolves to, `LaunchSequenceView` plays Purr's launch on that
 //  same colour, so the system hand-off can't be seen. Its six dots turn
 //  while the session check runs, then it fades away. First launch gets

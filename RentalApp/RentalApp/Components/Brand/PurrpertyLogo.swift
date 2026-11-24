@@ -4,9 +4,9 @@
 //
 //  Brand — The Purrperty logo: Purr the cat in front of its neighbourhood.
 //
-//  The mascot sits on a little street of homes — a sunny house with a coral
-//  roof, a violet condo and a sky tower behind it (a nod to Toronto's
-//  skyline), and a pale-sky house with a mint roof — on a rainbow ground
+//  The mascot sits on a little street of homes — a gold house with a blush
+//  roof, a cherry condo and a sky tower behind it (a nod to Toronto's
+//  skyline), and a cream house with a mint roof — on a rainbow ground
 //  line. Friendly first, but it still says "property" at a glance.
 //
 //  It can BUILD ITSELF: the ground line draws, the homes pop up one after
@@ -28,28 +28,24 @@ import SwiftUI
 /// look identical in light and dark mode. Logo-only — screens use
 /// `DS.Colors`.
 enum PurrpertyBrand {
-    // Purr's colours. Names describe the role in the art (the tall
-    // building is still "violet" in the geometry) until the logo redesign
-    // replaces this palette.
-    static let violet      = Color(hex: 0xE03838)
-    static let violetLight = Color(hex: 0xF07870)
-    static let violetDeep  = Color(hex: 0xB02727)
-    static let coral       = Color(hex: 0xF07870)
-    static let sunny       = Color(hex: 0xF2B83A)
-    static let sunnyLight  = Color(hex: 0xFFE6A8)
-    static let mint        = Color(hex: 0x2ED8A3)
-    static let sky         = Color(hex: 0x4DA8FF)
-    static let skyDeep     = Color(hex: 0xB4501E)
-    static let skyLight    = Color(hex: 0xFFD27A)
-    static let ink         = Color(hex: 0x2B1712)
-    static let white       = Color(hex: 0xFFFFFF)
+    static let cherry     = Color(hex: 0xE03838)
+    static let cherryDeep = Color(hex: 0xB02727)
+    static let blush      = Color(hex: 0xF07870)
+    static let gold       = Color(hex: 0xF2B83A)
+    static let goldLight  = Color(hex: 0xFFE6A8)
+    static let honey      = Color(hex: 0xFFD27A)
+    static let ember      = Color(hex: 0xB4501E)
+    static let mint       = Color(hex: 0x2ED8A3)
+    static let sky        = Color(hex: 0x4DA8FF)
+    static let ink        = Color(hex: 0x2B1712)
+    static let white      = Color(hex: 0xFFFFFF)
 
-    // House walls — pastel versions of the accents, so the saturated roofs
-    // and the cat stay the most colourful things in the logo.
-    static let wallSunny  = Color(hex: 0xFFE9A6)
-    static let wallMint   = Color(hex: 0xC4F2E3)
-    static let wallSky    = Color(hex: 0xFFF1DA)
-    static let wallViolet = Color(hex: 0xFDE0DA)
+    // House walls — pale accents, so the roofs and Purr stay the most
+    // colourful things in the logo.
+    static let wallGold  = Color(hex: 0xFFE9A6)
+    static let wallMint  = Color(hex: 0xC4F2E3)
+    static let wallCream = Color(hex: 0xFFF1DA)
+    static let wallBlush = Color(hex: 0xFDE0DA)
 }
 
 // MARK: - Geometry
@@ -72,7 +68,7 @@ enum PurrpertyLogoGeometry {
     static let leftHouse  = House(centerX: 0.165, width: 0.28, bodyHeight: 0.23, roofHeight: 0.15)
     static let rightHouse = House(centerX: 0.835, width: 0.26, bodyHeight: 0.21, roofHeight: 0.14)
 
-    /// Violet condo, behind the cat's left ear.
+    /// Cherry condo, behind the cat's left ear.
     static let condoCenterX: CGFloat = 0.31
     static let condoWidth: CGFloat = 0.19
     static let condoHeight: CGFloat = 0.62
@@ -115,19 +111,19 @@ struct PurrpertyLogoMark: View {
             ground
 
             tower(centerX: G.condoCenterX, width: G.condoWidth, height: G.condoHeight,
-                  top: PurrpertyBrand.violetLight, bottom: PurrpertyBrand.violet,
-                  cap: PurrpertyBrand.violetDeep, rows: 5, order: 0)
+                  top: PurrpertyBrand.blush, bottom: PurrpertyBrand.cherry,
+                  cap: PurrpertyBrand.cherryDeep, rows: 5, order: 0)
 
             tower(centerX: G.towerCenterX, width: G.towerWidth, height: G.towerHeight,
-                  top: PurrpertyBrand.skyLight, bottom: PurrpertyBrand.sky,
-                  cap: PurrpertyBrand.skyDeep, rows: 4, order: 1)
+                  top: PurrpertyBrand.honey, bottom: PurrpertyBrand.sky,
+                  cap: PurrpertyBrand.ember, rows: 4, order: 1)
 
-            house(G.leftHouse, wall: PurrpertyBrand.wallSunny, roof: PurrpertyBrand.coral,
-                  door: PurrpertyBrand.violet, order: 2)
+            house(G.leftHouse, wall: PurrpertyBrand.wallGold, roof: PurrpertyBrand.blush,
+                  door: PurrpertyBrand.cherry, order: 2)
 
             // Mint roof, not sky: the sky tower stands right behind it.
-            house(G.rightHouse, wall: PurrpertyBrand.wallSky, roof: PurrpertyBrand.mint,
-                  door: PurrpertyBrand.coral, order: 3)
+            house(G.rightHouse, wall: PurrpertyBrand.wallCream, roof: PurrpertyBrand.mint,
+                  door: PurrpertyBrand.blush, order: 3)
 
             if showsCat {
                 cat
@@ -145,7 +141,7 @@ struct PurrpertyLogoMark: View {
             .trim(from: 0, to: isBuilt ? 1 : 0)
             .stroke(
                 LinearGradient(
-                    colors: [PurrpertyBrand.coral, PurrpertyBrand.sunny, PurrpertyBrand.mint, PurrpertyBrand.sky, PurrpertyBrand.violet],
+                    colors: [PurrpertyBrand.blush, PurrpertyBrand.gold, PurrpertyBrand.mint, PurrpertyBrand.sky, PurrpertyBrand.cherry],
                     startPoint: .leading,
                     endPoint: .trailing
                 ),
@@ -361,9 +357,9 @@ private struct PurrpertyWindow: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-            .fill(lit ? PurrpertyBrand.sunnyLight : PurrpertyBrand.white)
+            .fill(lit ? PurrpertyBrand.goldLight : PurrpertyBrand.white)
             .frame(width: size, height: size)
-            .shadow(color: PurrpertyBrand.sunny.opacity(lit && glow ? 0.8 : 0), radius: size * 0.5)
+            .shadow(color: PurrpertyBrand.gold.opacity(lit && glow ? 0.8 : 0), radius: size * 0.5)
             .opacity(lit ? (glow ? 1 : 0.82) : 0.9)
             .onAppear {
                 guard animates else { return }
@@ -392,7 +388,7 @@ struct PurrpertyLogoTile: View {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [PurrpertyBrand.wallViolet.opacity(0.75), PurrpertyBrand.white],
+                        colors: [PurrpertyBrand.wallBlush.opacity(0.75), PurrpertyBrand.white],
                         startPoint: .top,
                         endPoint: .center
                     )
@@ -405,9 +401,9 @@ struct PurrpertyLogoTile: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .strokeBorder(PurrpertyBrand.violet.opacity(0.12), lineWidth: 1)
+                .strokeBorder(PurrpertyBrand.cherry.opacity(0.12), lineWidth: 1)
         )
-        .dsShadow(DS.Shadows.glow(PurrpertyBrand.violet, intensity: 0.22))
+        .dsShadow(DS.Shadows.glow(PurrpertyBrand.cherry, intensity: 0.22))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Purrperty")
     }
@@ -416,7 +412,7 @@ struct PurrpertyLogoTile: View {
 // MARK: - Wordmark
 
 /// "Purrperty" — "Purr" (the mascot's name, the way Duo lives inside
-/// Duolingo) in a violet → sky gradient, "perty" in ink.
+/// Duolingo) in a cherry → ember gradient, "perty" in ink.
 struct PurrpertyWordmark: View {
 
     var fontSize: CGFloat = 38
@@ -425,11 +421,11 @@ struct PurrpertyWordmark: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Violet 4.86 → deep sky 5.06 on white: passes AA at any size.
+            // Cherry 4.38 → ember 5.11 on white: passes AA at display sizes.
             Text(verbatim: "Purr")
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [PurrpertyBrand.violet, PurrpertyBrand.skyDeep],
+                        colors: [PurrpertyBrand.cherry, PurrpertyBrand.ember],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )

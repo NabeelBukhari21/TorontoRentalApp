@@ -155,7 +155,7 @@ private struct NotificationRow: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(DS.Colors.textOnBrand)
                         .frame(width: 40, height: 40)
-                        .background(DS.Colors.danger, in: Circle())
+                        .background(DS.Colors.dangerFill, in: Circle())
                         .scaleEffect(min(1, -dragOffset / 80))
                 }
                 .padding(.trailing, DS.Spacing.lg)

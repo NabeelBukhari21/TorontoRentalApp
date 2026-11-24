@@ -87,6 +87,11 @@ extension DS {
             dark: Color(hex: 0xFF8A80)
         )
 
+        /// Deeper cherry, for the far end of brand gradients. Same in both
+        /// modes because it carries white labels (6.63); `brandInk` is light
+        /// in dark mode and must never sit under white.
+        static let brandDeep = Color(hex: 0xB02727)
+
         // MARK: Accents — bright fills
 
         /// Purr's gold. Not for text — see `accentGoldInk`.
@@ -272,6 +277,10 @@ extension DS {
         static let warning = accentGoldInk
         static let danger  = accentBlushInk
         static let info    = accentSkyInk
+
+        /// Danger as a FILL under white text (5.86), the same in both
+        /// modes: `danger` is a text colour and turns light in dark mode.
+        static let dangerFill = Color(hex: 0xB23A44)
 
         static let neutral = Color(
             light: Color(hex: 0x765A52),

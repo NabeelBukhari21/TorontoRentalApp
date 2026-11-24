@@ -14,7 +14,7 @@ struct DSCard<Content: View>: View {
         /// Soft grey `surface` card with a light shadow. Grouped content
         /// sitting directly on the white page.
         case elevated
-        /// White card, hairline edge, soft violet shadow. The standard card
+        /// White card, hairline edge, soft warm shadow. The standard card
         /// — reads cleanly on white and on the ambient background.
         /// (Was `.glass` in the previous theme.)
         case raised
@@ -79,7 +79,7 @@ struct DSStatCard: View {
     let value: String
     var icon: String? = nil
     var iconGradient: LinearGradient = DS.Gradients.brand
-    /// Glyph colour on `iconGradient`. `textOnBrand` suits the violet
+    /// Glyph colour on `iconGradient`. `textOnBrand` suits the cherry
     /// gradients; pass `textOnAccent` with `warm` or `fresh`, where white
     /// fails even the 3:1 icon minimum (1.38 on sunny).
     var iconForeground: Color = DS.Colors.textOnBrand

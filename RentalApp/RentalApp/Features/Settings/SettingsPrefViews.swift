@@ -382,7 +382,7 @@ struct SettingsAppearancePage: View {
         }
     }
 
-    /// The accent bar in each preview tile — the brand violet as it
+    /// The accent bar in each preview tile — the brand cherry as it
     /// actually renders in that mode.
     private func previewAccent(_ theme: AppTheme) -> Color {
         switch theme {

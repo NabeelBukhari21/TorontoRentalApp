@@ -111,10 +111,10 @@ struct DSButton: View {
 
     private var foregroundColor: Color {
         switch variant {
-        // White on violet 4.86 / on coral-ink 5.52 (light); dark ink in dark.
+        // White on cherry 5.25 (light), 4.75 (dark).
         case .primary, .destructive: DS.Colors.textOnBrand
-        // `brandInk`, not `brand`: on the 12% violet tint `brand` is 4.14,
-        // under AA; `brandInk` is 5.16.
+        // `brandInk`, not `brand`: on the 12% cherry tint `brand` is under 4.5,
+        // under AA; `brandInk` passes.
         case .secondary: DS.Colors.brandInk
         case .soft: DS.Colors.brandInk
         case .ghost: DS.Colors.textSecondary
@@ -131,7 +131,7 @@ struct DSButton: View {
         case .ghost:
             Color.clear
         case .destructive:
-            DS.Colors.danger
+            DS.Colors.dangerFill
         case .soft:
             DS.Colors.surfaceRaised
         }
