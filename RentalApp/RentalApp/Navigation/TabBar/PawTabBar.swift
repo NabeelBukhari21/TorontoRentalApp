@@ -133,7 +133,7 @@ struct PawTabBar: View {
                     .onChanged { value in
                         let tab = tab(at: value.location.x, width: size.width)
                         guard tab != model.hovered else { return }
-                        feedback?.play(model.hovered == nil ? .press : .scrub)
+                        feedback?.play(model.hovered == nil ? .tabPress : .scrub)
                         model.hovered = tab
                     }
                     .onEnded { value in
@@ -142,7 +142,7 @@ struct PawTabBar: View {
                         // Dragged well off the bar: never mind.
                         guard let tab, value.location.y > -70 else { return }
                         selection = tab
-                        if let index = AppTab.pawOrder.firstIndex(of: tab) { feedback?.play(.select(index)) }
+                        feedback?.play(.tabSelect)
                     }
             )
             .accessibilityRepresentation {

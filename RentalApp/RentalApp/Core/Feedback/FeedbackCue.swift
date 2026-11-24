@@ -42,8 +42,9 @@ enum FeedbackCue: Equatable, Sendable {
     /// Pull to refresh: far enough, and let go.
     case stretch, pounce
     /// Felt, not heard: a dial tick while scrolling (0…1, how fast), the
-    /// end of a list, and a finger crossing a tab.
-    case scrollTick(Float), scrollEnd, scrub
+    /// end of a list; and on the tab bar, a finger going down, crossing a
+    /// tab, and choosing one.
+    case scrollTick(Float), scrollEnd, tabPress, scrub, tabSelect
 
     /// The sound's file name; nil is only felt.
     var sound: String? {
@@ -68,7 +69,7 @@ enum FeedbackCue: Equatable, Sendable {
         case .stamp: "stamp"
         case .stretch: "tap"
         case .pounce: "pounce"
-        case .scrollTick, .scrollEnd, .scrub: nil
+        case .scrollTick, .scrollEnd, .tabPress, .scrub, .tabSelect: nil
         }
     }
 
@@ -119,6 +120,8 @@ enum FeedbackCue: Equatable, Sendable {
         case .stamp: [.init(time: 0, duration: 0.12, intensity: 0.05, sharpness: 0.1, endIntensity: 0.3), .init(time: 0.13, intensity: 1, sharpness: 0.15), .init(time: 0.16, intensity: 0.5, sharpness: 0.1)]
         case .scrollTick(let speed): [.init(time: 0, intensity: 0.22 + 0.25 * speed, sharpness: 0.75)]
         case .scrollEnd: [.init(time: 0, intensity: 0.55, sharpness: 0.25)]
+        case .tabPress: FeedbackCue.press.haptic
+        case .tabSelect: FeedbackCue.select(0).haptic
         case .scrub: [.init(time: 0, intensity: 0.5, sharpness: 0.8)]
         case .stretch: [.init(time: 0, intensity: 0.5, sharpness: 0.7)]
         case .pounce: [.init(time: 0.02, intensity: 0.4, sharpness: 0.5), .init(time: 0.2, intensity: 0.9, sharpness: 0.2)]
