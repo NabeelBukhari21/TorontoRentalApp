@@ -107,7 +107,16 @@ final class SessionViewModel {
     /// replays — including after a sign-out.
     func completeOnboarding() {
         markOnboardingSeen()
+        cameFromOnboarding = true
         transition(to: .unauthenticated)
+    }
+
+    /// Sign-in was opened from the welcome, so it can go back there.
+    private(set) var cameFromOnboarding = false
+
+    func returnToOnboarding() {
+        cameFromOnboarding = false
+        transition(to: .onboarding)
     }
 
     /// Called when onboarding ends with a brand-new account. Staff go on
@@ -338,9 +347,9 @@ final class SessionViewModel {
     private func transition(to next: AuthState, animated: Bool = true) {
         if DebugLaunchOverride.isOnboardingOnly {
             switch next {
-            case .unauthenticated, .awaitingMFA, .authenticated:
+            case .authenticated:
                 return restartOnboarding()
-            case .checking, .onboarding, .needsOrganization, .gettingStarted:
+            case .checking, .onboarding, .unauthenticated, .awaitingMFA, .needsOrganization, .gettingStarted:
                 break
             }
         }
@@ -358,6 +367,7 @@ final class SessionViewModel {
     /// Onboarding-only builds: anywhere past onboarding leads back to its
     /// start, with the answers cleared.
     private func restartOnboarding() {
+        cameFromOnboarding = false
         onboarding.profile = OnboardingProfile()
         onboarding.pendingActivationUserID = nil
         onboardingRun += 1

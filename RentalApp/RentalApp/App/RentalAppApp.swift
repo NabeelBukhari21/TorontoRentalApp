@@ -41,6 +41,8 @@ struct RentalAppApp: App {
         // rest of launch is exactly the one worth catching, and handlers
         // installed in `.task` or `onAppear` miss it.
         container.crashReporter.install()
+
+        TapAwayKeyboard.install()
     }
 
     var body: some Scene {

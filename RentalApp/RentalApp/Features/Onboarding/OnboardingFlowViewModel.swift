@@ -193,15 +193,49 @@ final class OnboardingFlowViewModel {
         }
     }
 
+    /// Every combination of headaches gets its own act (31 of them), so
+    /// each tap changes Purr. All stay on his feet and in the frame.
     private var headacheMood: PurrMood {
-        let headaches = profile.headaches
-        if headaches.isEmpty { return .begging }
-        if headaches.count > 2 { return .tantrum }
-        if headaches.contains(.repairs) { return .urgentIssue }
-        if headaches.contains(.lateRent) { return .rentOverdue }
-        if headaches.contains(.paperwork) { return .documents }
-        if headaches.contains(.tenantMessages) { return .newMessage }
-        return .vacancy
+        let picked = OnboardingHeadache.allCases.filter(profile.headaches.contains)
+        return switch picked {
+        case []: .begging
+        // One
+        case [.lateRent]: .rentOverdue
+        case [.repairs]: .builder
+        case [.tenantMessages]: .newMessage
+        case [.paperwork]: .analytics
+        case [.findingTenants]: .vacancy
+        // Two
+        case [.lateRent, .repairs]: .paymentFailed
+        case [.lateRent, .tenantMessages]: .loginFailed
+        case [.lateRent, .paperwork]: .freezing
+        case [.lateRent, .findingTenants]: .revenueDown
+        case [.repairs, .tenantMessages]: .hiccups
+        case [.repairs, .paperwork]: .assistantConfused
+        case [.repairs, .findingTenants]: .rainyDay
+        case [.tenantMessages, .paperwork]: .typing
+        case [.tenantMessages, .findingTenants]: .notFound
+        case [.paperwork, .findingTenants]: .sneeze
+        // Three
+        case [.lateRent, .repairs, .tenantMessages]: .melting
+        case [.lateRent, .repairs, .paperwork]: .dramaticFaint
+        case [.lateRent, .repairs, .findingTenants]: .peekaboo
+        case [.lateRent, .tenantMessages, .paperwork]: .blankStare
+        case [.lateRent, .tenantMessages, .findingTenants]: .favouriteTaken
+        case [.lateRent, .paperwork, .findingTenants]: .ghostMode
+        case [.repairs, .tenantMessages, .paperwork]: .drumRoll
+        case [.repairs, .tenantMessages, .findingTenants]: .shakeDry
+        case [.repairs, .paperwork, .findingTenants]: .karateChop
+        case [.tenantMessages, .paperwork, .findingTenants]: .laughCrying
+        // Four
+        case [.lateRent, .repairs, .tenantMessages, .paperwork]: .boxing
+        case [.lateRent, .repairs, .tenantMessages, .findingTenants]: .shocked
+        case [.lateRent, .repairs, .paperwork, .findingTenants]: .error
+        case [.lateRent, .tenantMessages, .paperwork, .findingTenants]: .workout
+        case [.repairs, .tenantMessages, .paperwork, .findingTenants]: .sleepwalk
+        // All five
+        default: .tantrum
+        }
     }
 
     /// The question Purr asks on a quiz step.
@@ -226,7 +260,7 @@ final class OnboardingFlowViewModel {
         case .headaches:
             profile.headaches.isEmpty
                 ? "Pick as many as you like. I've heard it all."
-                : "Ugh, I know. I'll take those off your plate."
+                : headacheLine
         case .goal:
             "If Purrperty does one thing brilliantly for you, what is it?"
         case .personalize:
@@ -235,6 +269,16 @@ final class OnboardingFlowViewModel {
                 : "Light, dark or match your iPhone. You can change it anytime in Settings."
         default:
             ""
+        }
+    }
+
+    private var headacheLine: String {
+        switch profile.headaches.count {
+        case 1: "Ugh, I know. I'll take that off your plate."
+        case 2: "Two at once? I've got four paws."
+        case 3: "Three! No wonder you need a cat."
+        case 4: "Four headaches… hand them over."
+        default: "All of it? Deep breath. I'm on it."
         }
     }
 

@@ -134,12 +134,12 @@ extension DS {
         ///
         /// Fixed colours (identity shouldn't change with dark mode), each
         /// pair chosen so white letters (`onFixedColor`) pass AA at BOTH
-        /// ends: every stop here is 4.75–6.63 against white.
+        /// ends: every stop here is at least 4.75 against white.
         static let monogramStops: [[Color]] = [
             [Color(hex: 0xCC2E2E), Color(hex: 0xB02727)], // cherry
-            [Color(hex: 0xCC2E2E), Color(hex: 0xB4501E)], // cherry → ember
-            [Color(hex: 0xB23A44), Color(hex: 0xCC2E2E)], // rose → cherry
-            [Color(hex: 0x855600), Color(hex: 0xB4501E)], // sunset
+            [Color(hex: 0xB4501E), Color(hex: 0x9A3B12)], // ember
+            [Color(hex: 0x8A2F63), Color(hex: 0xA83256)], // berry
+            [Color(hex: 0x855600), Color(hex: 0x7A4A00)], // gold
             [Color(hex: 0x116F57), Color(hex: 0x0B60BE)]  // mint → sky
         ]
 

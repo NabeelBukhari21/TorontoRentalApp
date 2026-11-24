@@ -194,6 +194,114 @@ struct OnboardingUnlockList: View {
     }
 }
 
+/// The unlocks in a deck that plainly scrolls: how many there are, the
+/// next card fading out of view, and a paw that says how many are left.
+struct OnboardingUnlockDeck: View {
+
+    let unlocks: [OnboardingUnlock]
+
+    @State private var position = ScrollPosition(edge: .top)
+    @State private var below: CGFloat = 0
+    @State private var contentHeight: CGFloat = 1
+    @State private var hasScrolled = false
+    @State private var bounce = false
+    @Environment(\.feedback) private var feedback
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private struct Extent: Equatable {
+        let below, content: CGFloat
+    }
+
+    /// Cards not fully on screen yet.
+    private var remaining: Int {
+        guard below > 14, !unlocks.isEmpty else { return 0 }
+        return min(unlocks.count, max(1, Int((below / (contentHeight / CGFloat(unlocks.count))).rounded(.up))))
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "lock.open.fill").accessibilityHidden(true)
+                Text("^[\(unlocks.count) thing](inflect: true) unlocked")
+                Spacer(minLength: 0)
+            }
+            .font(DS.Typography.brand(.subheadline, weight: .semibold))
+            .foregroundStyle(DS.Colors.brandInk)
+            .accessibilityElement(children: .combine)
+
+            ScrollView {
+                OnboardingUnlockList(unlocks: unlocks)
+                    .padding(.bottom, 12)
+            }
+            .scrollPosition($position)
+            .scrollBounceBehavior(.basedOnSize)
+            .onScrollGeometryChange(for: Extent.self) {
+                Extent(below: $0.contentSize.height - $0.visibleRect.maxY, content: $0.contentSize.height)
+            } action: { _, extent in
+                below = extent.below
+                contentHeight = max(extent.content, 1)
+            }
+            .onScrollPhaseChange { _, phase in
+                if phase == .interacting { hasScrolled = true }
+            }
+            .containerRelativeFrame(.vertical) { height, _ in height * 0.28 }
+            .mask {
+                // The last visible card fades, so there's clearly more.
+                VStack(spacing: 0) {
+                    Color.black
+                    LinearGradient(colors: [.black, .black.opacity(remaining > 0 ? 0.08 : 1)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 56)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if remaining > 0 { moreChip.transition(.scale.combined(with: .opacity)) }
+            }
+        }
+        .animation(DS.Motion.bouncy, value: remaining)
+        .task { await nudge() }
+    }
+
+    private var moreChip: some View {
+        Button {
+            hasScrolled = true
+            feedback?.play(.tap)
+            withAnimation(DS.Motion.smooth) { position.scrollTo(edge: .bottom) }
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: "pawprint.fill")
+                Text("\(remaining) more")
+                    .contentTransition(.numericText(value: Double(remaining)))
+                Image(systemName: "chevron.down")
+                    .offset(y: bounce ? 3 : -1)
+            }
+            .font(DS.Typography.brand(.subheadline, weight: .semibold))
+            .foregroundStyle(DS.Colors.textOnBrand)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 40)
+            .background(Capsule().fill(.clay(DS.Colors.brand, shade: DS.Colors.brandDeep, size: 40)))
+            .shadow(color: DS.Colors.groundShadow, radius: 8, y: 5)
+        }
+        .buttonStyle(SquishStyle(scale: 0.93))
+        .offset(y: 6)
+        .accessibilityLabel("Show \(remaining) more")
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { bounce = true }
+        }
+    }
+
+    /// Once dealt, the deck slides up a little and back, unless it's
+    /// already been moved.
+    private func nudge() async {
+        try? await Task.sleep(for: .seconds(2.2))
+        guard !reduceMotion, !hasScrolled, remaining > 0, !Task.isCancelled else { return }
+        withAnimation(.easeInOut(duration: 0.45)) { position.scrollTo(y: 46) }
+        try? await Task.sleep(for: .milliseconds(520))
+        guard !hasScrolled, !Task.isCancelled else { return }
+        withAnimation(DS.Motion.bouncy) { position.scrollTo(y: 0) }
+    }
+}
+
 // MARK: - Plain Page
 
 /// The same step as a scrolling page, where the scene wouldn't fit: at

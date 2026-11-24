@@ -135,6 +135,10 @@ struct GettingStartedView: View {
             VStack(alignment: .leading, spacing: 10) {
                 StageField(symbol: "mappin", prompt: "Street", text: $viewModel.draft.addressLine1)
                     .textContentType(.fullStreetAddress)
+                    .autocorrectionDisabled()
+                    .onChange(of: viewModel.draft.addressLine1) { _, street in viewModel.streetChanged(to: street) }
+                AddressSuggestionList(search: viewModel.address, onPick: viewModel.use)
+                AddressStatusView(search: viewModel.address, onPick: viewModel.use)
                 StageField(
                     symbol: "envelope.fill", prompt: "Postal code (optional)", text: $viewModel.draft.postalCode,
                     error: viewModel.postalCodeIsValid ? nil : "That doesn't look like a Canadian postal code."
@@ -144,6 +148,10 @@ struct GettingStartedView: View {
                 .autocorrectionDisabled()
                 StageField(symbol: "building.2.fill", prompt: "City", text: $viewModel.draft.city)
                     .textContentType(.addressCity)
+            }
+            .animation(DS.Motion.snappy, value: viewModel.address.suggestions)
+            .onChange(of: [viewModel.draft.city, viewModel.draft.postalCode]) { _, new in
+                viewModel.address.detailsChanged(city: new[0], postalCode: new[1])
             }
 
         case .name:
@@ -227,9 +235,17 @@ struct GettingStartedView: View {
             }
             StageLink(title: "Not now", action: viewModel.declineNotifications)
         default:
-            StageButton(title: viewModel.step == .units ? "Add property" : "Continue", isEnabled: viewModel.canContinue) {
+            StageButton(title: continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.step == .address && viewModel.address.status == .checking) {
                 viewModel.advance()
             }
+        }
+    }
+
+    private var continueTitle: String {
+        switch viewModel.step {
+        case .units: "Add property"
+        case .address where viewModel.address.isUnconfirmed: "Keep as typed"
+        default: "Continue"
         }
     }
 

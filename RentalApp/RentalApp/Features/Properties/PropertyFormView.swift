@@ -56,6 +56,15 @@ final class PropertyFormViewModel: ValidatedForm {
     let yearBuilt  = Field(rules: [.integer(in: 1800...2100, "Year built")])
     let squareFeet = Field(rules: [.integer(in: 0...1_000_000, "Square feet")])
 
+    /// Suggestions for the street, and whether the address is real.
+    let addressSearch = AddressSearch()
+
+    func use(_ found: ResolvedAddress) {
+        address.value = found.street
+        city.value = found.city
+        if !found.postalCode.isEmpty { postalCode.value = found.postalCode }
+    }
+
     var kind: PropertyKind = .condo
 
     private(set) var isSubmitting = false
@@ -245,6 +254,12 @@ struct PropertyFormView: View {
                                             placeholder: "Queen West Lofts")
                                 DSFormField(title: "Street address", field: viewModel.address,
                                             placeholder: "412 Queen St W")
+                                    .onChange(of: viewModel.address.value) { _, street in
+                                        // Not while the form fills itself in for editing.
+                                        if viewModel.address.hasChanged { viewModel.addressSearch.streetChanged(to: street) }
+                                    }
+                                AddressSuggestionList(search: viewModel.addressSearch, onPick: viewModel.use)
+                                AddressStatusView(search: viewModel.addressSearch, onPick: viewModel.use)
                                 HStack(spacing: DS.Spacing.md) {
                                     DSFormField(title: "City", field: viewModel.city)
                                     DSFormField(title: "Postal code", field: viewModel.postalCode,

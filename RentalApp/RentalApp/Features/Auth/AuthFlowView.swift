@@ -35,6 +35,10 @@ struct AuthFlowView: View {
     /// getting-started flow for it.
     let onSignedUp: (SignInOutcome) -> Void
 
+    /// Back from the login screen to the welcome, when that's where the
+    /// person came from.
+    private let onBack: (() -> Void)?
+
     /// Offered on the login screen when a biometric-gated session is
     /// already on this device.
     private let biometricUnlock: BiometricUnlockOption?
@@ -46,11 +50,13 @@ struct AuthFlowView: View {
     init(
         container: AppContainer = .shared,
         biometricUnlock: BiometricUnlockOption? = nil,
+        onBack: (() -> Void)? = nil,
         onAuthenticated: @escaping (SignInOutcome) -> Void,
         onSignedUp: ((SignInOutcome) -> Void)? = nil
     ) {
         self.onAuthenticated = onAuthenticated
         self.onSignedUp = onSignedUp ?? onAuthenticated
+        self.onBack = onBack
         self.biometricUnlock = biometricUnlock
         _viewModel = State(initialValue: AuthViewModel(
             auth: container.auth,
@@ -65,10 +71,10 @@ struct AuthFlowView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    if screen != .login {
+                    if screen != .login || onBack != nil {
                         HStack {
                             AuthBackButton {
-                                navigate(to: backDestination)
+                                if screen == .login { onBack?() } else { navigate(to: backDestination) }
                             }
                             Spacer()
                         }

@@ -151,6 +151,7 @@ struct RootNavigation: View {
             AuthenticationNavigation(
                 container: container,
                 biometricUnlock: biometricUnlock,
+                onBack: session.cameFromOnboarding ? { session.returnToOnboarding() } : nil,
                 onAuthenticated: { session.handle($0) },
                 onSignedUp: { session.handleSignUp($0) }
             )
@@ -160,10 +161,11 @@ struct RootNavigation: View {
             MFAFlowView(challenge: challenge, session: session)
                 .transition(.opacity)
 
-        case .needsOrganization:
+        case .needsOrganization(let account):
             OrgSetupFlowView(
                 container: container,
-                suggestedSize: container.onboardingProfile.profile.unitRange?.portfolioSize
+                suggestedSize: container.onboardingProfile.profile.unitRange?.portfolioSize,
+                ownerName: account.fullName
             ) { organizationID, organizationName in
                 Task {
                     await session.attachOrganization(id: organizationID, name: organizationName)

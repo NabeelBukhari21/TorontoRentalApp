@@ -26,7 +26,7 @@ enum OrgSetupStep: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .name: "Name your organization"
+        case .name: "Hang your sign"
         case .logo: "Add your logo"
         case .propertyType: "What do you manage?"
         case .portfolioSize: "How many properties?"
@@ -36,7 +36,7 @@ enum OrgSetupStep: Int, CaseIterable {
 
     var subtitle: String {
         switch self {
-        case .name: "This is how your workspace will appear to tenants and teammates."
+        case .name: "The name your tenants and team will see."
         case .logo: "Upload a logo, or pick a look for your monogram — you can change it anytime."
         case .propertyType: "We'll tailor your dashboard to your portfolio."
         case .portfolioSize: "Helps us set up the right views for your scale."
@@ -146,10 +146,12 @@ final class OrgSetupViewModel {
     // MARK: Dependencies
 
     private let service: OrganizationServiceProtocol
+    private let ownerName: String
 
     /// `suggestedSize` comes from the onboarding quiz, so a question
     /// already answered there arrives pre-selected (still changeable).
-    init(service: OrganizationServiceProtocol, suggestedSize: PortfolioSizeOption? = nil) {
+    init(service: OrganizationServiceProtocol, suggestedSize: PortfolioSizeOption? = nil, ownerName: String = "") {
+        self.ownerName = ownerName
         self.service = service
         self.portfolioSize = suggestedSize
     }
@@ -157,6 +159,26 @@ final class OrgSetupViewModel {
     // MARK: Answers
 
     var orgName = ""
+
+    static let maxNameLength = 40
+
+    /// Only while what's typed can't be used.
+    var nameError: String? {
+        let name = orgName.trimmingCharacters(in: .whitespaces)
+        if name.count == 1 { return "One more letter, at least." }
+        if name.count > Self.maxNameLength { return "Keep it to \(Self.maxNameLength) letters so it fits." }
+        return nil
+    }
+
+    /// Ideas from the account's own name.
+    var nameSuggestions: [String] {
+        let words = ownerName.split(separator: " ").map(String.init)
+        guard let first = words.first, let last = words.last else {
+            return ["Maple Rentals", "Northside Homes", "Lakeview Living"]
+        }
+        let possessive = first.hasSuffix("s") ? "\(first)’" : "\(first)’s"
+        return ["\(last) Rentals", "\(possessive) Homes", "\(last) Property Co.", "\(last) & Co. Living"]
+    }
     var logoImage: UIImage?
     var logoGradientIndex = 0
     var propertyType: PropertyTypeOption?
@@ -193,7 +215,7 @@ final class OrgSetupViewModel {
     var canContinue: Bool {
         switch step {
         case .name:
-            orgName.trimmingCharacters(in: .whitespaces).count >= 2
+            (2...Self.maxNameLength).contains(orgName.trimmingCharacters(in: .whitespaces).count)
         case .logo, .inviteTeam:
             true // optional steps
         case .propertyType:

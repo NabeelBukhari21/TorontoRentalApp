@@ -19,12 +19,14 @@ struct OrgSetupFlowView: View {
     init(
         container: AppContainer = .shared,
         suggestedSize: PortfolioSizeOption? = nil,
+        ownerName: String = "",
         onFinished: @escaping (_ organizationID: String, _ organizationName: String) -> Void
     ) {
         self.onFinished = onFinished
         _viewModel = State(initialValue: OrgSetupViewModel(
             service: container.organization,
-            suggestedSize: suggestedSize
+            suggestedSize: suggestedSize,
+            ownerName: ownerName
         ))
     }
 
@@ -114,7 +116,7 @@ extension OrgSetupStep {
     /// Clay props around Purr.
     var props: [String] {
         switch self {
-        case .name: ["building.2.fill", "pencil"]
+        case .name: ["hammer.fill", "paintbrush.fill"]
         case .logo: ["photo.fill", "paintbrush.fill"]
         case .propertyType: ["house.fill", "building.fill"]
         case .portfolioSize: ["chart.bar.fill", "house.and.flag.fill"]

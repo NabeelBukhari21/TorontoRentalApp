@@ -36,7 +36,7 @@ enum OnboardingPersona: String, Codable, CaseIterable, Identifiable, Sendable {
         switch self {
         case .landlord:        "Landlord or owner"
         case .propertyManager: "Property manager or team"
-        case .tenant:          "I rent my home"
+        case .tenant:          "I live in a rental"
         }
     }
 

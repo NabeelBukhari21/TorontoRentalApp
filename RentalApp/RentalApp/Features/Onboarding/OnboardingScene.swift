@@ -448,13 +448,7 @@ struct OnboardingScene: View {
         case .signUp:
             OnboardingSignUpForm(auth: viewModel.auth, focus: $focus, onSignIn: onSignIn)
         case .unlocked:
-            ScrollView {
-                OnboardingUnlockList(unlocks: viewModel.profile.unlocks)
-                    .padding(.bottom, 16)
-            }
-            .scrollIndicators(.hidden)
-            .scrollBounceBehavior(.basedOnSize)
-            .containerRelativeFrame(.vertical) { height, _ in height * 0.29 }
+            OnboardingUnlockDeck(unlocks: viewModel.profile.unlocks)
         default:
             let choices = viewModel.choices
             VStack(spacing: 12) {

@@ -43,6 +43,11 @@ final class GettingStartedViewModel {
     private(set) var movesForward = true
     var draft = PropertyDraft()
     var unitCount = 1
+    /// Suggestions for the street, and whether the address is real.
+    let address = AddressSearch()
+    /// The name suggested from the street, replaced if the street changes.
+    private var suggestedName = ""
+    private var filledPostalCode = ""
     private(set) var saveTasks: [OnboardingBuildTask] = []
     private(set) var saveError: String?
     /// The draft starts on a kind; this says the person picked it.
@@ -123,7 +128,7 @@ final class GettingStartedViewModel {
     var mascotLine: String {
         switch step {
         case .kind:    "Let's add your first property. It takes about a minute."
-        case .address: "Just the street is fine. I'll file everything under it."
+        case .address: "Start typing and pick it from the list. I'll check it's real."
         case .name:    "A nickname helps once you have a few. The address works too."
         case .units:   unitCount == 1 ? "One unit, nice and simple." : "\(unitCount) units. I'll set each one up."
         default:       ""
@@ -169,8 +174,7 @@ final class GettingStartedViewModel {
         case .address:
             // Suggest the street as the name; most landlords call a
             // place by its address anyway.
-            if trimmed(draft.name).isEmpty { draft.name = trimmed(draft.addressLine1) }
-            move(to: .name)
+            Task { await checkAddress() }
         case .name:
             move(to: .units)
         case .units:
@@ -184,6 +188,37 @@ final class GettingStartedViewModel {
             moveToPaywallOrFinish()
         case .paywall:
             finish()
+        }
+    }
+
+    /// Moves on from a real address. One that can't be found says so once,
+    /// then is kept as typed: new buildings aren't on every map.
+    private func checkAddress() async {
+        guard await address.check(
+            street: trimmed(draft.addressLine1), city: trimmed(draft.city), postalCode: trimmed(draft.postalCode)
+        ) else { return }
+        if case .verified(let found) = address.status { use(found) }
+        if trimmed(draft.name).isEmpty || draft.name == suggestedName {
+            suggestedName = trimmed(draft.addressLine1)
+            draft.name = suggestedName
+        }
+        move(to: .name)
+    }
+
+    func use(_ found: ResolvedAddress) {
+        draft.addressLine1 = found.street
+        draft.city = found.city
+        filledPostalCode = found.postalCode
+        if !found.postalCode.isEmpty { draft.postalCode = found.postalCode }
+    }
+
+    func streetChanged(to street: String) {
+        address.streetChanged(to: street)
+        // A different street: the postal code filled in for the last one
+        // no longer belongs.
+        if address.status == .idle, !filledPostalCode.isEmpty, draft.postalCode == filledPostalCode {
+            draft.postalCode = ""
+            filledPostalCode = ""
         }
     }
 

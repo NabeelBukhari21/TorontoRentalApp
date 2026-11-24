@@ -41,21 +41,109 @@ struct OrgNameStep: View {
     @Bindable var viewModel: OrgSetupViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
-            StageField(symbol: "building.2.fill", prompt: "Organization name", text: $viewModel.orgName)
-                .textContentType(.organizationName)
+        VStack(spacing: 14) {
+            OrgShopSign(
+                name: viewModel.orgName, monogram: viewModel.monogram,
+                colors: OrgSetupViewModel.monogramGradients[viewModel.logoGradientIndex]
+            )
 
-            HStack(spacing: 12) {
-                OrgMark(viewModel: viewModel, size: 44)
-                Text(viewModel.orgName.isEmpty ? "Your Workspace" : viewModel.orgName)
-                    .font(DS.Typography.brand(.headline, weight: .semibold))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .lineLimit(1)
+            StageField(symbol: "signpost.right.fill", prompt: "Organization name", text: $viewModel.orgName, error: viewModel.nameError)
+                .textContentType(.organizationName)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .overlay(alignment: .topTrailing) {
+                    if viewModel.canContinue {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(DSAccent.mint.ink)
+                            .frame(height: 52)
+                            .padding(.trailing, 14)
+                            .transition(.scale.combined(with: .opacity))
+                            .accessibilityHidden(true)
+                    }
+                }
+                .animation(DS.Motion.bouncy, value: viewModel.canContinue)
+
+            suggestions
+
+            HStack(spacing: 8) {
+                Text("Sign colour")
+                    .font(DS.Typography.brand(.subheadline))
+                    .foregroundStyle(DS.Colors.textSecondary)
                 Spacer(minLength: 0)
-                DSBadge(text: "Preview", kind: .info)
+                OrgColourPicker(selection: $viewModel.logoGradientIndex)
             }
-            .stagePanel()
-            .animation(DS.Motion.gentle, value: viewModel.orgName)
+        }
+    }
+
+    private var suggestions: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(Array(viewModel.nameSuggestions.enumerated()), id: \.element) { index, name in
+                    SuggestionChip(name: name, index: index, isSelected: viewModel.orgName == name) {
+                        viewModel.orgName = name
+                        TapAwayKeyboard.dismiss()
+                    }
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+        .scrollClipDisabled()
+    }
+
+    private struct SuggestionChip: View {
+        let name: String
+        let index: Int
+        let isSelected: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                HStack(spacing: 6) {
+                    if index == 0 { Image(systemName: "sparkles") }
+                    Text(name)
+                }
+                .font(DS.Typography.brand(.subheadline, weight: .semibold))
+                .foregroundStyle(isSelected ? DS.Colors.textOnBrand : DS.Colors.textPrimary)
+                .padding(.horizontal, 14)
+                .frame(minHeight: 44)
+                .background(Capsule().fill(isSelected ? DS.Colors.brand : DS.Colors.surface))
+            }
+            .buttonStyle(SquishStyle(scale: 0.93, cue: .select(index)))
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+        }
+    }
+}
+
+// MARK: - Colours
+
+/// The sign's and monogram's colour.
+struct OrgColourPicker: View {
+
+    @Binding var selection: Int
+    @Environment(\.feedback) private var feedback
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(OrgSetupViewModel.monogramGradients.indices, id: \.self) { index in
+                Button {
+                    feedback?.play(.select(index))
+                    withAnimation(DS.Motion.bouncy) { selection = index }
+                } label: {
+                    Circle()
+                        .fill(LinearGradient(colors: OrgSetupViewModel.monogramGradients[index], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 34, height: 34)
+                        .overlay(Circle().strokeBorder(
+                            selection == index ? DS.Colors.textPrimary : DS.Colors.outline, lineWidth: 2.5
+                        ))
+                        .scaleEffect(selection == index ? 1.15 : 1)
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(SquishStyle(scale: 0.85))
+                .accessibilityLabel("Colour \(index + 1)")
+                .accessibilityAddTraits(selection == index ? .isSelected : [])
+            }
         }
     }
 }
@@ -66,7 +154,6 @@ struct OrgLogoStep: View {
 
     @Bindable var viewModel: OrgSetupViewModel
     @State private var pickerItem: PhotosPickerItem?
-    @Environment(\.feedback) private var feedback
 
     var body: some View {
         VStack(spacing: 16) {
@@ -76,26 +163,7 @@ struct OrgLogoStep: View {
 
             // Monogram gradient choices (hidden once a photo is set).
             if viewModel.logoImage == nil {
-                HStack(spacing: 12) {
-                    ForEach(OrgSetupViewModel.monogramGradients.indices, id: \.self) { index in
-                        Button {
-                            feedback?.play(.select(index))
-                            withAnimation(DS.Motion.bouncy) { viewModel.logoGradientIndex = index }
-                        } label: {
-                            Circle()
-                                .fill(LinearGradient(colors: OrgSetupViewModel.monogramGradients[index], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 36, height: 36)
-                                .overlay(Circle().strokeBorder(
-                                    viewModel.logoGradientIndex == index ? DS.Colors.textPrimary : DS.Colors.outline, lineWidth: 2.5
-                                ))
-                                .scaleEffect(viewModel.logoGradientIndex == index ? 1.15 : 1)
-                                .frame(width: 44, height: 44)
-                        }
-                        .buttonStyle(SquishStyle(scale: 0.85))
-                        .accessibilityLabel("Colour \(index + 1)")
-                        .accessibilityAddTraits(viewModel.logoGradientIndex == index ? .isSelected : [])
-                    }
-                }
+                OrgColourPicker(selection: $viewModel.logoGradientIndex)
                 .transition(.opacity)
             }
 

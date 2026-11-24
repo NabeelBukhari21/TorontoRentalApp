@@ -102,28 +102,27 @@ struct OnboardingWelcomeStep: View {
 
 // MARK: - Intro Fly-over
 
-/// The fly-over: a drawn Toronto, a building opened floor by floor,
-/// tenants and a vendor visit, with a short score (silent switch and the
-/// sound setting apply). Skippable; moves on by itself at
-/// the end. With Reduce Motion it shows the closing frame instead.
+/// The fly-over: Toronto in 3D, live. Offline, and where there's no 3D
+/// imagery, the drawn film plays instead; with Reduce Motion it shows that
+/// film's closing frame. Skippable; moves on by itself at the end.
 struct OnboardingIntroStep: View {
 
     let onFinished: (_ skipped: Bool) -> Void
 
-    @State private var player = VideoClipPlayer(resource: "PurrIntroFlyover")
+    @State private var style = FlyoverChoice.current
+    @State private var usesFilm = !FlyoverChoice.canFlyLive
     @State private var didFinish = false
-    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    /// The closing frame: Purr cheering over the name.
-    private static let posterTime = CMTime(value: 255, timescale: 30)
 
     var body: some View {
         ZStack {
             DS.Colors.launchBackground.ignoresSafeArea()
-            VideoClipSurface(player: player.player, gravity: .resizeAspectFill)
-                .ignoresSafeArea()
-                .accessibilityLabel("A map of Toronto tilts into 3D, a building opens floor by floor to show its units and tenants, then Purr cheers.")
+            if usesFilm || reduceMotion {
+                IntroFilm { finish(skipped: $0) }
+            } else {
+                LiveFlyover(style: style, onLanded: { finish(skipped: false) }, onUnavailable: { usesFilm = true })
+                    .id(style)
+            }
         }
         .overlay(alignment: .topTrailing) {
             if !reduceMotion {
@@ -131,46 +130,120 @@ struct OnboardingIntroStep: View {
                     Text("Skip")
                         .font(DS.Typography.brand(.subheadline, weight: .semibold))
                         .foregroundStyle(DS.Colors.textPrimary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .glassEffect(.regular.interactive(), in: .capsule)
+                        .padding(.horizontal, 18)
+                        .frame(minHeight: 44)
+                        .background(Capsule().fill(DS.Colors.surfaceRaised))
+                        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
                 }
                 .buttonStyle(SquishStyle())
                 .padding(.top, 8)
                 .padding(.trailing, 16)
             }
         }
-        .overlay(alignment: .bottom) {
-            if reduceMotion {
-                PrimaryActionButton(title: "Continue") { finish(skipped: false) }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 16)
-            }
+        #if DEBUG
+        .overlay(alignment: .topLeading) {
+            if DebugLaunchOverride.isOnboardingOnly, !usesFilm, !reduceMotion { picker }
         }
-        .onAppear {
-            guard player.isAvailable else { return finish(skipped: true) }
-            if reduceMotion {
-                player.hold(at: Self.posterTime)
-            } else {
-                player.playFromStart()
-                feedback?.startMusic("flyover")
-            }
-        }
-        .onDisappear {
-            player.reset()
-            feedback?.stopMusic()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification, object: player.item)) { _ in
-            player.didPlayToEnd()
-            finish(skipped: false)
-        }
+        #endif
     }
 
     private func finish(skipped: Bool) {
         guard !didFinish else { return }
         didFinish = true
-        player.player.pause()
         onFinished(skipped)
+    }
+
+    #if DEBUG
+    /// Test builds: the three flights, to choose from.
+    private var picker: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(zip(["A", "B", "C"], FlyoverStyle.allCases)), id: \.1) { letter, option in
+                Button {
+                    FlyoverChoice.current = option
+                    style = option
+                } label: {
+                    Text(letter)
+                        .font(DS.Typography.brand(.subheadline, weight: .semibold))
+                        .foregroundStyle(style == option ? DS.Colors.textOnBrand : DS.Colors.textPrimary)
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(style == option ? DS.Colors.brand : DS.Colors.surfaceRaised))
+                }
+                .buttonStyle(SquishStyle())
+                .accessibilityLabel("Flight \(letter)")
+            }
+        }
+        .padding(.top, 8)
+        .padding(.leading, 16)
+    }
+    #endif
+}
+
+/// Which flight plays, and whether this device can fly it.
+@MainActor
+enum FlyoverChoice {
+    private static let key = "PurrpertyFlyover"
+
+    static var current: FlyoverStyle {
+        get {
+            #if DEBUG
+            UserDefaults.standard.string(forKey: key).flatMap(FlyoverStyle.init(rawValue:)) ?? .skyline
+            #else
+            .skyline
+            #endif
+        }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: key) }
+    }
+
+    /// The simulator has no 3D imagery, unless it's given rendered frames.
+    static var canFlyLive: Bool {
+        #if targetEnvironment(simulator)
+        UserDefaults.standard.string(forKey: "PurrpertyFlyoverFrames") != nil
+        #else
+        true
+        #endif
+    }
+}
+
+/// The drawn film, with its short score.
+private struct IntroFilm: View {
+
+    let onFinished: (_ skipped: Bool) -> Void
+
+    @State private var player = VideoClipPlayer(resource: "PurrIntroFlyover")
+    @Environment(\.feedback) private var feedback
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The closing frame: Purr cheering over the name.
+    private static let posterTime = CMTime(value: 255, timescale: 30)
+
+    var body: some View {
+        VideoClipSurface(player: player.player, gravity: .resizeAspectFill)
+            .ignoresSafeArea()
+            .accessibilityLabel("A map of Toronto tilts into 3D, a building opens floor by floor to show its units and tenants, then Purr cheers.")
+            .overlay(alignment: .bottom) {
+                if reduceMotion {
+                    PrimaryActionButton(title: "Continue") { onFinished(false) }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 16)
+                }
+            }
+            .onAppear {
+                guard player.isAvailable else { return onFinished(true) }
+                if reduceMotion {
+                    player.hold(at: Self.posterTime)
+                } else {
+                    player.playFromStart()
+                    feedback?.startMusic("flyover")
+                }
+            }
+            .onDisappear {
+                player.reset()
+                feedback?.stopMusic()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification, object: player.item)) { _ in
+                player.didPlayToEnd()
+                onFinished(false)
+            }
     }
 }
 

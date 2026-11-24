@@ -37,7 +37,7 @@ struct PaywallFlowView: View {
         PurrStage(
             step: viewModel.step,
             accent: viewModel.step == .timeline ? .sky : viewModel.step == .plans ? .mint : .gold,
-            mood: viewModel.step == .intro ? .referralReward : viewModel.step == .timeline ? .reminder : .thankYou,
+            mood: viewModel.step == .intro ? .inviteFriends : viewModel.step == .timeline ? .reminder : .thankYou,
             title: title,
             line: viewModel.step == .intro ? "Everything you asked for, and more." : "",
             movesForward: viewModel.movesForward,
