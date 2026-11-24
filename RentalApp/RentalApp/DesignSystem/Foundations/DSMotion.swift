@@ -21,6 +21,9 @@ extension DS {
         /// Playful emphasis — badges appearing, success states.
         static let bouncy = Animation.spring(response: 0.5, dampingFraction: 0.65)
 
+        /// Whole scenes moving on — onboarding steps.
+        static let scene = Animation.spring(response: 0.7, dampingFraction: 0.82)
+
         /// Content entrances — cards sliding in.
         static let entrance = Animation.spring(response: 0.55, dampingFraction: 0.8)
 

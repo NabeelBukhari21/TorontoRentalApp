@@ -153,20 +153,55 @@ final class OnboardingFlowViewModel {
 
     // MARK: Purr
 
-    /// Purr acts out each step. Answering a question earns a reaction.
+    /// Purr acts out each step, and then the answer itself.
     var mascotMood: PurrMood {
         switch step {
-        case .welcome:     .welcome
-        case .intro:       .dashboard
-        case .persona:     profile.persona == nil ? .assistantThinking : .welcomeBack
-        case .units:       profile.unitRange == nil ? .properties : .fullyOccupied
-        case .headaches:   profile.headaches.isEmpty ? .begging : .thankYou
-        case .goal:        profile.goal == nil ? .assistantIdea : .clapping
-        case .personalize: .appearance
-        case .building:    .builder
-        case .unlocked:    .celebrate
-        case .signUp:      .signUp
+        case .welcome: .welcome
+        case .intro: .dashboard
+        case .persona:
+            switch profile.persona {
+            case nil: .assistantThinking
+            case .landlord: .keysReady
+            case .propertyManager: .superhero
+            case .tenant: .moveInDay
+            }
+        case .units:
+            switch profile.unitRange {
+            case nil: .properties
+            case .one: .favourited
+            case .twoToFive: .keysReady
+            case .sixToTwenty: .fullyOccupied
+            case .twentyPlus: .royalWave
+            }
+        case .headaches: headacheMood
+        case .goal:
+            switch profile.goal {
+            case nil: .assistantIdea
+            case .saveTime: .meditate
+            case .getPaidOnTime: .moneyDance
+            case .fewerVacancies: .victoryLap
+            }
+        case .personalize:
+            switch preferences.theme {
+            case .system: .appearance
+            case .light: .goodMorning
+            case .dark: .stargazing
+            }
+        case .building: .builder
+        case .unlocked: .partyTime
+        case .signUp: .signUp
         }
+    }
+
+    private var headacheMood: PurrMood {
+        let headaches = profile.headaches
+        if headaches.isEmpty { return .begging }
+        if headaches.count > 2 { return .tantrum }
+        if headaches.contains(.repairs) { return .urgentIssue }
+        if headaches.contains(.lateRent) { return .rentOverdue }
+        if headaches.contains(.paperwork) { return .documents }
+        if headaches.contains(.tenantMessages) { return .newMessage }
+        return .vacancy
     }
 
     /// The question Purr asks on a quiz step.
@@ -233,7 +268,8 @@ final class OnboardingFlowViewModel {
 
     private func move(to next: OnboardingStep, forward: Bool) {
         movesForward = forward
-        withAnimation(DS.Motion.smooth) { step = next }
+        if next == .building { buildTasks = [] }
+        withAnimation(DS.Motion.scene) { step = next }
         Task { await analytics.track(.onboardingStepViewed(step: next.rawValue)) }
 
         if next == .building {
@@ -313,7 +349,8 @@ final class OnboardingFlowViewModel {
             withAnimation(DS.Motion.bouncy) { setState(.done, for: task.id) }
         }
 
-        try? await Task.sleep(for: .milliseconds(450))
+        // Long enough for the liquid to reach the top.
+        try? await Task.sleep(for: .milliseconds(800))
         if step == .building { advance() }
     }
 

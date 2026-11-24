@@ -138,8 +138,16 @@ colourful, for students, on a white background.
     six-dot loader → logo; brief pop for returning users), welcome
     (feature-card marquees, paw button, terms chip, sleepy-Purr sign-in)
     and the Dollhouse fly-over (`PurrIntroFlyover.mp4`). Brand font:
-    Fredoka (`DS.Typography.brand`, bundled, OFL). Screens 1.3–1.11 are
-    the next round.
+    Fredoka (`DS.Typography.brand`, bundled, OFL). 
+  - onboarding round 2, screens 1.3–1.11, as one continuous scene
+    (`OnboardingScene`): Purr, the progress tube and the main button
+    persist; the next colour spreads as a liquid drop. Staging per step
+    (picked from three studies): counter (1.3, 1.4, 1.9–1.11), giant Purr
+    (1.5, 1.8), orbiting bubbles (1.6, 1.7). Plain scrolling page at
+    accessibility text sizes and in landscape. `LivingPurr` (never resize
+    the Rive canvas while animating), `Clay`, `SceneDepth`,
+    `LiquidBackdrop`. Record it with `-PurrpertyStartAt onboarding
+    -PurrpertyAutopilot YES` (see `OnboardingAutopilot`).
   - Rive Purr in four looks, red and gold palette
   - "Peek-a-roof" logo: layered Liquid Glass `AppIcon.icon` plus the
     in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`

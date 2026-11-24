@@ -80,10 +80,11 @@ extension GraphicsContext {
     /// above half opacity, in one colour. Shapes that touch fuse into one
     /// smooth blob and pull apart like liquid.
     func liquidLayer(color: Color, blur: CGFloat = 9, _ draw: (inout GraphicsContext) -> Void) {
-        drawLayer { layer in
-            layer.addFilter(.alphaThreshold(min: 0.5, color: color))
-            layer.addFilter(.blur(radius: blur))
-            draw(&layer)
-        }
+        // The filters must be on the context the layer is drawn into; on
+        // the layer itself they'd run per shape, and nothing would fuse.
+        var filtered = self
+        filtered.addFilter(.alphaThreshold(min: 0.5, color: color))
+        filtered.addFilter(.blur(radius: blur))
+        filtered.drawLayer { draw(&$0) }
     }
 }

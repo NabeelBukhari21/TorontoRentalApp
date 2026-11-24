@@ -90,27 +90,6 @@ struct OnboardingChecklistRow: View {
     }
 }
 
-// MARK: - Unlock Row
-
-struct OnboardingUnlockRow: View {
-
-    let unlock: OnboardingUnlock
-
-    var body: some View {
-        Label {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(unlock.title)
-                Text(unlock.detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        } icon: {
-            SymbolTile(systemName: unlock.icon, color: unlock.tint)
-        }
-        .accessibilityElement(children: .combine)
-    }
-}
-
 // MARK: - Progress
 
 /// Goal-gradient progress (playbook §5) for the navigation bar.
