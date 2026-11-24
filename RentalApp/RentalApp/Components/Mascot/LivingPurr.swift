@@ -41,6 +41,7 @@ struct LivingPurr<Beat: Equatable>: View {
         }
         .frame(width: Self.canvas, height: Self.canvas)
         .scaleEffect(size / Self.canvas)
+        .frame(width: size, height: size)
         .allowsHitTesting(false)
     }
 

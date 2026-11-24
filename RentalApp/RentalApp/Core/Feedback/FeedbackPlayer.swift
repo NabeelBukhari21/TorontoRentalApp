@@ -23,6 +23,7 @@ final class FeedbackPlayer {
     private let preferences: PreferencesRepositoryProtocol
     private var sounds: [String: AVAudioPlayer] = [:]
     private var engine: CHHapticEngine?
+    private var music: AVAudioPlayer?
     private var isPrepared = false
 
     init(preferences: PreferencesRepositoryProtocol) {
@@ -69,6 +70,29 @@ final class FeedbackPlayer {
         player.currentTime = 0
         let started = player.play()
         AppLog.app.debug("Feedback: \(cue.sound, privacy: .public) \(started ? "played" : "refused", privacy: .public)")
+    }
+
+    // MARK: Music
+
+    /// Starts a score from the top, if sounds are on.
+    func startMusic(_ name: String) {
+        guard preferences.soundEffectsEnabled, !UIAccessibility.isVoiceOverRunning,
+              let url = Bundle.main.url(forResource: name, withExtension: "m4a"),
+              let player = try? AVAudioPlayer(contentsOf: url) else { return }
+        player.volume = 0.8
+        player.play()
+        music = player
+    }
+
+    /// Fades the score out.
+    func stopMusic() {
+        guard let player = music else { return }
+        music = nil
+        player.setVolume(0, fadeDuration: 0.35)
+        Task {
+            try? await Task.sleep(for: .milliseconds(400))
+            player.stop()
+        }
     }
 
     // MARK: Haptics

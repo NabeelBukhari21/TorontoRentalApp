@@ -14,11 +14,18 @@ struct DashboardView: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.container) private var container
     @State private var viewModel: DashboardViewModel
+    @State private var showsWardrobe = false
+    @Environment(\.feedback) private var feedback
+    @Environment(\.toasts) private var toasts
 
     init(container: AppContainer = .shared) {
         _viewModel = State(initialValue: DashboardViewModel(
             dashboard: container.dashboard,
-            notifications: container.notifications
+            notifications: container.notifications,
+            payments: container.payments,
+            weather: container.weather,
+            wardrobe: container.wardrobe,
+            preferences: container.preferences
         ))
     }
 
@@ -37,13 +44,17 @@ struct DashboardView: View {
                     // The mascot's brief: the one thing that matters most
                     // right now, in a sentence.
                     if !viewModel.isLoading {
-                        DashboardMascotBrief(
-                            urgentTasks: viewModel.tasks.filter { $0.isUrgent && !$0.isDone }.count,
-                            openRequests: viewModel.openRequestCount,
-                            openTasks: viewModel.tasks.filter { !$0.isDone }.count,
-                            occupancyRate: viewModel.occupancyRate,
-                            unitCount: viewModel.unitCount
-                        )
+                        HomeScene(
+                            brief: DashboardBrief(
+                                urgentTasks: viewModel.tasks.filter { $0.isUrgent && !$0.isDone }.count,
+                                openRequests: viewModel.openRequestCount,
+                                openTasks: viewModel.tasks.filter { !$0.isDone }.count,
+                                occupancyRate: viewModel.occupancyRate,
+                                unitCount: viewModel.unitCount
+                            ),
+                            weather: viewModel.weather,
+                            outfit: viewModel.wardrobe.worn
+                        ) { showsWardrobe = true }
                         .dsEntrance(index: 0)
                     }
 
@@ -57,6 +68,11 @@ struct DashboardView: View {
                         revenue: viewModel.revenue
                     )
                     .dsEntrance(index: 0)
+
+                    if !viewModel.streak.months.isEmpty {
+                        RentStreakCard(streak: viewModel.streak) { router.push(.rentCollection) }
+                            .dsEntrance(index: 1)
+                    }
 
                     // Stats grid.
                     LazyVGrid(columns: statColumns, spacing: DS.Spacing.md) {
@@ -79,10 +95,12 @@ struct DashboardView: View {
                         .dsEntrance(index: 5)
 
                     // AI insights.
-                    DashboardAIInsightsCard(insights: viewModel.insights) { _ in
-                        router.push(.assistant)
+                    if !viewModel.insights.isEmpty {
+                        DashboardAIInsightsCard(insights: viewModel.insights) { _ in
+                            router.push(.assistant)
+                        }
+                        .dsEntrance(index: 6)
                     }
-                    .dsEntrance(index: 6)
 
                     // Occupancy.
                     DashboardOccupancyCard(
@@ -117,7 +135,7 @@ struct DashboardView: View {
                 }
                 .padding(DS.Spacing.lg)
             }
-            .refreshable { await viewModel.refresh() }
+            .purrRefreshable { await viewModel.refresh() }
 
             if viewModel.isLoading {
                 VStack(spacing: DS.Spacing.lg) {
@@ -135,6 +153,17 @@ struct DashboardView: View {
             }
         }
         .task { await viewModel.load() }
+        .task { await viewModel.loadExtras() }
+        .sheet(isPresented: $showsWardrobe) { WardrobeView(wardrobe: viewModel.wardrobe) }
+        .onChange(of: viewModel.newOutfits) { _, outfits in
+            guard !outfits.isEmpty else { return }
+            feedback?.play(.celebrate)
+            toasts.success(
+                outfits.count == 1 ? "New outfit for Purr: \(outfits[0].title)" : "\(outfits.count) new outfits for Purr",
+                mood: outfits[0].mood ?? .celebrate
+            )
+            viewModel.announcedOutfits()
+        }
         .liveUpdates(container.sync) {
             LiveList.reloadSubscription(topic: .properties) {
                 await viewModel.refresh()

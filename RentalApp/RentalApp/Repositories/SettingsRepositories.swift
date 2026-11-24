@@ -155,6 +155,9 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var hapticsEnabled = InMemoryPreferencesRepository.storedFlag(hapticsKey) {
         didSet { UserDefaults.standard.set(hapticsEnabled, forKey: Self.hapticsKey) }
     }
+    var showsWeather = InMemoryPreferencesRepository.storedFlag(weatherKey) {
+        didSet { UserDefaults.standard.set(showsWeather, forKey: Self.weatherKey) }
+    }
     var reduceGlassEffects = false
     var showPortfolioValueOnHome = true
 
@@ -173,6 +176,7 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     private static let purrStyleKey = "appearance.purrStyle.v1"
 
     private static let soundEffectsKey = "feedback.sounds.v1"
+    private static let weatherKey = "home.weather.v1"
     private static let hapticsKey = "feedback.haptics.v1"
 
     /// On until someone turns it off.

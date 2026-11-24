@@ -125,7 +125,7 @@ struct TenantListView: View {
                 .padding(DS.Spacing.lg)
                 .animation(DS.Motion.smooth, value: viewModel.filteredTenants.map(\.id))
             }
-            .refreshable { await viewModel.refresh() }
+            .purrRefreshable { await viewModel.refresh() }
         }
         .task { await viewModel.load() }
         .liveUpdates(container.sync) {

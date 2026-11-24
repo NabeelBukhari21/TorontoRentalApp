@@ -132,6 +132,21 @@ def main():
     for i, f in enumerate((C5, D5, E5, G5, A5, C6, D6)):
         save(f"deal{i}", mix((0, 0.35, whoosh(0.1, 900, 3200)), (0.015, 1, mallet(f, 0.3, 0.07))), 0.3)
 
+    # Rent going in the jar: three clinks, so a run of coins isn't a machine.
+    for i, f in enumerate((2093.0, 2349.3, 1975.5)):
+        x = t(0.3)
+        clink = sum(a * np.sin(2 * np.pi * f * m * x) * env(x, 0.0008, d) for m, a, d in ((1, 1, 0.07), (1.51, 0.6, 0.05), (2.74, 0.4, 0.03)))
+        save(f"coin{i}", clink, 0.26)
+
+    # A paw stamp: a wind-up, then a thump on a desk.
+    x = t(0.3)
+    thump = np.sin(2 * np.pi * np.cumsum(120 * np.exp(-x * 14) + 52) / SR) * env(x, 0.001, 0.09)
+    slap = lowpass(rng.standard_normal(len(x)), 1500) * env(x, 0.0005, 0.02)
+    save("stamp", mix((0, 0.25, whoosh(0.14, 500, 2400)), (0.13, 1, thump), (0.13, 0.7, slap), (0.2, 0.35, mallet(C5, 0.5, 0.15)), (0.27, 0.35, mallet(G5, 0.5, 0.15))), 0.5)
+
+    # Pull to refresh: Purr pounces, then it's done.
+    save("pounce", mix((0, 0.6, whoosh(0.2, 400, 2600)), (0.06, 0.8, bloop(300, 900, 0.16, 0.06)), (0.2, 0.7, thump)), 0.36)
+
     # Never a buzzer: two low, soft notes.
     save("error", mix((0, 1, mallet(233.08, 0.4, 0.12, 0.15)), (0.12, 1, mallet(196.0, 0.5, 0.16, 0.15))), 0.4)
 
@@ -149,6 +164,48 @@ def main():
     motor /= np.max(np.abs(motor))
     voice /= np.max(np.abs(voice))
     save("purr", mix((0, 0.8, voice), (0.28, 0.5, motor)), 0.4)
+
+    save("flyover", flyover(), 0.5)
+
+
+def pad(f, seconds):
+    """A warm held note: two detuned voices, slow in and out."""
+    x = t(seconds)
+    v = sum(np.sin(2 * np.pi * f * d * x) + 0.3 * np.sin(4 * np.pi * f * d * x) for d in (0.997, 1.003))
+    return v * np.minimum(x / 0.35, 1) * np.minimum((seconds - x) / 0.5, 1)
+
+
+def flyover():
+    """The score for PurrIntroFlyover.mp4 (8.73 s): the map lifts off, the
+    building opens floor by floor, and it lands on Purr's cheer at 7.2 s."""
+    beat = 60 / 125
+    C, G, A, F = 130.81, 98.0, 110.0, 87.31
+    chords = [(C, (523.25, 659.25, 783.99)), (A, (440.0, 523.25, 659.25)), (F, (349.23, 440.0, 523.25)), (G, (392.0, 493.88, 587.33))]
+    parts = [(0, 0.5, whoosh(1.1, 200, 2400)), (6.55, 0.5, whoosh(0.75, 250, 3200))]
+    pattern = (0, 1, 2, 1, 0, 2, 1, 2)
+    for bar in range(4):
+        root, notes = chords[bar]
+        start = 0.35 + bar * beat * 3.5
+        parts.append((start, 0.10, pad(root, beat * 3.6)))
+        parts.append((start, 0.10, pad(root * 2, beat * 3.6)))
+        for step in range(7):
+            at = start + step * beat / 2
+            # Grows as the building opens.
+            parts.append((at, 0.30 + 0.09 * bar, mallet(notes[pattern[step]] * (2 if bar >= 2 and step % 2 else 1), 0.5, 0.14)))
+        for k in range(2):
+            x = t(0.2)
+            parts.append((start + k * beat * 2, 0.35, np.sin(2 * np.pi * np.cumsum(90 * np.exp(-x * 20) + 48) / SR) * env(x, 0.001, 0.07)))
+        # A door, a floor, a tenant: one bubble on the turn of each bar.
+        parts.append((start, 0.35, bloop(350 + 80 * bar, 800 + 120 * bar, 0.2, 0.07)))
+    for i, f in enumerate((C5, E5, G5, C6)):
+        parts.append((7.0 + i * 0.07, 0.6, mallet(f, 0.8, 0.22)))
+        parts.append((7.28, 0.5, mallet(f, 1.4, 0.42)))
+    parts.append((7.28, 0.16, pad(C, 1.4)))
+    for i, f in enumerate((C6, E6, G6, D6, G6, E6)):
+        parts.append((7.35 + i * 0.07, 0.14, glass(f, 0.5, 0.15)))
+    out = mix(*parts)[:int(SR * 8.73)]
+    out[-int(SR * 0.25):] *= np.linspace(1, 0, int(SR * 0.25))
+    return out
 
 
 if __name__ == "__main__":

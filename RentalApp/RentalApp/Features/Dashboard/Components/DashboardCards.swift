@@ -22,7 +22,7 @@ struct DashboardOccupancyCard: View {
                 HStack {
                     Text("Occupancy").dsOverline()
                     Spacer()
-                    DSBadge(text: "2 listings live", kind: .info)
+                    DSBadge(text: "\(vacant) vacant", kind: .info)
                 }
 
                 HStack(spacing: DS.Spacing.xxl) {
@@ -77,7 +77,6 @@ struct DashboardMaintenanceCard: View {
                 HStack {
                     Text("Maintenance").dsOverline()
                     Spacer()
-                    DSStatusLabel(text: "1 urgent", kind: .danger, pulses: true)
                 }
 
                 // Stacked distribution bar.

@@ -160,6 +160,13 @@ colourful, for students, on a white background.
   - Rive Purr in four looks, red and gold palette
   - "Peek-a-roof" logo: layered Liquid Glass `AppIcon.icon` plus the
     in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`
+  - onboarding's look past sign-up: `PurrStage` (`Components/Stage`)
+    carries workspace setup, first property and the paywall
+  - `RentJarView` after a recorded payment, `SlideToFinish` + `PawStamp`
+    on a repair, `RentStreak` (from the rent roll only), `purrRefreshable`,
+    `HomeScene` (Toronto sky; Open-Meteo weather, no user data sent, free
+    tier is non-commercial), `PurrOutfit` wardrobe (the rig's own
+    costumes; always-on hats need the Rive CLI updated), fly-over score
 - Missing features, built step by step per `docs/FEATURES_PLAN.md`:
   1. New maintenance request form — done
   2. Lease renewal and move to another unit (Ontario rules in

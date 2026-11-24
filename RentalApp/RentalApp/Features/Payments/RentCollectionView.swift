@@ -138,6 +138,22 @@ struct RentCollectionView: View {
             } header: {
                 Text("\(rows.count) \(rows.count == 1 ? "tenant" : "tenants")")
             }
+        } else if !viewModel.isLoading, viewModel.loadError == nil {
+            // A row, not an overlay: it must not cover the summary.
+            Section {
+                ContentUnavailableView {
+                    if viewModel.searchText.isEmpty {
+                        PurrLabel("Nothing Here", mood: .paymentHistory)
+                    } else {
+                        PurrLabel("No Results for \u{201C}\(viewModel.searchText)\u{201D}", mood: .noResults)
+                    }
+                } description: {
+                    Text(viewModel.searchText.isEmpty
+                        ? "No rent is \(viewModel.filter == .paid ? "paid" : "listed") for \(viewModel.month.monthTitle) with this filter."
+                        : "Check the spelling or try a new search.")
+                }
+                .listRowBackground(Color.clear)
+            }
         }
     }
 
@@ -171,20 +187,6 @@ struct RentCollectionView: View {
                 Text(error.errorDescription ?? "")
             } actions: {
                 Button("Try Again") { Task { await viewModel.load() } }
-            }
-        } else if viewModel.visibleRows.isEmpty {
-            if viewModel.searchText.isEmpty {
-                ContentUnavailableView {
-                    PurrLabel("Nothing Here", mood: .paymentHistory)
-                } description: {
-                    Text("No rent is \(viewModel.filter == .paid ? "paid" : "listed") for \(viewModel.month.monthTitle) with this filter.")
-                }
-            } else {
-                ContentUnavailableView {
-                    PurrLabel("No Results for \u{201C}\(viewModel.searchText)\u{201D}", mood: .noResults)
-                } description: {
-                    Text("Check the spelling or try a new search.")
-                }
             }
         }
     }

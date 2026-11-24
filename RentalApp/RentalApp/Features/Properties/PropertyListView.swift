@@ -147,7 +147,7 @@ struct PropertyListView: View {
                 .padding(DS.Spacing.lg)
                 .animation(DS.Motion.smooth, value: viewModel.filteredProperties.map(\.id))
             }
-            .refreshable { await viewModel.refresh() }
+            .purrRefreshable { await viewModel.refresh() }
         }
         .task { await viewModel.load() }
         // A reload rather than a per-row upsert: `Property` carries derived

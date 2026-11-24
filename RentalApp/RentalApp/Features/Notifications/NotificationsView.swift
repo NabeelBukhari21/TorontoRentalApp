@@ -49,7 +49,7 @@ struct NotificationsView: View {
                 .padding(.bottom, DS.Spacing.huge)
                 .animation(DS.Motion.smooth, value: viewModel.notifications.map(\.id))
             }
-            .refreshable { await viewModel.refresh() }
+            .purrRefreshable { await viewModel.refresh() }
         }
         .task { await viewModel.load() }
         .liveUpdates(container.sync) {

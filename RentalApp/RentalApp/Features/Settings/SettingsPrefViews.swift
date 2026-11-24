@@ -274,6 +274,15 @@ struct SettingsAppearancePage: View {
             }
             .dsEntrance(index: 2)
 
+            SettingsSectionCard(title: "Home") {
+                SettingsToggleRow(
+                    icon: "cloud.sun.fill", title: "Toronto weather",
+                    subtitle: "In the sky on Home. From Open-Meteo",
+                    tint: DS.Colors.accentSkyInk, isOn: $viewModel.showsWeather
+                )
+            }
+            .dsEntrance(index: 2)
+
             SettingsSectionCard(title: "Display") {
                 SettingsToggleRow(
                     icon: "circle.hexagongrid.fill", title: "Reduce glass effects",

@@ -2,7 +2,7 @@
 //  DashboardMascotBrief.swift
 //  RentalApp
 //
-//  Dashboard — The mascot's daily brief at the top of Home.
+//  Dashboard — What Purr says and does at the top of Home (`HomeScene`).
 //
 //  One sentence about the thing that matters most right now, with Purr
 //  acting it out, in priority order:
@@ -19,9 +19,9 @@
 //  can't do burns trust fast.
 //
 
-import SwiftUI
+import Foundation
 
-struct DashboardMascotBrief: View {
+struct DashboardBrief: Equatable {
 
     let urgentTasks: Int
     let openRequests: Int
@@ -29,28 +29,19 @@ struct DashboardMascotBrief: View {
     /// Occupancy as a fraction (0…1). Values above 1 are read as percent.
     let occupancyRate: Double
     /// Units in the portfolio. Zero means a brand-new account.
-    var unitCount: Int = 1
+    let unitCount: Int
 
-    @State private var tipIndex = 0
-
-    private static let tips: [String] = [
+    static let tips: [String] = [
         "Tip: you can search everything — properties, tenants, leases and more — from one search bar.",
         "Tip: pull down on any list to refresh it.",
         "Tip: no signal? Keep working — your changes sync as soon as you're back online."
     ]
 
-    var body: some View {
-        MascotGuide(
-            mood: tipIndex == 0 ? brief.mood : .dailyTip,
-            message: tipIndex == 0 ? brief.message : Self.tips[(tipIndex - 1) % Self.tips.count],
-            mascotSize: 112,
-            surprisesOnTap: true,
-            onTapMascot: { tipIndex += 1 }
-        )
-        .accessibilityHint("Tap Purr for a tip")
-    }
+    var mood: PurrMood { brief.mood }
+    var message: String { brief.message }
 
-    // MARK: Brief
+    /// Something is waiting, so Purr acts it out rather than dress up.
+    var needsAttention: Bool { urgentTasks > 0 || unitCount == 0 }
 
     private var brief: (mood: PurrMood, message: String) {
         if urgentTasks > 0 {
@@ -90,16 +81,4 @@ struct DashboardMascotBrief: View {
     private func plural(_ word: String, _ count: Int) -> String {
         count == 1 ? word : word + "s"
     }
-}
-
-#Preview("Briefs") {
-    ScrollView {
-        VStack(spacing: DS.Spacing.xxl) {
-            DashboardMascotBrief(urgentTasks: 2, openRequests: 4, openTasks: 5, occupancyRate: 0.94)
-            DashboardMascotBrief(urgentTasks: 0, openRequests: 3, openTasks: 2, occupancyRate: 0.94)
-            DashboardMascotBrief(urgentTasks: 0, openRequests: 0, openTasks: 0, occupancyRate: 0.97)
-        }
-        .padding()
-    }
-    .background(DS.Colors.background)
 }

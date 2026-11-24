@@ -16,6 +16,7 @@ struct MaintenanceInboxView: View {
     @Environment(\.container) private var container
     @State private var viewModel: MaintenanceInboxViewModel
     @Namespace private var modeNamespace
+    @Environment(\.feedback) private var feedback
 
     init(container: AppContainer = .shared) {
         _viewModel = State(initialValue: MaintenanceInboxViewModel(
@@ -46,7 +47,6 @@ struct MaintenanceInboxView: View {
                 await viewModel.refresh()
             }
         }
-        .refreshable { await viewModel.refresh() }
         .navigationTitle("Maintenance")
         .navigationSubtitle("\(viewModel.openCount) open · \(viewModel.urgentCount) urgent")
         .toolbar {
@@ -196,6 +196,7 @@ struct MaintenanceInboxView: View {
                 .animation(DS.Motion.smooth, value: viewModel.filteredTickets.map(\.id))
             }
         }
+        .purrRefreshable { await viewModel.refresh() }
     }
 
     // MARK: Board Mode
@@ -262,6 +263,7 @@ struct MaintenanceInboxView: View {
                                     router.push(.maintenanceDetail(requestID: ticket.id))
                                 },
                                 onMove: { newStatus in
+                                    if newStatus == .done { feedback?.play(.stamp) }
                                     Task { await viewModel.move(ticket.id, to: newStatus) }
                                 }
                             )

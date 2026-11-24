@@ -26,6 +26,9 @@ final class RecordPaymentViewModel {
     private(set) var loadError: String?
     private(set) var isSubmitting = false
     var errorMessage: String?
+    /// The month's jar before and after, once a payment is recorded.
+    private(set) var receipt: RentReceipt?
+    private var rollBefore: RentRoll?
     var draft: PaymentDraft
 
     init(
@@ -52,6 +55,7 @@ final class RecordPaymentViewModel {
                 return
             }
             row = match
+            rollBefore = roll
             draft.amount = match.outstanding
             draft.method = match.usualMethod
         } catch {
@@ -83,6 +87,19 @@ final class RecordPaymentViewModel {
             let entry = try await payments.record(draft)
             await analytics.track(.paymentRecorded(method: draft.method.analyticsValue))
             await sync.publishLocalChange(.leases)
+            // The jar shows the month's real totals, so read them back.
+            let after = try? await payments.rentRoll(for: draft.month, forceRefresh: true)
+            if let before = rollBefore, let after, after.expected > 0 {
+                receipt = RentReceipt(
+                    amount: draft.amount,
+                    from: row?.firstName ?? "your tenant",
+                    monthTitle: draft.month.monthTitle,
+                    before: before.collectionRate,
+                    after: after.collectionRate,
+                    collected: after.collected,
+                    expected: after.expected
+                )
+            }
             return entry
         } catch {
             errorMessage = (error as? AppError ?? .unknown).errorDescription

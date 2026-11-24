@@ -35,6 +35,12 @@ enum FeedbackCue: Equatable, Sendable {
     case error
     /// Purr being stroked.
     case purr
+    /// A coin landing in the rent jar.
+    case coin(Int)
+    /// A paw stamp on something finished.
+    case stamp
+    /// Pull to refresh: far enough, and let go.
+    case stretch, pounce
 
     /// The sound's file name.
     var sound: String {
@@ -55,13 +61,17 @@ enum FeedbackCue: Equatable, Sendable {
         case .deal(let i): "deal\(min(max(i, 0), 6))"
         case .error: "error"
         case .purr: "purr"
+        case .coin(let i): "coin\(abs(i) % 3)"
+        case .stamp: "stamp"
+        case .stretch: "tap"
+        case .pounce: "pounce"
         }
     }
 
     /// Every sound file, for loading ahead.
     static let allSounds: [String] = {
-        let single: [FeedbackCue] = [.press, .tap, .focus, .deselect, .advance, .back, .tick, .flood, .fill, .drop, .celebrate, .error, .purr]
-        let runs = (0..<5).map(FeedbackCue.select) + (0..<3).map(FeedbackCue.taskDone) + (0..<7).map(FeedbackCue.deal)
+        let single: [FeedbackCue] = [.press, .tap, .focus, .deselect, .advance, .back, .tick, .flood, .fill, .drop, .celebrate, .error, .purr, .stamp, .pounce]
+        let runs = (0..<5).map(FeedbackCue.select) + (0..<3).map(FeedbackCue.taskDone) + (0..<7).map(FeedbackCue.deal) + (0..<3).map(FeedbackCue.coin)
         return (single + runs).map(\.sound)
     }()
 
@@ -93,6 +103,10 @@ enum FeedbackCue: Equatable, Sendable {
                 + [.init(time: 0.34, duration: 0.35, intensity: 0.6, sharpness: 0.2, endIntensity: 0)]
         case .deal: [.init(time: 0.01, intensity: 0.4, sharpness: 0.6)]
         case .error: [.init(time: 0, intensity: 0.8, sharpness: 0.2), .init(time: 0.12, intensity: 0.8, sharpness: 0.2)]
+        case .coin: [.init(time: 0, intensity: 0.55, sharpness: 0.95)]
+        case .stamp: [.init(time: 0, duration: 0.12, intensity: 0.05, sharpness: 0.1, endIntensity: 0.3), .init(time: 0.13, intensity: 1, sharpness: 0.15), .init(time: 0.16, intensity: 0.5, sharpness: 0.1)]
+        case .stretch: [.init(time: 0, intensity: 0.5, sharpness: 0.7)]
+        case .pounce: [.init(time: 0.02, intensity: 0.4, sharpness: 0.5), .init(time: 0.2, intensity: 0.9, sharpness: 0.2)]
         case .purr:
             // A motor: soft pulses, 25 a second, after the "mrrp".
             [.init(time: 0.05, intensity: 0.5, sharpness: 0.5)]

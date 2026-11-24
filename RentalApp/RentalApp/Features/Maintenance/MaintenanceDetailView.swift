@@ -17,7 +17,10 @@ struct MaintenanceDetailView: View {
     @State private var viewModel: MaintenanceDetailViewModel
     @FocusState private var commentFocused: Bool
     @State private var isSchedulingVisit = false
-    
+    /// Stamped when it's finished here, not every time a done one opens.
+    @State private var showsStamp = false
+    @Environment(\.feedback) private var feedback
+
     init(ticketID: String, container: AppContainer = .shared) {
         self.ticketID = ticketID
         _viewModel = State(initialValue: MaintenanceDetailViewModel(
@@ -38,7 +41,9 @@ struct MaintenanceDetailView: View {
             if let ticket {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: DS.Spacing.lg) {
-                        headerCard(ticket).dsEntrance(index: 0)
+                        headerCard(ticket)
+                            .overlay { if showsStamp, ticket.status == .done { PawStamp() } }
+                            .dsEntrance(index: 0)
                         workflowCard(ticket).dsEntrance(index: 1)
 
                         if RepairVisitTrackingRows.applies(to: ticket) {
@@ -60,6 +65,16 @@ struct MaintenanceDetailView: View {
                     .padding(.bottom, DS.Spacing.huge)
                 }
                 .scrollDismissesKeyboard(.interactively)
+                .safeAreaInset(edge: .bottom) {
+                    if ticket.status != .done, !commentFocused {
+                        SlideToFinish(title: "Slide to finish") { await finish() }
+                            .padding(.horizontal, DS.Spacing.lg)
+                            .padding(.bottom, DS.Spacing.sm)
+                            .shadow(color: DS.Colors.groundShadow, radius: 14, y: 8)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
+                .animation(DS.Motion.smooth, value: ticket.status)
             } else if let error = viewModel.error {
                 DSErrorView(error: error) { await viewModel.retry() }
             } else {
@@ -84,6 +99,20 @@ struct MaintenanceDetailView: View {
                 ScheduleVisitView(job: ticket, viewModel: viewModel)
             }
         }
+    }
+
+    // MARK: Finish
+
+    private func finish() async {
+        await viewModel.move(to: .done)
+        guard viewModel.ticket?.status == .done else {
+            feedback?.play(.error)
+            return
+        }
+        feedback?.play(.stamp)
+        showsStamp = true
+        try? await Task.sleep(for: .seconds(2.6))
+        withAnimation(DS.Motion.gentle) { showsStamp = false }
     }
 
     // MARK: Header
@@ -176,6 +205,8 @@ struct MaintenanceDetailView: View {
                     // Scheduled means a visit is booked, so it asks when.
                     if newStatus == .scheduled {
                         isSchedulingVisit = true
+                    } else if newStatus == .done {
+                        Task { await finish() }
                     } else {
                         Task { await viewModel.move(to: newStatus) }
                     }

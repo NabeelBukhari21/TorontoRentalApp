@@ -196,6 +196,9 @@ final class PreferencesSettingsViewModel {
     var hapticsEnabled: Bool {
         get { repo.hapticsEnabled } set { repo.hapticsEnabled = newValue }
     }
+    var showsWeather: Bool {
+        get { repo.showsWeather } set { repo.showsWeather = newValue }
+    }
     var reduceGlassEffects: Bool {
         get { repo.reduceGlassEffects } set { repo.reduceGlassEffects = newValue }
     }

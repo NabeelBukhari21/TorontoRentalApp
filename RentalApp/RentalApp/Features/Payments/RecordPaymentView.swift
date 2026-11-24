@@ -30,7 +30,10 @@ struct RecordPaymentView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if let row = viewModel.row {
+                if let receipt = viewModel.receipt {
+                    RentJarView(receipt: receipt) { dismiss() }
+                        .transition(.opacity)
+                } else if let row = viewModel.row {
                     form(row)
                 } else if let error = viewModel.loadError {
                     ContentUnavailableView {
@@ -42,7 +45,7 @@ struct RecordPaymentView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle("Record Payment")
+            .navigationTitle(viewModel.receipt == nil ? "Record Payment" : "")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .task { await viewModel.load() }
@@ -54,6 +57,13 @@ struct RecordPaymentView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
+        if viewModel.receipt == nil {
+            formToolbar
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var formToolbar: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button("Cancel", systemImage: AppSymbol.close.rawValue) { dismiss() }
         }
@@ -131,8 +141,11 @@ struct RecordPaymentView: View {
         Task {
             if let entry = await viewModel.submit() {
                 onRecorded()
-                toasts.success("Recorded \((-entry.amount).formatted(.cad)) from \(viewModel.row?.firstName ?? "tenant")", mood: .paymentSuccess)
-                dismiss()
+                if viewModel.receipt == nil {
+                    toasts.success("Recorded \((-entry.amount).formatted(.cad)) from \(viewModel.row?.firstName ?? "tenant")", mood: .paymentSuccess)
+                }
+                // The jar says it better than a toast; it has its own Done.
+                if viewModel.receipt == nil { dismiss() }
             }
         }
     }

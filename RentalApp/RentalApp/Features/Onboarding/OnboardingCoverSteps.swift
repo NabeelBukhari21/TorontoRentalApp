@@ -103,7 +103,8 @@ struct OnboardingWelcomeStep: View {
 // MARK: - Intro Fly-over
 
 /// The fly-over: a drawn Toronto, a building opened floor by floor,
-/// tenants and a vendor visit. Muted; skippable; moves on by itself at
+/// tenants and a vendor visit, with a short score (silent switch and the
+/// sound setting apply). Skippable; moves on by itself at
 /// the end. With Reduce Motion it shows the closing frame instead.
 struct OnboardingIntroStep: View {
 
@@ -111,6 +112,7 @@ struct OnboardingIntroStep: View {
 
     @State private var player = VideoClipPlayer(resource: "PurrIntroFlyover")
     @State private var didFinish = false
+    @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The closing frame: Purr cheering over the name.
@@ -147,9 +149,17 @@ struct OnboardingIntroStep: View {
         }
         .onAppear {
             guard player.isAvailable else { return finish(skipped: true) }
-            if reduceMotion { player.hold(at: Self.posterTime) } else { player.playFromStart() }
+            if reduceMotion {
+                player.hold(at: Self.posterTime)
+            } else {
+                player.playFromStart()
+                feedback?.startMusic("flyover")
+            }
         }
-        .onDisappear { player.reset() }
+        .onDisappear {
+            player.reset()
+            feedback?.stopMusic()
+        }
         .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification, object: player.item)) { _ in
             player.didPlayToEnd()
             finish(skipped: false)

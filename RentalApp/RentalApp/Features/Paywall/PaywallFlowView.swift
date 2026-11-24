@@ -37,7 +37,7 @@ struct PaywallFlowView: View {
         PurrStage(
             step: viewModel.step,
             accent: viewModel.step == .timeline ? .sky : viewModel.step == .plans ? .mint : .gold,
-            mood: viewModel.step == .intro ? .referralReward : viewModel.step == .timeline ? .reminder : .balloonFloat,
+            mood: viewModel.step == .intro ? .referralReward : viewModel.step == .timeline ? .reminder : .thankYou,
             title: title,
             line: viewModel.step == .intro ? "Everything you asked for, and more." : "",
             movesForward: viewModel.movesForward,
@@ -246,6 +246,7 @@ private struct PaywallPlansStep: View {
                         planCard(monthly, badge: nil)
                     }
                 }
+                .padding(.top, DS.Spacing.sm)
             }
 
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
@@ -311,7 +312,7 @@ private struct PaywallPlansStep: View {
                         .padding(.horizontal, DS.Spacing.sm)
                         .padding(.vertical, DS.Spacing.xs)
                         .background(DS.Colors.accentGold, in: Capsule())
-                        .offset(x: -DS.Spacing.sm, y: -DS.Spacing.md)
+                        .offset(x: -DS.Spacing.sm, y: -DS.Spacing.sm)
                 }
             }
         }

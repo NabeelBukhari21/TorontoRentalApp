@@ -113,6 +113,12 @@ struct RootNavigation: View {
         .task { await container.feedback.prepare() }
         // Widgets follow the session: a staff account's numbers, or nothing.
         .task(id: session.state) { await updateWidgets() }
+        // Purr's wardrobe belongs to the workspace.
+        .onChange(of: session.state, initial: true) { _, state in
+            if case .authenticated(let account) = state {
+                container.wardrobe.account = account.organizationID ?? account.userID
+            }
+        }
         // Deep links land on the shared router; one that arrives during
         // the launch flow has its destination set before Main appears.
         .onOpenURL { url in

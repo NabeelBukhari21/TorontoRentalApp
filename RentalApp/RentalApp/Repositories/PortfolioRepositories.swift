@@ -926,7 +926,8 @@ final class InMemoryDashboardRepository: DashboardRepositoryProtocol {
             portfolio: summary,
             revenue: Projections.revenueSeries(),
             stats: stats,
-            insights: DashboardMockData.insights,
+            // They name demo tenants, so only the demo has them.
+            insights: tenants.isEmpty ? [] : DashboardMockData.insights,
             maintenanceCounts: counts,
             activity: Projections.activityFeed(),
             tasks: Projections.upcomingTasks()

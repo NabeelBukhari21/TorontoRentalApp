@@ -22,11 +22,27 @@ final class DashboardViewModel {
     private(set) var state: LoadState<DashboardSnapshot> = .idle
     private(set) var isRefreshing = false
     private(set) var unreadNotifications = 0
+    private(set) var streak = RentStreak.none
+    private(set) var weather: Weather?
+    /// Outfits just earned, to announce once.
+    private(set) var newOutfits: [PurrOutfit] = []
+    let wardrobe: WardrobeStore
+    private let payments: PaymentRepositoryProtocol
+    private let weatherService: WeatherServiceProtocol
+    private let preferences: PreferencesRepositoryProtocol
 
     init(
         dashboard: DashboardRepositoryProtocol,
-        notifications: NotificationRepositoryProtocol
+        notifications: NotificationRepositoryProtocol,
+        payments: PaymentRepositoryProtocol,
+        weather: WeatherServiceProtocol,
+        wardrobe: WardrobeStore,
+        preferences: PreferencesRepositoryProtocol
     ) {
+        self.payments = payments
+        self.weatherService = weather
+        self.wardrobe = wardrobe
+        self.preferences = preferences
         self.dashboard = dashboard
         self.notifications = notifications
     }
@@ -91,6 +107,30 @@ final class DashboardViewModel {
         await fetch(forceRefresh: true)
     }
 
+    // MARK: Scene
+
+    /// The sky, the streak and the wardrobe. After the numbers: none of it
+    /// may hold them up.
+    func loadExtras() async {
+        weather = preferences.showsWeather ? await weatherService.current() : nil
+    }
+
+    private func updateMilestones() async {
+        streak = await RentStreak.load(from: payments)
+        let month = try? await payments.rentRoll(for: .now, forceRefresh: false)
+        newOutfits = wardrobe.update(with: WardrobeFacts(
+            properties: propertyCount,
+            units: unitCount,
+            rentedUnits: occupiedUnits,
+            openRequests: openRequestCount,
+            hasRequests: maintenanceCounts.contains { $0.count > 0 },
+            isMonthCollected: month.map { $0.expected > 0 && $0.collected >= $0.expected } ?? false,
+            streak: streak.count
+        ))
+    }
+
+    func announcedOutfits() { newOutfits = [] }
+
     // MARK: Intents
 
     func toggleTask(_ task: UpcomingTask) async {
@@ -102,6 +142,7 @@ final class DashboardViewModel {
         do {
             state = .loaded(try await dashboard.snapshot(forceRefresh: forceRefresh))
             unreadNotifications = (try? await notifications.unreadCount()) ?? 0
+            await updateMilestones()
         } catch is CancellationError {
             // The view went away mid-load (e.g. the app reopened onto a
             // screen pushed over Home). Without a value to show, go back
