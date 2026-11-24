@@ -48,6 +48,8 @@ struct RentalAppApp: App {
             #if DEBUG
             if let still = PurrStillStudio.request {
                 PurrStillStudio(request: still)
+            } else if SakugaGallery.isRequested {
+                SakugaGallery()
             } else {
                 app
             }
