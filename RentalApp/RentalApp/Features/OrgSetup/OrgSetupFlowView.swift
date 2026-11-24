@@ -2,8 +2,8 @@
 //  OrgSetupFlowView.swift
 //  RentalApp
 //
-//  Org Setup — Wizard container. Progress bar, animated step header,
-//  directional step transitions, and back/continue navigation.
+//  Org Setup — Workspace setup on Purr's stage, carrying on from the
+//  sign-up scene.
 //
 
 import SwiftUI
@@ -29,110 +29,117 @@ struct OrgSetupFlowView: View {
     }
 
     var body: some View {
-        ZStack {
-            SplashBackground()
-            SplashParticleField(particleCount: 14)
-
+        PurrStage(
+            step: viewModel.isComplete ? -1 : viewModel.step.rawValue,
+            accent: accent,
+            mood: mood,
+            title: viewModel.isComplete ? "You're all set!" : viewModel.step.title,
+            line: viewModel.isComplete ? "\(viewModel.orgName) is ready to go." : viewModel.step.subtitle,
+            movesForward: viewModel.movesForward,
+            progress: viewModel.isComplete ? nil : viewModel.progress,
+            progressLabel: "Step \(viewModel.step.rawValue + 1) of \(OrgSetupStep.allCases.count)",
+            props: viewModel.isComplete ? ["star.fill", "sparkles"] : viewModel.step.props,
+            celebrates: viewModel.isComplete,
+            onBack: viewModel.step == .name || viewModel.isComplete ? nil : { viewModel.goBack() }
+        ) {
             if viewModel.isComplete {
-                OrgCompletionView(viewModel: viewModel) {
+                OrgSummary(viewModel: viewModel)
+            } else {
+                stepContent
+            }
+        } actions: {
+            if let error = viewModel.submissionError {
+                AuthFormError(message: error)
+            }
+            if viewModel.isComplete {
+                // "Continue", not "Go to Dashboard": a new account goes on
+                // to getting started (first property) before Home.
+                StageButton(title: "Continue") {
                     onFinished(
                         viewModel.createdOrganizationID ?? "org_unknown",
                         viewModel.orgName.trimmingCharacters(in: .whitespaces)
                     )
                 }
-                    .transition(.opacity.combined(with: .scale(scale: 1.04)))
             } else {
-                wizard
-                    .transition(.opacity)
+                StageButton(title: viewModel.continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.isSubmitting) {
+                    Task { await viewModel.advance() }
+                }
+            }
+        }
+        .overlay {
+            if viewModel.isComplete {
+                OrgConfettiBurst()
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea()
+                    .accessibilityHidden(true)
             }
         }
     }
 
-    // MARK: Wizard
+    private var accent: DSAccent {
+        if viewModel.isComplete { return .gold }
+        return switch viewModel.step {
+        case .name: .gold
+        case .logo: .blush
+        case .propertyType: .sky
+        case .portfolioSize: .mint
+        case .inviteTeam: .gold
+        }
+    }
 
-    private var wizard: some View {
-        VStack(spacing: 0) {
-            // Progress.
-            OrgSetupProgressBar(
-                progress: viewModel.progress,
-                stepIndex: viewModel.step.rawValue,
-                stepCount: OrgSetupStep.allCases.count
-            )
-            .padding(.horizontal, DS.Spacing.xl)
-            .padding(.top, DS.Spacing.md)
-
-            // Step content.
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DS.Spacing.xxl) {
-                    OrgSetupStepHeader(step: viewModel.step, isReady: viewModel.canContinue)
-                        .id("header-\(viewModel.step.rawValue)")
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-
-                    stepContent
-                        .id("step-\(viewModel.step.rawValue)")
-                        .transition(
-                            .asymmetric(
-                                insertion: .move(edge: viewModel.movesForward ? .trailing : .leading)
-                                    .combined(with: .opacity),
-                                removal: .move(edge: viewModel.movesForward ? .leading : .trailing)
-                                    .combined(with: .opacity)
-                            )
-                        )
-                }
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.vertical, DS.Spacing.xxl)
-                .frame(maxWidth: .infinity)
-            }
-            .scrollDismissesKeyboard(.interactively)
-
-            // Navigation.
-            HStack(spacing: DS.Spacing.md) {
-                if viewModel.step != .name {
-                    AuthBackButton {
-                        viewModel.goBack()
-                    }
-                    .transition(.scale.combined(with: .opacity))
-                }
-
-                DSButton(
-                    title: viewModel.continueTitle,
-                    variant: .primary,
-                    size: .large,
-                    isFullWidth: true,
-                    isLoading: viewModel.isSubmitting
-                ) {
-                    Task { await viewModel.advance() }
-                }
-                .disabled(!viewModel.canContinue || viewModel.isSubmitting)
-                .animation(DS.Motion.gentle, value: viewModel.canContinue)
-            }
-            .animation(DS.Motion.smooth, value: viewModel.step)
-            .padding(.horizontal, DS.Spacing.xl)
-            .padding(.bottom, DS.Spacing.xl)
-            .overlay(alignment: .top) {
-                if let error = viewModel.submissionError {
-                    AuthFormError(message: error)
-                        .padding(.horizontal, DS.Spacing.xl)
-                        .offset(y: -DS.Spacing.xxl)
-                }
-            }
-            .animation(DS.Motion.gentle, value: viewModel.submissionError)
+    private var mood: PurrMood {
+        if viewModel.isComplete { return .partyTime }
+        return switch viewModel.step {
+        case .name: viewModel.canContinue ? .success : .editProfile
+        case .logo: .profilePhoto
+        case .propertyType: viewModel.propertyType == nil ? .properties : .keysReady
+        case .portfolioSize: viewModel.portfolioSize == nil ? .analytics : .clapping
+        case .inviteTeam: viewModel.inviteEmails.isEmpty ? .inviteFriends : .thankYou
         }
     }
 
     @ViewBuilder
     private var stepContent: some View {
         switch viewModel.step {
-        case .name:
-            OrgNameStep(viewModel: viewModel)
-        case .logo:
-            OrgLogoStep(viewModel: viewModel)
-        case .propertyType:
-            OrgTypeStep(viewModel: viewModel)
-        case .portfolioSize:
-            OrgSizeStep(viewModel: viewModel)
-        case .inviteTeam:
-            OrgInviteStep(viewModel: viewModel)
+        case .name: OrgNameStep(viewModel: viewModel)
+        case .logo: OrgLogoStep(viewModel: viewModel)
+        case .propertyType: StageAnswers(choices: viewModel.typeChoices)
+        case .portfolioSize: StageAnswers(choices: viewModel.sizeChoices)
+        case .inviteTeam: OrgInviteStep(viewModel: viewModel)
+        }
+    }
+}
+
+extension OrgSetupStep {
+    /// Clay props around Purr.
+    var props: [String] {
+        switch self {
+        case .name: ["building.2.fill", "pencil"]
+        case .logo: ["photo.fill", "paintbrush.fill"]
+        case .propertyType: ["house.fill", "building.fill"]
+        case .portfolioSize: ["chart.bar.fill", "house.and.flag.fill"]
+        case .inviteTeam: ["envelope.fill", "person.2.fill"]
+        }
+    }
+}
+
+extension OrgSetupViewModel {
+
+    var typeChoices: [OnboardingChoice] {
+        zip(PropertyTypeOption.allCases, [DSAccent.sky, .gold, .cherry, .mint, .blush]).map { option, accent in
+            OnboardingChoice(id: option.id, title: option.title, subtitle: "", symbol: option.icon, accent: accent,
+                             isSelected: propertyType == option) {
+                withAnimation(DS.Motion.bouncy) { self.propertyType = option }
+            }
+        }
+    }
+
+    var sizeChoices: [OnboardingChoice] {
+        zip(PortfolioSizeOption.allCases, [DSAccent.mint, .sky, .gold, .cherry]).map { option, accent in
+            OnboardingChoice(id: option.id, title: option.title, subtitle: option.subtitle, symbol: option.icon, accent: accent,
+                             isSelected: portfolioSize == option) {
+                withAnimation(DS.Motion.bouncy) { self.portfolioSize = option }
+            }
         }
     }
 }

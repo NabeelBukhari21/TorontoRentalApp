@@ -4,9 +4,7 @@
 //
 //  Getting started — First property (one question per screen), the aha
 //  celebration with the founder's note, notification priming, then the
-//  trial paywall. Same structure as onboarding: system navigation bar,
-//  inset-grouped list with Purr and a large title, one action at the
-//  bottom.
+//  trial paywall, on Purr's stage.
 //
 
 import SwiftUI
@@ -15,7 +13,6 @@ struct GettingStartedView: View {
 
     @State private var viewModel: GettingStartedViewModel
     private let container: AppContainer
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.feedback) private var feedback
 
     init(
@@ -36,19 +33,24 @@ struct GettingStartedView: View {
             PaywallFlowView(container: container, profile: viewModel.profile, source: "onboarding") { _ in
                 viewModel.finish()
             }
-            .transition(.move(edge: .bottom))
+            .transition(.opacity)
         } else {
-            NavigationStack {
+            PurrStage(
+                step: viewModel.step,
+                accent: accent,
+                mood: mood,
+                title: title,
+                line: line,
+                movesForward: viewModel.movesForward,
+                progress: viewModel.step.isPropertyStep ? viewModel.progress : nil,
+                progressLabel: viewModel.stepLabel,
+                props: props,
+                celebrates: viewModel.step == .celebration,
+                onBack: viewModel.step.isPropertyStep && viewModel.step != .kind ? { viewModel.goBack() } : nil
+            ) {
                 content
-                    .id(viewModel.step)
-                    .transition(reduceMotion ? .opacity : .push(from: viewModel.movesForward ? .trailing : .leading))
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar { toolbar }
-            }
-            // The brand face for everything that doesn't set its own.
-            .font(DS.Typography.brand(.body, weight: .regular))
-            .onChange(of: viewModel.step) { _, step in
-                feedback?.play(step == .celebration ? .celebrate : viewModel.movesForward ? .advance : .back)
+            } actions: {
+                actions
             }
             .overlay {
                 if viewModel.step == .celebration {
@@ -58,22 +60,64 @@ struct GettingStartedView: View {
                         .accessibilityHidden(true)
                 }
             }
+            .onChange(of: viewModel.saveTasks.count { $0.state == .done }) { old, new in
+                if new > old { feedback?.play(.taskDone(new - 1)) }
+            }
         }
     }
 
-    // MARK: Toolbar
+    // MARK: Words
 
-    @ToolbarContentBuilder
-    private var toolbar: some ToolbarContent {
-        if viewModel.step.isPropertyStep && viewModel.step != .kind {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back", systemImage: "chevron.backward") { viewModel.goBack() }
-            }
+    private var title: String {
+        switch viewModel.step {
+        case .saving: "Adding \(viewModel.draft.name)"
+        case .celebration: "\(propertyName) is live"
+        case .notifications: "Never miss a rent payment"
+        default: viewModel.question
         }
-        if viewModel.step.isPropertyStep {
-            ToolbarItem(placement: .principal) {
-                OnboardingProgressView(progress: viewModel.progress, label: viewModel.stepLabel)
-            }
+    }
+
+    private var line: String {
+        switch viewModel.step {
+        case .saving: "This takes a few seconds."
+        case .celebration: "Your first property is on Purrperty."
+        case .notifications: "A nudge when rent lands, a repair comes in or a tenant messages you. You choose which in Settings."
+        default: viewModel.mascotLine
+        }
+    }
+
+    private var propertyName: String { viewModel.createdProperty?.name ?? viewModel.draft.name }
+
+    // MARK: Purr
+
+    private var mood: PurrMood {
+        switch viewModel.step {
+        case .saving: .builder
+        case .celebration: .propertyAdded
+        case .notifications: .newNotification
+        default: viewModel.mascotMood
+        }
+    }
+
+    private var accent: DSAccent {
+        switch viewModel.step {
+        case .kind, .celebration: .gold
+        case .address: .sky
+        case .name: .mint
+        case .units, .saving: .blush
+        default: .sky
+        }
+    }
+
+    private var props: [String] {
+        switch viewModel.step {
+        case .kind: ["house.fill", "building.2.fill"]
+        case .address: ["mappin.and.ellipse", "map.fill"]
+        case .name: ["pencil", "tag.fill"]
+        case .units: ["door.left.hand.closed", "key.fill"]
+        case .saving: ["hammer.fill", "gearshape.fill"]
+        case .celebration: ["star.fill", "sparkles"]
+        default: ["bell.fill", "dollarsign"]
         }
     }
 
@@ -81,204 +125,136 @@ struct GettingStartedView: View {
 
     @ViewBuilder
     private var content: some View {
+        @Bindable var viewModel = viewModel
+
         switch viewModel.step {
-        case .kind, .address, .name, .units:
-            propertyStep
+        case .kind:
+            StageAnswers(choices: kinds)
+
+        case .address:
+            VStack(alignment: .leading, spacing: 10) {
+                StageField(symbol: "mappin", prompt: "Street", text: $viewModel.draft.addressLine1)
+                    .textContentType(.fullStreetAddress)
+                StageField(
+                    symbol: "envelope.fill", prompt: "Postal code (optional)", text: $viewModel.draft.postalCode,
+                    error: viewModel.postalCodeIsValid ? nil : "That doesn't look like a Canadian postal code."
+                )
+                .textContentType(.postalCode)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+                StageField(symbol: "building.2.fill", prompt: "City", text: $viewModel.draft.city)
+                    .textContentType(.addressCity)
+            }
+
+        case .name:
+            VStack(alignment: .leading, spacing: 10) {
+                StageField(symbol: "tag.fill", prompt: "Property name", text: $viewModel.draft.name)
+                    .submitLabel(.next)
+                    .onSubmit { if viewModel.canContinue { viewModel.advance() } }
+                Text("Shown in your list and on Home.")
+                    .font(DS.Typography.brand(.footnote, weight: .regular))
+                    .foregroundStyle(DS.Colors.textSecondary)
+            }
+
+        case .units:
+            VStack(spacing: 12) {
+                StageStepper(value: $viewModel.unitCount, range: 1...GettingStartedViewModel.maxUnits, label: "Units")
+                Text("You can name each unit later, from the property.")
+                    .font(DS.Typography.brand(.footnote, weight: .regular))
+                    .foregroundStyle(DS.Colors.textSecondary)
+                if let error = viewModel.saveError {
+                    Label(error, symbol: .caution)
+                        .font(DS.Typography.brand(.footnote))
+                        .foregroundStyle(DS.Colors.danger)
+                }
+            }
+
         case .saving:
-            savingStep
+            VStack(spacing: 12) {
+                ForEach(viewModel.saveTasks) { OnboardingBuildPill(task: $0) }
+            }
+            .frame(maxWidth: .infinity)
+
         case .celebration:
-            GettingStartedCelebration(
-                propertyName: viewModel.createdProperty?.name ?? viewModel.draft.name,
-                firstName: viewModel.firstName,
-                onContinue: viewModel.advance
-            )
+            FounderNoteCard(firstName: viewModel.firstName)
+
         case .notifications:
-            GettingStartedNotificationPriming(
-                propertyName: viewModel.createdProperty?.name,
-                onEnable: { Task { await viewModel.enableNotifications() } },
-                onDecline: viewModel.declineNotifications
-            )
+            notificationPreview
+
         case .paywall:
             EmptyView()
         }
     }
 
-    // MARK: Property Steps
-
-    private var propertyStep: some View {
-        @Bindable var viewModel = viewModel
-
-        return List {
-            Section {
-                OnboardingHeader(mood: viewModel.mascotMood, title: viewModel.question, message: viewModel.mascotLine)
-            }
-            .onboardingHeaderSection()
-
-            switch viewModel.step {
-            case .kind:
-                Section {
-                    ForEach(PropertyKind.allCases, id: \.self) { kind in
-                        ChoiceRow(
-                            symbol: kind.icon, tint: tint(for: kind),
-                            title: kind.rawValue, subtitle: subtitle(for: kind),
-                            isSelected: false
-                        ) { viewModel.choose(kind) }
-                    }
-                }
-
-            case .address:
-                Section {
-                    LabeledContent("Street") {
-                        TextField("Street", text: $viewModel.draft.addressLine1, prompt: Text("Required"))
-                            .textContentType(.fullStreetAddress)
-                            .multilineTextAlignment(.trailing)
-                    }
-                    LabeledContent("Postal code") {
-                        TextField("Postal code", text: $viewModel.draft.postalCode, prompt: Text("Optional"))
-                            .textContentType(.postalCode)
-                            .textInputAutocapitalization(.characters)
-                            .autocorrectionDisabled()
-                            .multilineTextAlignment(.trailing)
-                    }
-                    LabeledContent("City") {
-                        TextField("City", text: $viewModel.draft.city)
-                            .textContentType(.addressCity)
-                            .multilineTextAlignment(.trailing)
-                    }
-                } footer: {
-                    if !viewModel.postalCodeIsValid {
-                        PurrLabel("That doesn't look like a Canadian postal code.", mood: .error)
-                            .foregroundStyle(.red)
-                    }
-                }
-
-            case .name:
-                Section {
-                    TextField("Property name", text: $viewModel.draft.name, prompt: Text("Property name"))
-                        .submitLabel(.next)
-                        .onSubmit { if viewModel.canContinue { viewModel.advance() } }
-                } footer: {
-                    Text("Shown in your list and on Home.")
-                }
-
-            case .units:
-                Section {
-                    Stepper(value: $viewModel.unitCount, in: 1...GettingStartedViewModel.maxUnits) {
-                        LabeledContent("Units") {
-                            Text(viewModel.unitCount, format: .number)
-                                .contentTransition(.numericText(value: Double(viewModel.unitCount)))
-                                .monospacedDigit()
-                        }
-                    }
-                    .sensoryFeedback(.selection, trigger: viewModel.unitCount)
-                } footer: {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("You can name each unit later, from the property.")
-                        if let error = viewModel.saveError {
-                            Label(error, symbol: .caution).foregroundStyle(.red)
-                        }
-                    }
-                }
-
-            default:
-                EmptyView()
-            }
-        }
-        .listStyle(.insetGrouped)
-        .scrollDismissesKeyboard(.interactively)
-        .primaryActionBar {
-            switch viewModel.step {
-            case .kind:
-                Button("I'll add one later") { viewModel.skipProperty() }
-                    .frame(minHeight: 44)
-            default:
-                PrimaryActionButton(title: viewModel.step == .units ? "Add property" : "Continue") {
-                    viewModel.advance()
-                }
-                .disabled(!viewModel.canContinue)
-            }
-        }
-    }
-
-    // MARK: Saving
-
-    private var savingStep: some View {
-        List {
-            Section {
-                OnboardingHeader(mood: .builder, title: "Adding \(viewModel.draft.name)")
-            }
-            .onboardingHeaderSection()
-
-            Section {
-                ForEach(viewModel.saveTasks) { task in
-                    OnboardingChecklistRow(task: task)
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationBarBackButtonHidden()
-    }
-
-    // MARK: Kind Styling
-
-    private func tint(for kind: PropertyKind) -> Color {
-        switch kind {
-        case .condo:      .blue
-        case .multiUnit:  .orange
-        case .house:      .green
-        case .commercial: .red
+    private var kinds: [OnboardingChoice] {
+        zip(PropertyKind.allCases, [DSAccent.sky, .gold, .mint, .cherry]).map { kind, accent in
+            OnboardingChoice(
+                id: kind.rawValue, title: kind.rawValue, subtitle: subtitle(for: kind), symbol: kind.icon,
+                accent: accent, isSelected: viewModel.draft.kind == kind && viewModel.hasChosenKind
+            ) { viewModel.choose(kind) }
         }
     }
 
     private func subtitle(for kind: PropertyKind) -> String {
         switch kind {
-        case .condo:      "A condo unit or townhome"
-        case .multiUnit:  "Duplex to apartment block"
-        case .house:      "A single-family home"
-        case .commercial: "Retail, office or industrial"
+        case .condo:      "Condo or townhome"
+        case .multiUnit:  "Duplex to apartments"
+        case .house:      "Single-family home"
+        case .commercial: "Retail or office"
         }
     }
-}
 
-// MARK: - Celebration
+    // MARK: Actions
 
-/// The aha moment: confetti, Purr leaping, and a personal note from the
-/// founder (playbook §3).
-private struct GettingStartedCelebration: View {
-
-    let propertyName: String
-    let firstName: String
-    let onContinue: () -> Void
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                PurrMascot(mood: .propertyAdded, size: 200, surprisesOnTap: true)
-
-                VStack(spacing: 8) {
-                    Text("\(propertyName) is live")
-                        .font(DS.Typography.brand(.largeTitle, weight: .bold))
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
-                    Text("Your first property is on Purrperty.")
-                        .foregroundStyle(.secondary)
-                }
-
-                FounderNoteCard(firstName: firstName)
+    @ViewBuilder
+    private var actions: some View {
+        switch viewModel.step {
+        case .kind:
+            StageLink(title: "I'll add one later") { viewModel.skipProperty() }
+        case .saving, .paywall:
+            EmptyView()
+        case .notifications:
+            StageButton(title: "Turn on notifications", isProminent: true) {
+                Task { await viewModel.enableNotifications() }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
-            .frame(maxWidth: 540)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Color.groupedBackground)
-        .navigationBarBackButtonHidden()
-        .primaryActionBar {
-            PrimaryActionButton(title: "Continue", action: onContinue)
+            StageLink(title: "Not now", action: viewModel.declineNotifications)
+        default:
+            StageButton(title: viewModel.step == .units ? "Add property" : "Continue", isEnabled: viewModel.canContinue) {
+                viewModel.advance()
+            }
         }
     }
+
+    // MARK: Notification Preview
+
+    /// A preview of the banner they'll get; the system prompt shows only
+    /// if they tap "Turn on notifications" (playbook §7).
+    private var notificationPreview: some View {
+        let property = viewModel.createdProperty?.name
+        return HStack(alignment: .top, spacing: 12) {
+            PurrpertyLogoTile(size: 38, animates: false)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text("Purrperty").font(DS.Typography.brand(.subheadline, weight: .semibold))
+                    Spacer()
+                    Text("now").font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(DS.Colors.textSecondary)
+                }
+                Text("Rent received").font(DS.Typography.brand(.subheadline, weight: .semibold))
+                Text(property.map { "Unit 1 at \($0) just paid this month's rent." } ?? "Unit 2 just paid this month's rent.")
+                    .font(DS.Typography.brand(.subheadline, weight: .regular))
+                    .foregroundStyle(DS.Colors.textSecondary)
+            }
+        }
+        .stagePanel()
+        .shadow(color: DS.Colors.groundShadow, radius: 10, y: 6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Example notification: Rent received")
+    }
 }
+
+// MARK: - Founder's Note
 
 /// A short note signed by a person, not a brand.
 private struct FounderNoteCard: View {
@@ -286,23 +262,23 @@ private struct FounderNoteCard: View {
     let firstName: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Hi \(firstName),")
                 .font(DS.Typography.brand(.headline, weight: .semibold))
-
             Text("Thanks for giving Purrperty a try. I built it so looking after your rentals takes minutes, not evenings. I hope it does exactly that for you.")
+                .font(DS.Typography.brand(.callout, weight: .regular))
                 .fixedSize(horizontal: false, vertical: true)
-
             VStack(alignment: .leading, spacing: 2) {
                 Text(FounderNote.signature)
                     .font(DS.Typography.brand(.title3, weight: .semibold))
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(DS.Colors.brandInk)
                 Text(FounderNote.title)
                     .font(DS.Typography.brand(.footnote, weight: .regular))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DS.Colors.textSecondary)
             }
         }
-        .appCard()
+        .foregroundStyle(DS.Colors.textPrimary)
+        .stagePanel()
         .accessibilityElement(children: .combine)
     }
 }
@@ -311,71 +287,4 @@ private struct FounderNoteCard: View {
 enum FounderNote {
     static let signature = "Nabeel"
     static let title = "Founder, Purrperty"
-}
-
-// MARK: - Notification Priming
-
-/// A preview of a real notification first; the system prompt only if
-/// they tap "Turn on notifications" (playbook §7).
-private struct GettingStartedNotificationPriming: View {
-
-    let propertyName: String?
-    let onEnable: () -> Void
-    let onDecline: () -> Void
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                notificationPreview
-                    .padding(.top, 24)
-
-                PurrMascot(mood: .newNotification, size: 150)
-
-                VStack(spacing: 8) {
-                    Text("Never miss a rent payment")
-                        .font(DS.Typography.brand(.largeTitle, weight: .bold))
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
-                    Text("Get a nudge when rent lands, a repair comes in or a tenant messages you. You choose which in Settings.")
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-            }
-            .padding(.horizontal, 24)
-            .frame(maxWidth: 540)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollBounceBehavior(.basedOnSize)
-        .background(Color.groupedBackground)
-        .navigationBarBackButtonHidden()
-        .primaryActionBar {
-            PrimaryActionButton(title: "Turn on notifications", action: onEnable)
-            Button("Not now", action: onDecline)
-                .frame(minHeight: 44)
-        }
-    }
-
-    /// An illustration of the banner they'll get — plain content, not glass.
-    private var notificationPreview: some View {
-        HStack(alignment: .top, spacing: 12) {
-            PurrpertyLogoTile(size: 38, animates: false)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text("Purrperty").font(DS.Typography.brand(.subheadline, weight: .semibold))
-                    Spacer()
-                    Text("now").font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(.secondary)
-                }
-                Text("Rent received").font(DS.Typography.brand(.subheadline, weight: .semibold))
-                Text(propertyName.map { "Unit 1 at \($0) just paid this month's rent." } ?? "Unit 2 just paid this month's rent.")
-                    .font(DS.Typography.brand(.subheadline, weight: .regular))
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(14)
-        .background(Color.secondaryGroupedBackground, in: .rect(cornerRadius: 24))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Example notification: Rent received")
-    }
 }

@@ -181,7 +181,7 @@ final class OrgSetupViewModel {
     var monogram: String {
         let parts = orgName.split(separator: " ").prefix(2)
         let letters = parts.compactMap { $0.first.map(String.init) }
-        return letters.isEmpty ? "R" : letters.joined().uppercased()
+        return letters.isEmpty ? "P" : letters.joined().uppercased()
     }
 
     // MARK: Progress
@@ -222,7 +222,7 @@ final class OrgSetupViewModel {
     func advance() async {
         if let next = OrgSetupStep(rawValue: step.rawValue + 1) {
             movesForward = true
-            withAnimation(DS.Motion.smooth) { step = next }
+            withAnimation(DS.Motion.scene) { step = next }
         } else {
             await submit()
         }
@@ -248,7 +248,7 @@ final class OrgSetupViewModel {
         do {
             try await service.createOrganization(draft)
             createdOrganizationID = "org_\(UUID().uuidString.prefix(8).lowercased())"
-            withAnimation(DS.Motion.smooth) { isComplete = true }
+            withAnimation(DS.Motion.scene) { isComplete = true }
         } catch {
             submissionError = (error as? AppError)?.errorDescription
                 ?? AppError.unknown.errorDescription
@@ -258,7 +258,7 @@ final class OrgSetupViewModel {
     func goBack() {
         guard let previous = OrgSetupStep(rawValue: step.rawValue - 1) else { return }
         movesForward = false
-        withAnimation(DS.Motion.smooth) { step = previous }
+        withAnimation(DS.Motion.scene) { step = previous }
     }
 
     // MARK: Invites

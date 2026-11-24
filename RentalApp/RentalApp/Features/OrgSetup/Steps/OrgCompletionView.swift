@@ -2,124 +2,10 @@
 //  OrgCompletionView.swift
 //  RentalApp
 //
-//  Org Setup — Completion celebration: the mascot cheering inside a
-//  confetti burst, and a summary card of the new workspace.
+//  Org Setup — The confetti burst behind a celebration.
 //
 
 import SwiftUI
-
-struct OrgCompletionView: View {
-
-    let viewModel: OrgSetupViewModel
-    let onFinished: () -> Void
-
-    var body: some View {
-        ZStack {
-            OrgConfettiBurst()
-
-            VStack(spacing: DS.Spacing.xxl) {
-                Spacer()
-
-                // Purr's party. Replaces the success ring: a celebration
-                // reads better as a character's reaction than as a checkmark.
-                PurrMascot(mood: .partyTime, size: 190, surprisesOnTap: true)
-
-                VStack(spacing: DS.Spacing.sm) {
-                    Text("You're all set!")
-                        .font(.system(size: 30, weight: .heavy, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [DS.Colors.brand, DS.Colors.accentEmber],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-
-                    Text("Your workspace is ready to go.")
-                        .font(DS.Typography.callout)
-                        .foregroundStyle(DS.Colors.textSecondary)
-                }
-                .dsEntrance(index: 1)
-
-                // Workspace summary.
-                AuthCard {
-                    VStack(spacing: DS.Spacing.lg) {
-                        HStack(spacing: DS.Spacing.md) {
-                            ZStack {
-                                Circle()
-                                    .fill(viewModel.monogramGradient)
-
-                                if let image = viewModel.logoImage {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .clipShape(Circle())
-                                } else {
-                                    Text(viewModel.monogram)
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundStyle(DS.Colors.onFixedColor)
-                                }
-                            }
-                            .frame(width: 54, height: 54)
-                            .overlay(Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1))
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(viewModel.orgName)
-                                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                                    .foregroundStyle(DS.Colors.textPrimary)
-                                    .lineLimit(1)
-
-                                Text(summaryLine)
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundStyle(DS.Colors.textSecondary)
-                            }
-
-                            Spacer(minLength: 0)
-                        }
-
-                        if !viewModel.inviteEmails.isEmpty {
-                            HStack {
-                                DSAvatarStack(names: viewModel.inviteEmails, maxVisible: 4)
-
-                                Text("\(viewModel.inviteEmails.count) invite\(viewModel.inviteEmails.count == 1 ? "" : "s") on the way")
-                                    .font(.system(size: 12.5, weight: .medium, design: .rounded))
-                                    .foregroundStyle(DS.Colors.textSecondary)
-
-                                Spacer()
-                            }
-                        }
-                    }
-                }
-                .dsEntrance(index: 2)
-
-                Spacer()
-
-                // "Continue", not "Go to Dashboard": a new account goes on
-                // to getting started (first property) before Home.
-                DSButton(
-                    title: "Continue",
-                    icon: "arrow.right",
-                    variant: .primary,
-                    size: .large,
-                    isFullWidth: true
-                ) {
-                    onFinished()
-                }
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.bottom, DS.Spacing.xxl)
-                .dsEntrance(index: 3)
-            }
-            .padding(.horizontal, DS.Spacing.xl)
-        }
-    }
-
-    private var summaryLine: String {
-        var parts: [String] = []
-        if let type = viewModel.propertyType { parts.append(type.title) }
-        if let size = viewModel.portfolioSize { parts.append("\(size.title) properties") }
-        return parts.isEmpty ? "Ready to add your first property" : parts.joined(separator: " · ")
-    }
-}
 
 // MARK: - Confetti
 
@@ -258,22 +144,4 @@ struct OrgConfettiBurst: View {
         .allowsHitTesting(false)
         .ignoresSafeArea()
     }
-}
-
-#Preview("Completion") {
-    struct Demo: View {
-        var body: some View {
-            let vm = OrgSetupViewModel(service: AppContainer.preview.organization)
-            vm.orgName = "Bukhari Properties"
-            vm.propertyType = .multiUnit
-            vm.portfolioSize = .growing
-            vm.inviteEmails = ["sarah@example.com", "mike@example.com"]
-
-            return ZStack {
-                SplashBackground()
-                OrgCompletionView(viewModel: vm, onFinished: {})
-            }
-        }
-    }
-    return Demo()
 }

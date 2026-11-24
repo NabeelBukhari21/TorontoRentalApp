@@ -45,6 +45,8 @@ final class GettingStartedViewModel {
     var unitCount = 1
     private(set) var saveTasks: [OnboardingBuildTask] = []
     private(set) var saveError: String?
+    /// The draft starts on a kind; this says the person picked it.
+    private(set) var hasChosenKind = false
     private(set) var createdProperty: Property?
 
     let profile: OnboardingProfile
@@ -150,6 +152,7 @@ final class GettingStartedViewModel {
     func choose(_ kind: PropertyKind) {
         withAnimation(DS.Motion.bouncy) {
             draft.kind = kind
+            hasChosenKind = true
             switch kind {
             case .house, .condo: unitCount = 1
             case .multiUnit:     unitCount = max(2, profile.unitRange?.suggestedUnitsPerProperty ?? 2)
@@ -196,7 +199,7 @@ final class GettingStartedViewModel {
 
     private func move(to next: GettingStartedStep, forward: Bool = true) {
         movesForward = forward
-        withAnimation(DS.Motion.smooth) { step = next }
+        withAnimation(DS.Motion.scene) { step = next }
     }
 
     /// Priming only makes sense while the system prompt can still be

@@ -515,7 +515,7 @@ private struct OnboardingCues: ViewModifier {
 // MARK: - Transitions
 
 /// Words and answers blur away upward, and the next rise into focus.
-private struct DriftTransition: Transition {
+struct DriftTransition: Transition {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content, phase: TransitionPhase) -> some View {
@@ -527,7 +527,7 @@ private struct DriftTransition: Transition {
     }
 }
 
-private extension AnyTransition {
+extension AnyTransition {
     static var drift: AnyTransition {
         .asymmetric(
             insertion: AnyTransition(DriftTransition()).animation(DS.Motion.scene.delay(0.16)),

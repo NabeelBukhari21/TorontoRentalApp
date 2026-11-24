@@ -2,13 +2,37 @@
 //  OrgSetupSteps.swift
 //  RentalApp
 //
-//  Org Setup — The five wizard steps. Each is a glass card of
-//  animated form content; the flow container provides header,
-//  progress, and navigation.
+//  Org Setup — What each step puts on Purr's counter. (Property type and
+//  portfolio size are answer cards; see `OrgSetupFlowView`.)
 //
 
 import SwiftUI
 import PhotosUI
+
+// MARK: - Monogram
+
+/// The workspace's logo, or its initials on the chosen gradient.
+private struct OrgMark: View {
+    let viewModel: OrgSetupViewModel
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle().fill(viewModel.monogramGradient)
+            if let image = viewModel.logoImage {
+                Image(uiImage: image).resizable().scaledToFill().clipShape(.circle)
+            } else {
+                Text(viewModel.monogram)
+                    .font(DS.Typography.brandFixed(size * 0.38))
+                    .foregroundStyle(DS.Colors.onFixedColor)
+            }
+        }
+        .frame(width: size, height: size)
+        .overlay(Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1.5))
+        .shadow(color: DS.Colors.groundShadow, radius: 8, y: 6)
+        .accessibilityHidden(true)
+    }
+}
 
 // MARK: - Step 1 · Organization Name
 
@@ -17,54 +41,22 @@ struct OrgNameStep: View {
     @Bindable var viewModel: OrgSetupViewModel
 
     var body: some View {
-        AuthCard {
-            VStack(spacing: DS.Spacing.lg) {
-                AuthTextField(
-                    label: "Organization name",
-                    text: $viewModel.orgName,
-                    icon: "building.2.fill"
-                )
+        VStack(spacing: 12) {
+            StageField(symbol: "building.2.fill", prompt: "Organization name", text: $viewModel.orgName)
+                .textContentType(.organizationName)
 
-                // Live workspace preview.
-                HStack(spacing: DS.Spacing.md) {
-                    Circle()
-                        .fill(viewModel.monogramGradient)
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            Text(viewModel.monogram)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                                .foregroundStyle(DS.Colors.onFixedColor)
-                        )
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(viewModel.orgName.isEmpty ? "Your Workspace" : viewModel.orgName)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DS.Colors.textPrimary)
-                            .lineLimit(1)
-
-                        Text("rentos.app/\(slug)")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(DS.Colors.textSecondary)
-                            .lineLimit(1)
-                    }
-
-                    Spacer(minLength: 0)
-
-                    DSBadge(text: "Preview", kind: .info)
-                }
-                .padding(DS.Spacing.md)
-                .background(DS.Colors.surface, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
-                .animation(DS.Motion.gentle, value: viewModel.orgName)
+            HStack(spacing: 12) {
+                OrgMark(viewModel: viewModel, size: 44)
+                Text(viewModel.orgName.isEmpty ? "Your Workspace" : viewModel.orgName)
+                    .font(DS.Typography.brand(.headline, weight: .semibold))
+                    .foregroundStyle(DS.Colors.textPrimary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                DSBadge(text: "Preview", kind: .info)
             }
+            .stagePanel()
+            .animation(DS.Motion.gentle, value: viewModel.orgName)
         }
-    }
-
-    private var slug: String {
-        let base = viewModel.orgName.isEmpty ? "your-workspace" : viewModel.orgName
-        return base
-            .lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
     }
 }
 
@@ -74,107 +66,58 @@ struct OrgLogoStep: View {
 
     @Bindable var viewModel: OrgSetupViewModel
     @State private var pickerItem: PhotosPickerItem?
+    @Environment(\.feedback) private var feedback
 
     var body: some View {
-        AuthCard {
-            VStack(spacing: DS.Spacing.xl) {
-                // Logo preview.
-                ZStack {
-                    Circle()
-                        .fill(viewModel.monogramGradient)
-                        .frame(width: 108, height: 108)
-                        .opacity(viewModel.logoImage == nil ? 1 : 0)
-
-                    if let image = viewModel.logoImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 108, height: 108)
-                            .clipShape(Circle())
-                            .transition(.scale(scale: 0.7).combined(with: .opacity))
-                    } else {
-                        Text(viewModel.monogram)
-                            .font(.system(size: 38, weight: .bold, design: .rounded))
-                            .foregroundStyle(DS.Colors.onFixedColor)
-                    }
-                }
-                .overlay(
-                    Circle().strokeBorder(DS.Colors.highlightLine, lineWidth: 1.5)
-                )
-                .dsShadow(DS.Shadows.glow(DS.Colors.brand, intensity: 0.4))
-                .dsFloating(amplitude: 4, duration: 3.6)
+        VStack(spacing: 16) {
+            OrgMark(viewModel: viewModel, size: 92)
+                .jelly(on: viewModel.logoGradientIndex)
                 .animation(DS.Motion.bouncy, value: viewModel.logoImage == nil)
 
-                // Monogram gradient choices (hidden once a photo is set).
-                if viewModel.logoImage == nil {
-                    HStack(spacing: DS.Spacing.md) {
-                        ForEach(OrgSetupViewModel.monogramGradients.indices, id: \.self) { index in
-                            Button {
-                                withAnimation(DS.Motion.snappy) {
-                                    viewModel.logoGradientIndex = index
-                                }
-                            } label: {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: OrgSetupViewModel.monogramGradients[index],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 34, height: 34)
-                                    .overlay(
-                                        Circle().strokeBorder(
-                                            viewModel.logoGradientIndex == index ? DS.Colors.textPrimary : DS.Colors.outline,
-                                            lineWidth: 2
-                                        )
-                                    )
-                                    .scaleEffect(viewModel.logoGradientIndex == index ? 1.15 : 1)
-                            }
-                            .buttonStyle(DSPressStyle(scale: 0.85))
-                        }
-                    }
-                    .animation(DS.Motion.bouncy, value: viewModel.logoGradientIndex)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
-
-                // Read on the main actor; PhotosPicker's label closure isn't.
-                let pickerTitle = viewModel.logoImage == nil ? "Upload Logo" : "Choose a Different Photo"
-
-                VStack(spacing: DS.Spacing.md) {
-                    PhotosPicker(selection: $pickerItem, matching: .images) {
-                        HStack(spacing: DS.Spacing.sm) {
-                            Image(systemName: "photo.fill")
-                                .font(.system(size: 15, weight: .semibold))
-                            Text(pickerTitle)
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundStyle(DS.Colors.brandInk)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                                .strokeBorder(DS.Colors.outline, lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(DSPressStyle())
-
-                    if viewModel.logoImage != nil {
+            // Monogram gradient choices (hidden once a photo is set).
+            if viewModel.logoImage == nil {
+                HStack(spacing: 12) {
+                    ForEach(OrgSetupViewModel.monogramGradients.indices, id: \.self) { index in
                         Button {
-                            withAnimation(DS.Motion.snappy) {
-                                viewModel.logoImage = nil
-                                pickerItem = nil
-                            }
+                            feedback?.play(.select(index))
+                            withAnimation(DS.Motion.bouncy) { viewModel.logoGradientIndex = index }
                         } label: {
-                            Text("Remove photo")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(DS.Colors.accentBlushInk)
+                            Circle()
+                                .fill(LinearGradient(colors: OrgSetupViewModel.monogramGradients[index], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .frame(width: 36, height: 36)
+                                .overlay(Circle().strokeBorder(
+                                    viewModel.logoGradientIndex == index ? DS.Colors.textPrimary : DS.Colors.outline, lineWidth: 2.5
+                                ))
+                                .scaleEffect(viewModel.logoGradientIndex == index ? 1.15 : 1)
+                                .frame(width: 44, height: 44)
                         }
-                        .buttonStyle(DSPressStyle(scale: 0.95))
-                        .transition(.opacity)
+                        .buttonStyle(SquishStyle(scale: 0.85))
+                        .accessibilityLabel("Colour \(index + 1)")
+                        .accessibilityAddTraits(viewModel.logoGradientIndex == index ? .isSelected : [])
                     }
                 }
+                .transition(.opacity)
+            }
+
+            // Read on the main actor; PhotosPicker's label closure isn't.
+            let pickerTitle = viewModel.logoImage == nil ? "Upload a logo" : "Choose a different photo"
+            PhotosPicker(selection: $pickerItem, matching: .images) {
+                Label(pickerTitle, systemImage: "photo.fill")
+                    .font(DS.Typography.brand(.callout, weight: .semibold))
+                    .foregroundStyle(DS.Colors.brandInk)
+                    .frame(maxWidth: .infinity)
+                    .stageField()
+            }
+            .buttonStyle(SquishStyle(scale: 0.97))
+
+            if viewModel.logoImage != nil {
+                StageLink(title: "Remove photo") {
+                    withAnimation(DS.Motion.snappy) {
+                        viewModel.logoImage = nil
+                        pickerItem = nil
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .onChange(of: pickerItem) { _, item in
@@ -182,96 +125,7 @@ struct OrgLogoStep: View {
                 guard let item,
                       let data = try? await item.loadTransferable(type: Data.self),
                       let image = UIImage(data: data) else { return }
-                withAnimation(DS.Motion.bouncy) {
-                    viewModel.logoImage = image
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Step 3 · Property Type
-
-struct OrgTypeStep: View {
-
-    @Bindable var viewModel: OrgSetupViewModel
-
-    var body: some View {
-        VStack(spacing: DS.Spacing.md) {
-            ForEach(Array(PropertyTypeOption.allCases.enumerated()), id: \.element.id) { index, option in
-                OrgOptionCard(
-                    icon: option.icon,
-                    title: option.title,
-                    subtitle: option.subtitle,
-                    isSelected: viewModel.propertyType == option
-                ) {
-                    viewModel.propertyType = option
-                }
-                .dsEntrance(index: index)
-            }
-        }
-    }
-}
-
-// MARK: - Step 4 · Portfolio Size
-
-struct OrgSizeStep: View {
-
-    @Bindable var viewModel: OrgSetupViewModel
-
-    private let columns = [
-        GridItem(.flexible(), spacing: DS.Spacing.md),
-        GridItem(.flexible(), spacing: DS.Spacing.md)
-    ]
-
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: DS.Spacing.md) {
-            ForEach(Array(PortfolioSizeOption.allCases.enumerated()), id: \.element.id) { index, option in
-                Button {
-                    viewModel.portfolioSize = option
-                } label: {
-                    VStack(spacing: DS.Spacing.sm) {
-                        Image(systemName: option.icon)
-                            .font(.system(size: 22, weight: .semibold))
-                            .foregroundStyle(
-                                viewModel.portfolioSize == option
-                                    ? AnyShapeStyle(DS.Gradients.ai)
-                                    : AnyShapeStyle(DS.Colors.textSecondary)
-                            )
-
-                        Text(option.title)
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundStyle(DS.Colors.textPrimary)
-
-                        Text(option.subtitle)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(DS.Colors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, DS.Spacing.xl)
-                    .background(DS.Colors.surfaceRaised,
-                        in: RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
-                            .strokeBorder(
-                                viewModel.portfolioSize == option
-                                    ? AnyShapeStyle(
-                                        LinearGradient(
-                                            colors: [DS.Colors.accentSkyInk.opacity(0.9), DS.Colors.accentGoldInk.opacity(0.7)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                      )
-                                    : AnyShapeStyle(DS.Colors.outline),
-                                lineWidth: viewModel.portfolioSize == option ? 1.5 : 1
-                            )
-                    )
-                    .scaleEffect(viewModel.portfolioSize == option ? 1.03 : 1)
-                }
-                .buttonStyle(DSPressStyle())
-                .animation(DS.Motion.bouncy, value: viewModel.portfolioSize)
-                .dsEntrance(index: index)
+                withAnimation(DS.Motion.bouncy) { viewModel.logoImage = image }
             }
         }
     }
@@ -284,52 +138,84 @@ struct OrgInviteStep: View {
     @Bindable var viewModel: OrgSetupViewModel
 
     var body: some View {
-        AuthCard {
-            VStack(spacing: DS.Spacing.lg) {
-                HStack(spacing: DS.Spacing.md) {
-                    AuthTextField(
-                        label: "Teammate email",
-                        text: $viewModel.inviteInput,
-                        icon: "envelope.fill",
-                        keyboardType: .emailAddress,
-                        error: viewModel.inviteError
-                    )
-                    .onChange(of: viewModel.inviteInput) { _, _ in
-                        viewModel.inviteError = nil
-                    }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
+                StageField(symbol: "envelope.fill", prompt: "Teammate email", text: $viewModel.inviteInput, error: viewModel.inviteError)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .onSubmit { viewModel.addInvite() }
+                    .onChange(of: viewModel.inviteInput) { _, _ in viewModel.inviteError = nil }
 
-                    DSIconButton(icon: DS.Icons.add, variant: .primary, diameter: 46) {
-                        viewModel.addInvite()
-                    }
-                    .padding(.top, viewModel.inviteError == nil ? 0 : -26)
+                Button { viewModel.addInvite() } label: {
+                    Image(systemName: DS.Icons.add)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(DS.Colors.textOnBrand)
+                        .frame(width: 48, height: 48)
+                        .background(Circle().fill(.clay(DS.Colors.brand, shade: DS.Colors.brandDeep, size: 48)))
                 }
+                .buttonStyle(PressableDepthStyle(edge: DS.Colors.brandDeep, depth: 4))
+                .accessibilityLabel("Add teammate")
+            }
 
-                if viewModel.inviteEmails.isEmpty {
-                    VStack(spacing: DS.Spacing.sm) {
-                        Image(systemName: DS.Icons.tenants)
-                            .font(.system(size: 26, weight: .medium))
-                            .foregroundStyle(DS.Colors.textTertiary)
-
-                        Text("Invites appear here — teammates get\nProperty Manager access to start.")
-                            .font(.system(size: 12.5, weight: .medium))
-                            .foregroundStyle(DS.Colors.textSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.vertical, DS.Spacing.lg)
-                } else {
-                    // Invited chips.
-                    FlowLayoutCompat(spacing: DS.Spacing.sm) {
-                        ForEach(viewModel.inviteEmails, id: \.self) { email in
-                            OrgInviteChip(email: email) {
-                                viewModel.removeInvite(email)
-                            }
-                        }
+            if viewModel.inviteEmails.isEmpty {
+                Text("Teammates get Property Manager access to start.")
+                    .font(DS.Typography.brand(.footnote, weight: .regular))
+                    .foregroundStyle(DS.Colors.textSecondary)
+            } else {
+                FlowLayoutCompat(spacing: DS.Spacing.sm) {
+                    ForEach(viewModel.inviteEmails, id: \.self) { email in
+                        OrgInviteChip(email: email) { viewModel.removeInvite(email) }
                     }
                 }
             }
         }
     }
 }
+
+// MARK: - Done
+
+/// The new workspace, summed up.
+struct OrgSummary: View {
+    let viewModel: OrgSetupViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 14) {
+                OrgMark(viewModel: viewModel, size: 54)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(viewModel.orgName)
+                        .font(DS.Typography.brand(.title3, weight: .semibold))
+                        .foregroundStyle(DS.Colors.textPrimary)
+                        .lineLimit(1)
+                    Text(summaryLine)
+                        .font(DS.Typography.brand(.subheadline, weight: .regular))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                }
+            }
+            if !viewModel.inviteEmails.isEmpty {
+                HStack {
+                    DSAvatarStack(names: viewModel.inviteEmails, maxVisible: 4)
+                    Text("\(viewModel.inviteEmails.count) \(viewModel.inviteEmails.count == 1 ? "teammate" : "teammates") to invite")
+                        .font(DS.Typography.brand(.footnote, weight: .regular))
+                        .foregroundStyle(DS.Colors.textSecondary)
+                }
+            }
+        }
+        .stagePanel()
+        .accessibilityElement(children: .combine)
+    }
+
+    private var summaryLine: String {
+        var parts: [String] = []
+        if let type = viewModel.propertyType { parts.append(type.title) }
+        if let size = viewModel.portfolioSize { parts.append("\(size.title) properties") }
+        return parts.isEmpty ? "Ready to add your first property" : parts.joined(separator: " · ")
+    }
+}
+
+// MARK: - Layout
 
 /// Simple wrapping layout for chips (iOS 16+ Layout).
 struct FlowLayoutCompat: Layout {

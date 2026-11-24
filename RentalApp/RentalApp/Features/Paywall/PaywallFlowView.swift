@@ -13,6 +13,7 @@ import SwiftUI
 struct PaywallFlowView: View {
 
     @State private var viewModel: PaywallViewModel
+    @Environment(\.feedback) private var feedback
     /// `true` when the user ends up subscribed or in a trial.
     let onFinished: (_ subscribed: Bool) -> Void
 
@@ -33,32 +34,28 @@ struct PaywallFlowView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
-
-            ScrollView(showsIndicators: false) {
-                Group {
-                    switch viewModel.step {
-                    case .intro:    PaywallIntroStep(viewModel: viewModel)
-                    case .timeline: PaywallTimelineStep(viewModel: viewModel)
-                    case .plans:    PaywallPlansStep(viewModel: viewModel)
-                    }
-                }
-                .id(viewModel.step)
-                .transition(
-                    .asymmetric(
-                        insertion: .move(edge: viewModel.movesForward ? .trailing : .leading).combined(with: .opacity),
-                        removal: .move(edge: viewModel.movesForward ? .leading : .trailing).combined(with: .opacity)
-                    )
-                )
-                .padding(.horizontal, DS.Spacing.xl)
-                .padding(.vertical, DS.Spacing.lg)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
+        PurrStage(
+            step: viewModel.step,
+            accent: viewModel.step == .timeline ? .sky : viewModel.step == .plans ? .mint : .gold,
+            mood: viewModel.step == .intro ? .referralReward : viewModel.step == .timeline ? .reminder : .balloonFloat,
+            title: title,
+            line: viewModel.step == .intro ? "Everything you asked for, and more." : "",
+            movesForward: viewModel.movesForward,
+            props: viewModel.step == .intro ? ["star.fill", "gift.fill"] : viewModel.step == .timeline ? ["bell.fill", "calendar"] : ["crown.fill", "sparkles"],
+            onBack: viewModel.step == .intro ? nil : { viewModel.goBack() },
+            onClose: viewModel.isDismissible ? {
+                viewModel.dismissed()
+                onFinished(false)
+            } : nil,
+            closeLabel: "Close, continue with the free plan"
+        ) {
+            switch viewModel.step {
+            case .intro:    PaywallIntroStep(viewModel: viewModel)
+            case .timeline: PaywallTimelineStep(viewModel: viewModel)
+            case .plans:    PaywallPlansStep(viewModel: viewModel)
             }
-            .scrollBounceBehavior(.basedOnSize)
-
-            footer
+        } actions: {
+            actions
         }
         .onAppear { viewModel.onAppear() }
         .sheet(isPresented: $viewModel.showsAllPlans) {
@@ -67,78 +64,54 @@ struct PaywallFlowView: View {
         }
     }
 
-    // MARK: Chrome
-
-    private var topBar: some View {
-        HStack {
-            if viewModel.step != .intro {
-                AuthBackButton { viewModel.goBack() }
-                    .transition(.opacity)
-            }
-            Spacer()
-            if viewModel.isDismissible {
-                Button {
-                    viewModel.dismissed()
-                    onFinished(false)
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(DS.Colors.textSecondary)
-                        .frame(width: 40, height: 40)
-                        .background(DS.Colors.surface, in: Circle())
-                }
-                .buttonStyle(DSPressStyle(scale: 0.9))
-                .accessibilityLabel("Close, continue with the free plan")
-            }
+    private var title: String {
+        switch viewModel.step {
+        case .intro: "Try Purrperty \(viewModel.name(of: viewModel.featuredTier)) free for \(viewModel.trialDays) days"
+        case .timeline: "How your free trial works"
+        case .plans: "Choose your plan"
         }
-        .padding(.horizontal, DS.Spacing.xl)
-        .padding(.top, DS.Spacing.sm)
-        .animation(DS.Motion.smooth, value: viewModel.step)
     }
 
     @ViewBuilder
-    private var footer: some View {
-        VStack(spacing: DS.Spacing.md) {
-            if let error = viewModel.errorMessage {
-                AuthFormError(message: error)
-            }
+    private var actions: some View {
+        if let error = viewModel.errorMessage {
+            AuthFormError(message: error)
+        }
 
-            switch viewModel.step {
-            case .intro, .timeline:
-                DSButton(title: "Continue", variant: .primary, size: .large, isFullWidth: true) {
-                    viewModel.advance()
-                }
-                Text("No charge today")
-                    .font(DS.Typography.caption)
-                    .foregroundStyle(DS.Colors.textSecondary)
+        switch viewModel.step {
+        case .intro, .timeline:
+            StageButton(title: "Continue", isProminent: true) { viewModel.advance() }
+            Text("No charge today")
+                .font(DS.Typography.brand(.footnote, weight: .regular))
+                .foregroundStyle(DS.Colors.textSecondary)
 
-            case .plans:
-                DSButton(
-                    title: "Start my \(viewModel.trialDays)-day free trial",
-                    variant: .primary, size: .large, isFullWidth: true,
-                    isLoading: viewModel.isPurchasing
-                ) {
-                    Task {
-                        if await viewModel.startTrial() { onFinished(true) }
+        case .plans:
+            StageButton(
+                title: "Start my \(viewModel.trialDays)-day free trial",
+                isEnabled: viewModel.selectedProduct != nil,
+                isLoading: viewModel.isPurchasing,
+                isProminent: true
+            ) {
+                Task {
+                    if await viewModel.startTrial() {
+                        feedback?.play(.celebrate)
+                        onFinished(true)
+                    } else if viewModel.errorMessage != nil {
+                        feedback?.play(.error)
                     }
                 }
-                .disabled(viewModel.selectedProduct == nil)
-
-                if let product = viewModel.selectedProduct {
-                    Text("\(viewModel.trialDays) days free, then \(product.displayPrice) per \(product.period). Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the trial ends and you won't be charged.")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(DS.Colors.textTertiary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                PaywallLegalLinks(viewModel: viewModel, onRestored: { onFinished(true) })
             }
+
+            if let product = viewModel.selectedProduct {
+                Text("\(viewModel.trialDays) days free, then \(product.displayPrice) per \(product.period). Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the trial ends and you won't be charged.")
+                    .font(DS.Typography.brand(.caption, weight: .regular))
+                    .foregroundStyle(DS.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            PaywallLegalLinks(viewModel: viewModel, onRestored: { onFinished(true) })
         }
-        .padding(.horizontal, DS.Spacing.xl)
-        .padding(.bottom, DS.Spacing.lg)
-        .frame(maxWidth: 560)
-        .animation(DS.Motion.gentle, value: viewModel.errorMessage)
     }
 }
 
@@ -150,26 +123,6 @@ private struct PaywallIntroStep: View {
 
     var body: some View {
         VStack(spacing: DS.Spacing.xl) {
-            ZStack {
-                Circle()
-                    .fill(DS.Gradients.hero)
-                    .frame(width: 160, height: 160)
-                    .opacity(0.16)
-                PurrMascot(mood: .referralReward, size: 140)
-            }
-            .dsEntrance(index: 0)
-
-            VStack(spacing: DS.Spacing.sm) {
-                Text("Try Purrperty \(viewModel.name(of: viewModel.featuredTier)) free for \(viewModel.trialDays) days")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                Text("Everything you asked for, and more.")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(DS.Colors.textSecondary)
-            }
-            .dsEntrance(index: 1)
-
             VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 ForEach(Array(viewModel.outcomes.enumerated()), id: \.offset) { index, outcome in
                     HStack(alignment: .top, spacing: DS.Spacing.md) {
@@ -177,11 +130,10 @@ private struct PaywallIntroStep: View {
                             .font(.system(size: 20))
                             .foregroundStyle(DS.Colors.accentMintInk)
                         Text(outcome)
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .font(DS.Typography.brand(.callout, weight: .semibold))
                             .foregroundStyle(DS.Colors.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .dsEntrance(index: index + 2)
                 }
             }
             .padding(DS.Spacing.xl)
@@ -198,16 +150,7 @@ private struct PaywallTimelineStep: View {
     @Bindable var viewModel: PaywallViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xxl) {
-            HStack(alignment: .bottom) {
-                Text("How your free trial works")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                Spacer(minLength: 0)
-                PurrMascot(mood: .reminder, size: 64)
-            }
-            .dsEntrance(index: 0)
-
+        VStack(alignment: .leading, spacing: DS.Spacing.lg) {
             VStack(alignment: .leading, spacing: 0) {
                 milestone(
                     icon: "lock.open.fill", tint: DS.Colors.brand, iconColor: DS.Colors.textOnBrand,
@@ -229,15 +172,14 @@ private struct PaywallTimelineStep: View {
                     isLast: true
                 )
             }
-            .dsEntrance(index: 1)
 
             Toggle(isOn: $viewModel.remindsBeforeTrialEnds) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Remind me before it ends")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(DS.Typography.brand(.callout, weight: .semibold))
                         .foregroundStyle(DS.Colors.textPrimary)
                     Text("A notification on day \(viewModel.reminderDay).")
-                        .font(DS.Typography.caption)
+                        .font(DS.Typography.brand(.caption, weight: .regular))
                         .foregroundStyle(DS.Colors.textSecondary)
                 }
             }
@@ -245,7 +187,6 @@ private struct PaywallTimelineStep: View {
             .padding(DS.Spacing.lg)
             .background(DS.Colors.surface, in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
             .sensoryFeedback(.selection, trigger: viewModel.remindsBeforeTrialEnds)
-            .dsEntrance(index: 2)
         }
     }
 
@@ -267,16 +208,16 @@ private struct PaywallTimelineStep: View {
                 if !isLast {
                     Rectangle()
                         .fill(DS.Colors.outline)
-                        .frame(width: 3, height: 44)
+                        .frame(width: 3, height: 26)
                 }
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(DS.Typography.brand(.callout, weight: .semibold))
                     .foregroundStyle(DS.Colors.textPrimary)
                 Text(detail)
-                    .font(DS.Typography.subheadline)
+                    .font(DS.Typography.brand(.subheadline, weight: .regular))
                     .foregroundStyle(DS.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -294,11 +235,6 @@ private struct PaywallPlansStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.xl) {
-            Text("Choose your plan")
-                .font(.system(size: 30, weight: .heavy, design: .rounded))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .dsEntrance(index: 0)
-
             if viewModel.isLoadingProducts {
                 ProgressView().frame(maxWidth: .infinity, minHeight: 160)
             } else {
@@ -310,25 +246,22 @@ private struct PaywallPlansStep: View {
                         planCard(monthly, badge: nil)
                     }
                 }
-                .dsEntrance(index: 1)
             }
 
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Text("\(viewModel.name(of: viewModel.featuredTier)) includes").dsOverline()
                 ForEach(viewModel.featuredTier.entitlements.sorted { $0.title < $1.title }, id: \.self) { entitlement in
                     Label(entitlement.title, systemImage: "checkmark")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(DS.Typography.brand(.subheadline, weight: .medium))
                         .foregroundStyle(DS.Colors.textPrimary)
                         .labelStyle(PaywallCheckLabelStyle())
                 }
             }
-            .dsEntrance(index: 2)
 
             Button("View all plans") { viewModel.showsAllPlans = true }
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .font(DS.Typography.brand(.subheadline, weight: .semibold))
                 .foregroundStyle(DS.Colors.brandInk)
                 .frame(maxWidth: .infinity)
-                .dsEntrance(index: 3)
         }
     }
 
@@ -340,22 +273,22 @@ private struct PaywallPlansStep: View {
         } label: {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 Text(product.billingPeriod == .year ? "Yearly" : "Monthly")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(DS.Typography.brand(.subheadline, weight: .semibold))
                     .foregroundStyle(DS.Colors.textSecondary)
 
                 Text(product.displayPrice)
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
+                    .font(DS.Typography.brand(.title2, weight: .bold))
                     .foregroundStyle(DS.Colors.textPrimary)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
 
                 Text("per \(product.period)")
-                    .font(DS.Typography.caption)
+                    .font(DS.Typography.brand(.caption, weight: .regular))
                     .foregroundStyle(DS.Colors.textSecondary)
 
                 // Price anchoring: the same price, broken down small.
                 Text("≈ \(product.formatted(product.pricePerWeek)) a week")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(DS.Typography.brand(.footnote, weight: .semibold))
                     .foregroundStyle(isSelected ? DS.Colors.brandInk : DS.Colors.textSecondary)
                     .padding(.top, DS.Spacing.xs)
             }
@@ -373,7 +306,7 @@ private struct PaywallPlansStep: View {
             .overlay(alignment: .topTrailing) {
                 if let badge {
                     Text(badge)
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .font(DS.Typography.brand(.caption, weight: .bold))
                         .foregroundStyle(DS.Colors.textOnAccent)
                         .padding(.horizontal, DS.Spacing.sm)
                         .padding(.vertical, DS.Spacing.xs)
@@ -382,8 +315,8 @@ private struct PaywallPlansStep: View {
                 }
             }
         }
-        .buttonStyle(DSPressStyle(scale: 0.97))
-        .sensoryFeedback(.selection, trigger: isSelected)
+        .buttonStyle(SquishStyle(scale: 0.96, cue: .press))
+        .jelly(on: isSelected, strength: 0.4)
         .accessibilityLabel("\(product.billingPeriod == .year ? "Yearly" : "Monthly"), \(product.displayPrice) per \(product.period)\(badge.map { ", \($0)" } ?? "")")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
@@ -415,7 +348,7 @@ private struct PaywallLegalLinks: View {
             Link("Terms", destination: LegalDocument.termsOfService.url())
             Link("Privacy", destination: LegalDocument.privacyPolicy.url())
         }
-        .font(.system(size: 12, weight: .semibold))
+        .font(DS.Typography.brand(.caption))
         .foregroundStyle(DS.Colors.textSecondary)
     }
 }
@@ -455,12 +388,12 @@ private struct PaywallAllPlansSheet: View {
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
             HStack {
                 Text(viewModel.name(of: tier))
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .font(DS.Typography.brand(.title3, weight: .bold))
                     .foregroundStyle(DS.Colors.textPrimary)
                 Spacer()
                 if tier == viewModel.featuredTier {
                     Text("Recommended")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(DS.Typography.brand(.caption, weight: .semibold))
                         .foregroundStyle(DS.Colors.brandInk)
                         .padding(.horizontal, DS.Spacing.sm)
                         .padding(.vertical, DS.Spacing.xs)
@@ -470,13 +403,13 @@ private struct PaywallAllPlansSheet: View {
 
             if tier == .free {
                 Text("Free forever")
-                    .font(DS.Typography.subheadline)
+                    .font(DS.Typography.brand(.subheadline, weight: .regular))
                     .foregroundStyle(DS.Colors.textSecondary)
             } else {
                 ForEach([SubscriptionProduct.BillingPeriod.year, .month], id: \.self) { period in
                     if let product = viewModel.product(tier, period) {
                         Text("\(product.displayPrice) per \(product.period)")
-                            .font(DS.Typography.subheadline)
+                            .font(DS.Typography.brand(.subheadline, weight: .regular))
                             .foregroundStyle(DS.Colors.textSecondary)
                     }
                 }
@@ -484,13 +417,13 @@ private struct PaywallAllPlansSheet: View {
 
             Label(tier.propertyLimit.map { "Up to \($0) properties" } ?? "Unlimited properties", systemImage: "checkmark")
                 .labelStyle(PaywallCheckLabelStyle())
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .font(DS.Typography.brand(.subheadline, weight: .medium))
                 .foregroundStyle(DS.Colors.textPrimary)
 
             ForEach(tier.entitlements.filter { $0 != .unlimitedProperties }.sorted { $0.title < $1.title }, id: \.self) { entitlement in
                 Label(entitlement.title, systemImage: "checkmark")
                     .labelStyle(PaywallCheckLabelStyle())
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(DS.Typography.brand(.subheadline, weight: .medium))
                     .foregroundStyle(DS.Colors.textPrimary)
             }
 

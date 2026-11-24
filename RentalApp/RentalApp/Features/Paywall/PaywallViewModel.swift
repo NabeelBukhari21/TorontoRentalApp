@@ -127,13 +127,13 @@ final class PaywallViewModel {
     func advance() {
         guard let next = PaywallStep(rawValue: step.rawValue + 1) else { return }
         movesForward = true
-        withAnimation(DS.Motion.smooth) { step = next }
+        withAnimation(DS.Motion.scene) { step = next }
     }
 
     func goBack() {
         guard let previous = PaywallStep(rawValue: step.rawValue - 1) else { return }
         movesForward = false
-        withAnimation(DS.Motion.smooth) { step = previous }
+        withAnimation(DS.Motion.scene) { step = previous }
     }
 
     func dismissed() {
