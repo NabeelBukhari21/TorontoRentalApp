@@ -1,0 +1,119 @@
+--- a/tools/build_mascot.py
++++ b/tools/build_mascot.py
+@@ -371,8 +371,8 @@
+     return parts
+ 
+ 
+-def build_hats():
+-    hat_items = [
++def hat_art():
++    return [
+         ("None", [], {}),
+         ("Propeller", [
+             rnode("HatBlades", [
+@@ -421,9 +421,43 @@
+             shape("Band", [pts([("s", -122, -118), ("m", 0, -214, 0, 78), ("s", 122, -118)], False)], [stroke(OUT, 18), stroke(INK, 10)]),
+         ], {}),
+     ]
+-    return solo_set("Hat", hat_items, "Hat")
++
++
++def build_hats():
++    return solo_set("Hat", hat_art(), "Hat")
++
++
++# Worn on any pose, chosen by the view model number "outfit" (append only).
++OUTFITS = ["None", "HardHat", "Toque", "Headphones", "Party", "Crown", "Shades", "Propeller", "GradCap"]
+ 
+ 
++def build_outfits():
++    """The outfit, over the head. Poses that bring their own hat hide it."""
++    art = {n: (kids, kw) for n, kids, kw in hat_art()}
++    art["Toque"] = ([
++        lined("Pom", [ellipse(44, 44, 0, -250)], CREAM),
++        lined("Cuff", [rect(176, 36, 17, 0, -170)], RED),
++        shape("Band", [pts([("s", -62, -206), ("m", 0, -222, 0, 30), ("s", 62, -206)], False)], [stroke(CREAM, 10)]),
++        lined("Cap", [pts([("s", -80, -172, 8), ("m", 0, -244, 0, 60), ("s", 80, -172, 8)])], RED),
++    ], {})
++    art["Shades"] = ([
++        shape("Shine", [rect(26, 7, 3, -66, -95), rect(26, 7, 3, 46, -95)], [fill("99FFFFFF")]),
++        lined("LensL", [pts([("s", -104, -107, 10), ("s", -14, -107, 10), ("s", -22, -57, 26), ("s", -92, -57, 26)])], INK),
++        lined("LensR", [pts([("s", 14, -107, 10), ("s", 104, -107, 10), ("s", 92, -57, 26), ("s", 22, -57, 26)])], INK),
++        shape("Bridge", [pts([("s", -20, -99), ("s", 20, -99)], False)], [stroke(OUT, 9)]),
++    ], {})
++    return rnode("OutfitWrap", [solo_set("Outfit", [(n, art[n][0], art[n][1]) for n in OUTFITS], "Outfit")])
++
++
++def build_outfit_anims():
++    out = []
++    for name in OUTFITS:
++        a = Anim("Outfit " + name, 30, "oneShot")
++        a.k("Outfit", "activeComponentId", [(0, RIG["Outfit" + name])], "hold")
++        out.append((name, a))
++    return out
++
++
+ def build_vehicles():
+     back_items = [
+         ("None", [], {}),
+@@ -798,6 +832,7 @@
+         a.k("VFront", "activeComponentId", [(0, RIG["VF" + (front or "None")])], "hold"),
+         a.k("VBack", "activeComponentId", [(0, RIG["VB" + (back or "None")])], "hold"),
+         a.k("Hat", "activeComponentId", [(0, RIG["Hat" + (hat or "None")])], "hold"),
++        a.k("OutfitWrap", "opacity", [(0, 0 if hat else 1)], "hold"),
+         a.k("WFront", "activeComponentId", [(0, RIG["WF" + (world or "None")])], "hold"))
+     T = lambda a, p, keys, e="cubic": a.k("Torso", p, keys, e)
+     F = lambda a, sd, keys, e="cubic": a.k("Fore" + sd, "rotation", keys, e)
+@@ -1442,6 +1477,7 @@
+         ]
+     head = rnode("Head", [
+         build_hats(),
++        build_outfits(),
+         face,
+         shape("HeadLine", head_geo(), [stroke(OUT, LW)]),
+         *head_patches,
+@@ -1831,7 +1867,7 @@
+            ("Torso", "rotation"), ("Torso", "scaleX"), ("Torso", "scaleY"), ("Torso", "x"),
+            ("ForeR", "rotation"), ("ForeL", "rotation"),
+            ("Cat", "opacity"), ("Shadow", "opacity"), ("Head", "scaleX"), ("Head", "scaleY"), ("FootL", "x"), ("FootR", "x"),
+-           ("VFront", "activeComponentId"), ("VBack", "activeComponentId"), ("Hat", "activeComponentId"),
++           ("VFront", "activeComponentId"), ("VBack", "activeComponentId"), ("Hat", "activeComponentId"), ("OutfitWrap", "opacity"),
+            ("WFront", "activeComponentId"), ("FaceTurn", "x"), ("FaceTurn", "scaleX"), ("HeadCap", "x"), ("HeadStreak", "x"),
+            ("HeadSide", "x"), ("Tuft", "x"), ("Collar", "x"), ("KeyTag", "x"), ("EarL", "x"), ("EarR", "x"),
+            ("Tail", "x"), ("Tail", "scaleX"), ("ArmR", "x"), ("ArmL", "x"), ("FootL", "rotation"), ("FootR", "rotation"),
+@@ -2323,11 +2359,12 @@
+     blink = build_blink(EYES)
+     prop_anims = build_prop_anims(props)
+     fx_anims = build_fx_anims()
++    outfit_anims = build_outfit_anims()
+ 
+     vm_id = nid()
+     inst_id = nid()
+-    vprops = {name: nid() for name in ("pose", "face", "prop", "fx")}
+-    defaults = {"pose": 1, "face": 0, "prop": 1, "fx": 9}
++    vprops = {name: nid() for name in ("pose", "face", "prop", "fx", "outfit")}
++    defaults = {"pose": 1, "face": 0, "prop": 1, "fx": 9, "outfit": 0}
+ 
+     HUB = os.environ.get("PURR_HUB", "1") == "1"  # one AnyState hub per layer instead of a full mesh
+ 
+@@ -2385,10 +2422,11 @@
+         layer("Face", "face", faces, 0),
+         layer("Prop", "prop", prop_anims, 0),
+         layer("FX", "fx", fx_anims, 320),
++        layer("Outfit", "outfit", outfit_anims, 0),
+         single("Blink", blink),
+     ])
+ 
+-    all_anims = [a for _, a in poses] + [a for _, a in faces] + [a for _, a in prop_anims] + [a for _, a in fx_anims] + [blink]
++    all_anims = [a for _, a in poses] + [a for _, a in faces] + [a for _, a in prop_anims] + [a for _, a in fx_anims] + [a for _, a in outfit_anims] + [blink]
+     style_id = nid()
+     artboard = E("Artboard", {"defaultStateMachineId": sm_id, "viewModelId": vm_id, "styleId": style_id,
+                               "width": 500, "height": 500, "name": "Purr", "id": nid()},
+@@ -2408,6 +2446,7 @@
+         "face": [n for n, _ in faces],
+         "prop": [n for n, _ in props],
+         "fx": list(FX),
++        "outfit": list(OUTFITS),
+     }
+     with open(os.path.join(ROOT, "build", "rig.json"), "w") as f:
+         json.dump(catalogue, f, indent=2)
