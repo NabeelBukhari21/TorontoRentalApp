@@ -95,6 +95,12 @@ struct OnboardingScene: View {
 
     // MARK: - Scene
 
+    private var buildProgress: Double {
+        let total = Double(max(viewModel.buildTasks.count, 1))
+        let done = Double(viewModel.buildTasks.count { $0.state == .done })
+        return viewModel.buildTasks.isEmpty ? 0 : min(1, (done + 0.35) / total)
+    }
+
     private static let barHeight: CGFloat = 44
     /// Room the main button takes at the bottom.
     private static let buttonRoom: CGFloat = 84
@@ -286,6 +292,9 @@ struct OnboardingScene: View {
                         .rotationEffect(.degrees(index.isMultiple(of: 2) ? -3 : 3))
                         .offset(x: index.isMultiple(of: 2) ? -18 : 18)
                 }
+                SakugaProgress(value: buildProgress, showsLabel: false)
+                    .padding(.horizontal, 44)
+                    .padding(.top, 48)
             }
         } else {
             VStack(spacing: 18) {

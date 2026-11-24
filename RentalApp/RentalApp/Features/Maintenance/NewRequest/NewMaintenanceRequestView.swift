@@ -161,14 +161,11 @@ struct NewMaintenanceRequestView: View {
         @Bindable var viewModel = viewModel
 
         return Section {
-            Picker("Priority", selection: $viewModel.draft.priority) {
-                ForEach(TicketPriority.allCases) { priority in
-                    Text(priority.title).tag(priority)
-                }
-            }
-            .pickerStyle(.segmented)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
+            SakugaTabs(values: TicketPriority.allCases, title: \.title, selection: $viewModel.draft.priority)
+                .padding(.vertical, 18)
+                .padding(.trailing, 5)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
         } header: {
             Text("Priority")
         } footer: {

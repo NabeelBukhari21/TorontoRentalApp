@@ -56,7 +56,7 @@ struct SakugaGallery: View {
         .background {
             LinearGradient(colors: [Color(hex: 0xFFF6EC), .white], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
         }
-        .overlay { SakugaLayer(stage: stage).ignoresSafeArea() }
+        .overlay { SakugaLayer(stage: stage, followsScreen: true).ignoresSafeArea() }
         .environment(\.sakuga, stage)
         .environment(\.feedback, feedback)
         .preferredColorScheme(.light)
@@ -71,7 +71,7 @@ struct SakugaGallery: View {
         case 0:
             VStack(spacing: 90) {
                 SakugaButton(title: "Confirm", fire: fire1)
-                SakugaButton(title: "Cancel", isPrimary: false, fire: fire2)
+                SakugaButton(title: "Cancel", kind: .plain, impact: .light, fire: fire2)
             }
         case 1: SakugaToggle(isOn: $isOn, label: "Notifications").scaleEffect(1.35)
         case 2: SakugaSlider(value: $slider, label: "Budget")

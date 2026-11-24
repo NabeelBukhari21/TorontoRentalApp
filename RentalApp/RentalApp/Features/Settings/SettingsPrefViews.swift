@@ -306,6 +306,9 @@ struct SettingsAppearancePage: View {
             }
             .dsEntrance(index: 2)
 
+            SakugaCredit()
+                .dsEntrance(index: 3)
+
             #if DEBUG
             Button("All of Purr's moods") { showsPurrGallery = true }
                 .font(.footnote.weight(.semibold))
@@ -516,8 +519,8 @@ struct SettingsAIPage: View {
                             .contentTransition(.opacity)
                     }
 
-                    Slider(value: $viewModel.aiProactiveness, in: 0...1)
-                        .tint(DS.Colors.brand)
+                    SakugaSlider(value: $viewModel.aiProactiveness, label: "Proactiveness")
+                        .padding(.top, 30)
 
                     HStack {
                         Text("Only urgent")

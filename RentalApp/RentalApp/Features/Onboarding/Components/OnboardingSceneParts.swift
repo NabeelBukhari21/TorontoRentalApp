@@ -57,23 +57,20 @@ struct OnboardingActions: View {
     @Environment(\.feedback) private var feedback
 
     @Environment(\.dynamicTypeSize) private var typeSize
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     private var isSignUp: Bool { viewModel.step == .signUp }
     private var isHidden: Bool { viewModel.step == .building }
     private var title: String { isSignUp ? "Create account" : viewModel.continueTitle }
 
-    private var palette: (fill: Color, edge: Color, ink: Color) {
-        // Opaque when it can't be pressed yet: it may sit on Purr.
-        guard viewModel.canContinue else {
-            return (DS.Colors.surfaceSecondary, DS.Colors.track, DS.Colors.textSecondary)
-        }
-        return switch viewModel.step.staging {
-        case .counter: (DS.Colors.textPrimary, DS.Colors.textSecondary, DS.Colors.background)
-        case .giant: (DS.Colors.surfaceRaised, DSAccent.blush.ink, DS.Colors.textPrimary)
-        case .orbit: (DS.Colors.brand, DS.Colors.brandDeep, DS.Colors.textOnBrand)
+    private var kind: SakugaButton.Kind {
+        switch viewModel.step.staging {
+        case .counter: isSignUp ? .primary : .dark
+        case .giant: .plain
+        case .orbit: .primary
         }
     }
+
+    /// The burst is for the moments that matter; the rest get whiskers.
+    private var isBig: Bool { [.personalize, .unlocked, .signUp].contains(viewModel.step) }
 
     var body: some View {
         let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
@@ -85,33 +82,12 @@ struct OnboardingActions: View {
                 }
                 .transition(.scale.combined(with: .opacity))
             }
-            Button(action: perform) {
-                ZStack {
-                    if viewModel.auth.isLoading {
-                        ProgressView().tint(palette.ink)
-                    } else {
-                        HStack(spacing: 8) {
-                            Text(title).lineLimit(1).minimumScaleFactor(0.8)
-                            Image(systemName: "chevron.forward")
-                                .font(.system(size: 15, weight: .heavy))
-                                // Nudges onward once the answer is in.
-                                .symbolEffect(.wiggle.forward, options: .repeat(.periodic(delay: 2.6)), isActive: viewModel.canContinue && !reduceMotion)
-                        }
-                        .id(title)
-                        .transition(.blurReplace)
-                    }
-                }
-                .font(DS.Typography.brand(20, weight: .semibold, relativeTo: .headline))
-                .foregroundStyle(palette.ink)
-                .padding(.horizontal, isSignUp ? 24 : 34)
-                .frame(minHeight: 58)
-                .background(Capsule().fill(.clay(palette.fill, shade: palette.edge, size: 58)))
-                .sheen(isOn: viewModel.canContinue && !viewModel.auth.isLoading && viewModel.step.staging != .giant)
-            }
-            .buttonStyle(PressableDepthStyle(edge: palette.edge))
+            SakugaButton(
+                title: title, kind: kind, impact: isBig ? .full : .light,
+                symbol: "chevron.forward", isLoading: viewModel.auth.isLoading, action: perform
+            )
+            .disabled(!viewModel.canContinue)
             .jelly(on: viewModel.canContinue)
-            .shadow(color: DS.Colors.groundShadow, radius: 14, y: 12)
-            .disabled(!viewModel.canContinue || viewModel.auth.isLoading)
         }
         .padding(.horizontal, 16)
         .animation(DS.Motion.bouncy, value: viewModel.canContinue)

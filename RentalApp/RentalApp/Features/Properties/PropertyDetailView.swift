@@ -65,7 +65,6 @@ struct PropertyDetailView: View {
     @State private var pendingConfirmation: DSConfirmation?
     @State private var selectedTab: PropertyDetailTab = .overview
     @State private var movesForward = true
-    @Namespace private var tabNamespace
 
     private var property: Property? { viewModel.property }
 
@@ -245,47 +244,20 @@ struct PropertyDetailView: View {
 
     private var tabBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DS.Spacing.sm) {
-                ForEach(PropertyDetailTab.allCases) { tab in
-                    tabButton(tab)
-                }
-            }
+            SakugaTabs(
+                values: PropertyDetailTab.allCases, title: \.title,
+                selection: Binding(get: { selectedTab }, set: { tab in
+                    movesForward = tab.rawValue > selectedTab.rawValue
+                    withAnimation(DS.Motion.smooth) { selectedTab = tab }
+                })
+            )
+            .frame(width: CGFloat(PropertyDetailTab.allCases.count) * 112)
+            // Room for the ears and the shadow.
+            .padding(.top, 20)
+            .padding(.bottom, 12)
             .padding(.horizontal, DS.Spacing.lg)
         }
-    }
-
-    private func tabButton(_ tab: PropertyDetailTab) -> some View {
-        let isSelected = tab == selectedTab
-
-        return Button {
-            movesForward = tab.rawValue > selectedTab.rawValue
-            withAnimation(DS.Motion.smooth) {
-                selectedTab = tab
-            }
-        } label: {
-            HStack(spacing: DS.Spacing.xs + 2) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 12, weight: .semibold))
-
-                Text(tab.title)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-            }
-            .foregroundStyle(isSelected ? DS.Colors.textOnBrand : DS.Colors.textSecondary)
-            .padding(.horizontal, DS.Spacing.md + 2)
-            .padding(.vertical, DS.Spacing.sm + 2)
-            .background {
-                if isSelected {
-                    Capsule()
-                        .fill(DS.Gradients.brand)
-                        .matchedGeometryEffect(id: "property.tab.pill", in: tabNamespace)
-                } else {
-                    Capsule()
-                        .fill(DS.Colors.surfaceRaised)
-                        .overlay(Capsule().strokeBorder(DS.Colors.outline, lineWidth: 1))
-                }
-            }
-        }
-        .buttonStyle(DSPressStyle(scale: 0.94))
+        .scrollClipDisabled()
     }
 
     // MARK: Tab Content

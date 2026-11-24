@@ -45,12 +45,9 @@ struct RentCollectionView: View {
             summarySection
 
             Section {
-                Picker("Show", selection: $viewModel.filter) {
-                    ForEach(RentCollectionViewModel.Filter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
+                SakugaTabs(values: RentCollectionViewModel.Filter.allCases, title: \.rawValue, selection: $viewModel.filter)
+                .padding(.vertical, 18)
+                .padding(.trailing, 5)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
             }
@@ -110,10 +107,15 @@ struct RentCollectionView: View {
                     .monospacedDigit()
                     .foregroundStyle(roll.outstanding > 0 ? .red : .secondary)
             }
-            LabeledContent("Owing from earlier months") {
+            LabeledContent {
                 Text(roll.arrears, format: .cad)
                     .monospacedDigit()
                     .foregroundStyle(roll.arrears > 0 ? .red : .secondary)
+            } label: {
+                HStack(spacing: 0) {
+                    Text("Owing from earlier months")
+                    SakugaHint(text: "Ontario doesn't allow late fees on rent. A returned payment can cost a tenant up to $20, and unpaid rent starts with an N4 notice.")
+                }
             }
             LabeledContent("Tenants owing", value: roll.owingCount, format: .number)
         } footer: {

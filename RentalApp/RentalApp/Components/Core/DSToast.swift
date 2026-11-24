@@ -21,6 +21,32 @@ struct DSToastView: View {
     let onRetry: () -> Void
     let onDismiss: () -> Void
 
+    @State private var frame: CGRect = .zero
+    @State private var slide: CGFloat = 0
+    @State private var smear: CGFloat = 1
+    @Environment(\.sakuga) private var stage
+    @Environment(\.feedback) private var feedback
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Streaks in and skids to a stop. Failures just appear: they're read,
+    /// not enjoyed.
+    private func land() {
+        guard toast.style == .success, !reduceMotion else { return }
+        slide = -440
+        smear = 1.6
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.66)) { slide = 0 }
+        withAnimation(.spring(response: 0.36, dampingFraction: 0.42).delay(0.2)) { smear = 1 }
+        stage?.later(250) {
+            feedback?.play(.stamp)
+            let c = frame
+            stage?.lines(c.minX + 10, c.midY, n: 9, dir: .pi, len: 60, spread: 18, life: 0.4)
+            for u in [0.08, 0.22, 0.38] { stage?.puff(c.minX + c.width * u, c.maxY + 4, n: 4, size: .random(in: 7...11), vx: -.random(in: 10...30), vy: -8, life: .random(in: 0.7...1)) }
+            stage?.pawPuff(c.maxX - 16, c.maxY + 6, size: 10, rot: 0.3, vx: 14, life: 0.8)
+            stage?.shards(c.minX + 16, c.midY + 12, n: 4, size: 4, dir: .pi + 0.5, arc: 1.6)
+            stage?.sfx("SKRRT!", c.midX - 34, c.maxY + 30, size: 34, rot: -0.1, life: 0.85, style: .dotted)
+        }
+    }
+
     private var role: StatusRole {
         switch toast.style {
         case .success: .positive
@@ -66,8 +92,15 @@ struct DSToastView: View {
         .padding(.trailing, 8)
         .padding(.vertical, 6)
         .frame(minHeight: 52)
-        .glassEffect(.regular, in: .capsule)
+        .background(Capsule().fill(SakugaInk.fill).strokeBorder(SakugaInk.ink, lineWidth: 3))
+        .background(Capsule().fill(SakugaInk.shade).offset(x: 4, y: 5))
+        // Ink on paper in both themes.
+        .environment(\.colorScheme, .light)
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame = $0 }
+        .scaleEffect(x: smear, y: 1 / sqrt(smear), anchor: .trailing)
+        .offset(x: slide)
         .padding(.horizontal)
+        .onAppear(perform: land)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isStaticText)
     }
@@ -95,7 +128,7 @@ private struct DSToastHost: ViewModifier {
                     )
                     .padding(.top, 4)
                     .transition(
-                        .move(edge: .top).combined(with: .opacity)
+                        .asymmetric(insertion: .opacity, removal: .scale(scale: 0.2).combined(with: .opacity))
                     )
                     // A toast is an announcement, not a control surface —
                     // it must never swallow a tap meant for the tab bar.

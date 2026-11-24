@@ -43,6 +43,14 @@ final class SakugaStage {
     }
 
     private(set) var effects: [Effect] = []
+
+    /// The hint that's open, if any.
+    struct Hint: Equatable {
+        let id: UUID
+        let text: String
+        let anchor: CGRect
+    }
+    var hint: Hint?
     /// Reduce Motion turns every effect off.
     @ObservationIgnored var isCalm = false
     @ObservationIgnored private var sweep: Task<Void, Never>?
@@ -75,6 +83,9 @@ final class SakugaStage {
 /// Draws a stage.
 struct SakugaLayer: View {
     let stage: SakugaStage
+    /// Points are the screen's, wherever this layer sits on it.
+    var followsScreen = false
+    @State private var origin: CGPoint = .zero
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -84,12 +95,14 @@ struct SakugaLayer: View {
                     let t = timeline.date.timeIntervalSince(effect.start)
                     guard t >= 0, t < effect.life else { continue }
                     var copy = context
+                    if followsScreen { copy.translateBy(x: -origin.x, y: -origin.y) }
                     effect.draw(&copy, t / effect.life, t)
                 }
             }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+        .onGeometryChange(for: CGPoint.self) { $0.frame(in: .global).origin } action: { origin = $0 }
         .onChange(of: reduceMotion, initial: true) { _, calm in stage.isCalm = calm }
     }
 }

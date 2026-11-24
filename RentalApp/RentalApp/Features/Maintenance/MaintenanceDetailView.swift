@@ -46,6 +46,11 @@ struct MaintenanceDetailView: View {
                             .dsEntrance(index: 0)
                         workflowCard(ticket).dsEntrance(index: 1)
 
+                        if ticket.status == .done {
+                            RepairRatingCard(ticketID: ticket.id, store: container.repairRatings)
+                                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                        }
+
                         if RepairVisitTrackingRows.applies(to: ticket) {
                             visitCard(ticket).dsEntrance(index: 1)
                         }

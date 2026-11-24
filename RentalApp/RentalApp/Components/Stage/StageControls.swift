@@ -16,40 +16,15 @@ struct StageButton: View {
     var isProminent = false
     let action: () -> Void
 
-    private var palette: (fill: Color, edge: Color, ink: Color) {
-        guard isEnabled else { return (DS.Colors.surfaceSecondary, DS.Colors.track, DS.Colors.textSecondary) }
-        return isProminent
-            ? (DS.Colors.brand, DS.Colors.brandDeep, DS.Colors.textOnBrand)
-            : (DS.Colors.textPrimary, DS.Colors.textSecondary, DS.Colors.background)
-    }
-
     var body: some View {
-        Button(action: action) {
-            ZStack {
-                if isLoading {
-                    ProgressView().tint(palette.ink)
-                } else {
-                    HStack(spacing: 8) {
-                        Text(title).lineLimit(1).minimumScaleFactor(0.7)
-                        Image(systemName: "chevron.forward").font(.system(size: 15, weight: .heavy))
-                    }
-                    .id(title)
-                    .transition(.blurReplace)
-                }
-            }
-            .font(DS.Typography.brand(20, weight: .semibold, relativeTo: .headline))
-            .foregroundStyle(palette.ink)
-            .padding(.horizontal, 30)
-            .frame(minWidth: 180, minHeight: 56)
-            .background(Capsule().fill(.clay(palette.fill, shade: palette.edge, size: 56)))
-            .sheen(isOn: isEnabled && !isLoading)
-        }
-        .buttonStyle(PressableDepthStyle(edge: palette.edge))
-        .shadow(color: DS.Colors.groundShadow, radius: 12, y: 10)
-        .jelly(on: isEnabled)
-        .disabled(!isEnabled || isLoading)
+        SakugaButton(
+            title: title, kind: isProminent ? .primary : .dark, impact: isProminent ? .full : .light,
+            symbol: "chevron.forward", isLoading: isLoading, action: action
+        )
+        .disabled(!isEnabled)
         .animation(DS.Motion.bouncy, value: isEnabled)
-        .padding(.bottom, 4)
+        .jelly(on: isEnabled)
+        .padding(.bottom, 8)
     }
 }
 
@@ -109,6 +84,7 @@ struct StageField: View {
                     .focused($isFocused)
             }
             .stageField(isFocused: isFocused, hasError: error != nil)
+            .sakugaKeys(text)
             .contentShape(.rect)
             .onTapGesture { isFocused = true }
             if let error {

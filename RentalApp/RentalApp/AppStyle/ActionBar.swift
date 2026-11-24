@@ -26,7 +26,7 @@ extension View {
     }
 }
 
-/// The prominent, full-width Liquid Glass button for a screen's main action.
+/// The full-width button for a screen's main action. Lands like one.
 struct PrimaryActionButton: View {
 
     let title: String
@@ -34,15 +34,7 @@ struct PrimaryActionButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            ZStack {
-                Text(title).opacity(isLoading ? 0 : 1)
-                if isLoading { ProgressView() }
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.glassProminent)
-        .controlSize(.large)
-        .disabled(isLoading)
+        SakugaButton(title: title, isFullWidth: true, isLoading: isLoading, action: action)
+            .padding(.bottom, 6)
     }
 }

@@ -78,12 +78,9 @@ struct RenewLeaseView: View {
             }
 
             Section {
-                Picker("Term", selection: $viewModel.kind.animation()) {
-                    ForEach(LeaseTermKind.allCases) { kind in
-                        Text(kind.rawValue).tag(kind)
-                    }
-                }
-                .pickerStyle(.segmented)
+                SakugaTabs(values: LeaseTermKind.allCases, title: \.rawValue, selection: $viewModel.kind.animation())
+                .padding(.vertical, 18)
+                .padding(.trailing, 5)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
             } header: {

@@ -189,9 +189,7 @@ struct SettingsToggleRow: View {
 
             Spacer()
 
-            Toggle("", isOn: $isOn)
-                .toggleStyle(DSToggleStyle())
-                .labelsHidden()
+            SakugaToggle(isOn: $isOn, label: title, scale: 0.6)
         }
         .padding(DS.Spacing.md + 2)
     }

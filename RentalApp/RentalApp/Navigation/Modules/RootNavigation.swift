@@ -101,6 +101,7 @@ struct RootNavigation: View {
         .environment(session)
         .environment(\.toasts, toasts)
         .dsToastLayer()
+        .sakugaScreen()
         // Realtime: lifecycle first so the socket follows the scene, then
         // the banner, which reads the state the lifecycle drives.
         .dsRealtimeLifecycle(container.sync)

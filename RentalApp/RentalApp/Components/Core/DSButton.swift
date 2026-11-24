@@ -105,6 +105,7 @@ struct DSButton: View {
         }
         .buttonStyle(DSPressStyle())
         .disabled(isLoading)
+        .sakugaTap(variant == .primary && isEnabled && !isLoading)
     }
 
     // MARK: Styling

@@ -50,6 +50,7 @@ struct RecordPaymentView: View {
             .toolbar { toolbar }
             .task { await viewModel.load() }
         }
+        .sakugaScreen()
         .presentationDetents([.large])
     }
 
@@ -97,12 +98,6 @@ struct RecordPaymentView: View {
             Section {
                 AmountField("Amount received", amount: $viewModel.draft.amount)
 
-                Picker("Method", selection: $viewModel.draft.method) {
-                    ForEach(PaymentMethod.allCases) { method in
-                        Label(method.rawValue, systemImage: method.symbol).tag(method)
-                    }
-                }
-
                 DatePicker("Received", selection: $viewModel.draft.receivedOn, in: ...Date.now, displayedComponents: .date)
 
                 TextField(viewModel.draft.method.referencePrompt, text: $viewModel.draft.reference, prompt: Text("\(viewModel.draft.method.referencePrompt) (optional)"))
@@ -116,6 +111,19 @@ struct RecordPaymentView: View {
                 } else if viewModel.draft.amount > row.outstanding {
                     PurrLabel("That's more than the \(row.outstanding.formatted(.cad)) still owing.", mood: .error)
                         .foregroundStyle(.red)
+                }
+            }
+
+            Section("Method") {
+                ForEach(PaymentMethod.allCases) { method in
+                    Button { viewModel.draft.method = method } label: {
+                        HStack(spacing: 12) {
+                            Label(method.rawValue, systemImage: method.symbol).foregroundStyle(DS.Colors.textPrimary)
+                            Spacer()
+                            SakugaRadioMark(isOn: viewModel.draft.method == method, size: 26)
+                        }
+                    }
+                    .accessibilityAddTraits(viewModel.draft.method == method ? .isSelected : [])
                 }
             }
 

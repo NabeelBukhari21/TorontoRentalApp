@@ -37,10 +37,7 @@ struct OnboardingAnswerCard: View {
                 }
                 Spacer(minLength: 0)
                 if !isCompact {
-                    Image(systemName: choice.isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(choice.isSelected ? AnyShapeStyle(choice.accent.ink) : AnyShapeStyle(DS.Colors.track))
-                        .contentTransition(.symbolEffect(.replace))
+                    SakugaRadioMark(isOn: choice.isSelected, size: 26)
                 }
             }
             .padding(.horizontal, 12)

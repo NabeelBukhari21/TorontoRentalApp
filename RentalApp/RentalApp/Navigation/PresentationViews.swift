@@ -22,6 +22,7 @@ struct SheetRouteView: View {
 
     var body: some View {
         content
+            .sakugaScreen()
             .presentationDetents(route.detents)
     }
 

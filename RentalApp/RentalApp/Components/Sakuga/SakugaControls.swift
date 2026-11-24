@@ -42,12 +42,13 @@ private struct PaperCard: ViewModifier {
     var edge: Color = SakugaInk.ink
     var shadow: Color = SakugaInk.shade
     var drop: CGSize = CGSize(width: 5, height: 6)
+    var line: CGFloat = 3
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         content
             // Behind, so what's inside can break out over the edge.
-            .background(shape.fill(fill).strokeBorder(edge, lineWidth: 3))
+            .background(shape.fill(fill).strokeBorder(edge, lineWidth: line))
             .background(shape.fill(shadow).offset(drop))
     }
 }
@@ -65,8 +66,17 @@ private func manga(_ size: CGFloat, _ weight: Font.Weight = .bold) -> Font { DS.
 /// Primary: squashes flat, inverts for a frame, and a paw burst goes off
 /// behind it. Secondary: a small squash and three whiskers.
 struct SakugaButton: View {
+
+    enum Kind { case primary, dark, plain }
+    /// Full: the burst. Light: whiskers and dust, for a step that's one of many.
+    enum Impact { case full, light }
+
     let title: String
-    var isPrimary = true
+    var kind: Kind = .primary
+    var impact: Impact = .full
+    var symbol: String? = nil
+    var isFullWidth = false
+    var isLoading = false
     var fire = 0
     var action: () -> Void = {}
 
@@ -80,31 +90,51 @@ struct SakugaButton: View {
     @State private var tilt: Double = 0
     @Environment(\.sakuga) private var stage
     @Environment(\.feedback) private var feedback
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var isFull: Bool { impact == .full }
+
+    private var palette: (fill: Color, ink: Color) {
+        guard isEnabled else { return (DS.Colors.surfaceSecondary, DS.Colors.textSecondary) }
+        if isInverted { return kind == .dark ? (SakugaInk.cherry, SakugaInk.fill) : (SakugaInk.ink, SakugaInk.fill) }
+        return switch kind {
+        case .primary: (SakugaInk.cherry, SakugaInk.fill)
+        case .dark: (SakugaInk.ink, SakugaInk.fill)
+        case .plain: (SakugaInk.fill, SakugaInk.ink)
+        }
+    }
 
     var body: some View {
         Button(action: hit) {
             HStack(spacing: 8) {
-                Text(title).italic()
-                if isDone { Image(systemName: "pawprint.fill").font(.system(size: 17, weight: .bold)).foregroundStyle(SakugaInk.accent).transition(.scale(scale: 0.1)) }
+                if isLoading {
+                    ProgressView().tint(palette.ink)
+                } else {
+                    Text(title).italic().lineLimit(1).minimumScaleFactor(0.7)
+                    if isDone {
+                        Image(systemName: "pawprint.fill").font(.system(size: 17, weight: .bold)).foregroundStyle(SakugaInk.accent).transition(.scale(scale: 0.1))
+                    } else if let symbol {
+                        Image(systemName: symbol).font(.system(size: 15, weight: .heavy))
+                    }
+                }
             }
-            .font(manga(21))
-            .foregroundStyle(isInverted ? SakugaInk.fill : isPrimary ? SakugaInk.fill : SakugaInk.ink)
-            .padding(.horizontal, 30)
-            .frame(minHeight: 54)
-            .paperCard(fill: isInverted ? SakugaInk.ink : isPrimary ? SakugaInk.cherry : SakugaInk.fill, drop: isDown ? .zero : CGSize(width: 5, height: 6))
+            .id(title)
+            .transition(.blurReplace)
+            .font(manga(20))
+            .foregroundStyle(palette.ink)
+            .padding(.horizontal, 28)
+            .frame(maxWidth: isFullWidth ? .infinity : nil)
+            .frame(minWidth: 150, minHeight: 54)
+            .paperCard(fill: palette.fill, drop: isDown ? .zero : CGSize(width: 5, height: 6))
             .tracksFrame($frame)
-            .scaleEffect(x: (1 + (1 - squash) * 0.24) * pop, y: squash * pop)
+            .scaleEffect(x: (1 + (1 - squash) * 0.2) * pop, y: squash * pop)
             .rotationEffect(.degrees(tilt))
         }
         .buttonStyle(Press(isDown: $isDown))
+        .disabled(isLoading)
         .sakugaBehind(behind)
-        .onChange(of: isDown) { _, down in
-            withAnimation(.spring(response: 0.16, dampingFraction: 0.6)) { squash = down ? (isPrimary ? 0.55 : 0.74) : 1 }
-            guard down, isPrimary, let stage else { return }
-            stage.ticks(frame.cx, frame.minY - 6, n: 3, r: 4, len: 14, dir: -.pi / 2, fan: 0.5)
-            stage.wob(frame.minX - 6, frame.cy, dir: -1, r: 10, life: 0.3)
-            stage.wob(frame.maxX + 6, frame.cy, dir: 1, r: 10, life: 0.3)
-        }
+        .onChange(of: isDown) { _, down in pressed(down) }
         .onChange(of: fire) { _, _ in
             isDown = true
             behind.later(200) {
@@ -117,55 +147,71 @@ struct SakugaButton: View {
     private struct Press: ButtonStyle {
         @Binding var isDown: Bool
         func makeBody(configuration: Configuration) -> some View {
-            configuration.label.onChange(of: configuration.isPressed) { _, p in isDown = p }
+            configuration.label
+                .contentShape(.rect)
+                .onChange(of: configuration.isPressed) { _, p in isDown = p }
         }
+    }
+
+    private func pressed(_ down: Bool) {
+        if !reduceMotion {
+            withAnimation(.spring(response: 0.16, dampingFraction: 0.6)) { squash = down ? (isFull ? 0.6 : 0.8) : 1 }
+        }
+        guard down else { return }
+        feedback?.play(.press)
+        guard isFull, let stage else { return }
+        stage.ticks(frame.cx, frame.minY - 6, n: 3, r: 4, len: 14, dir: -.pi / 2, fan: 0.5)
+        stage.wob(frame.minX - 6, frame.cy, dir: -1, r: 10, life: 0.3)
+        stage.wob(frame.maxX + 6, frame.cy, dir: 1, r: 10, life: 0.3)
     }
 
     private func hit() {
         action()
-        guard isPrimary else {
-            feedback?.play(.tap)
-            stage?.ticks(frame.maxX - 8, frame.minY - 4, n: 3, r: 5, len: 17, dir: -1.05, life: 0.5, fan: 0.36)
+        guard !reduceMotion else { return }
+        let c = frame
+        guard isFull else {
+            pop = 1.08
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.4)) { pop = 1 }
+            stage?.ticks(c.maxX - 8, c.minY - 4, n: 3, r: 5, len: 17, dir: -1.05, life: 0.5, fan: 0.36)
+            stage?.puff(c.minX, c.maxY - 4, n: 3, size: 8, vx: -24, vy: -8, life: 0.6)
+            stage?.puff(c.maxX, c.maxY - 4, n: 3, size: 8, vx: 24, vy: -8, life: 0.6)
             return
         }
         feedback?.play(.stamp)
-        let c = frame
         isInverted = true
-        pop = 1.2
-        tilt = -5
-        squash = 0.62
+        pop = 1.16
+        tilt = -4
+        squash = 0.66
         withAnimation(.spring(response: 0.36, dampingFraction: 0.38)) { pop = 1; tilt = 0; squash = 1 }
         // Behind, in its own space: the layer is 170 bigger all round.
         behind.burst(170 + c.width / 2, 170 + c.height / 2, r: 104, spikes: 17, life: 0.5)
         stage?.shards(c.cx, c.cy, n: 11, speed: 260, size: 8, life: 0.95, arc: 6.28, grav: 300)
         for (dx, dy) in [(-1.0, -0.5), (1.0, -1.0), (-1.0, 0.9), (1.0, 1.0)] {
-            stage?.puff(c.cx + dx * (c.width / 2 + 6), c.cy + dy * 26, size: .random(in: 12...16), vx: dx * 46, vy: dy * 30 - 6, life: .random(in: 0.75...1.05))
+            stage?.puff(c.cx + dx * (c.width / 2 - 4), c.cy + dy * 26, size: .random(in: 11...15), vx: dx * 46, vy: dy * 30 - 6, life: .random(in: 0.75...1.05))
         }
-        stage?.sfx("POW!", c.cx + 8, c.minY - 52, size: 60, rot: -0.12, life: 1.05)
-        stage?.ticks(c.cx - 96, c.cy - 70, n: 2, r: 4, len: 22, dir: -2.4, life: 0.45)
-        stage?.ticks(c.cx + 110, c.cy - 60, n: 2, r: 4, len: 22, dir: -0.7, life: 0.45)
+        stage?.sfx("POW!", c.cx + 8, c.minY - 46, size: 52, rot: -0.12, life: 1)
         behind.later(170) { isInverted = false }
         behind.later(220) {
-            stage?.wob(c.minX - 8, c.cy, dir: -1)
-            stage?.wob(c.maxX + 8, c.cy, dir: 1)
-            stage?.donut(c.cx + 6, c.cy - 44, r: 26, vx: 22, vy: -52, life: 1.25)
-            stage?.pawPuff(c.cx + 62, c.cy - 48, size: 15, rot: 0.3, vx: 34, vy: -40, life: 1.1)
+            stage?.donut(c.cx + 6, c.cy - 44, r: 24, vx: 22, vy: -52, life: 1.2)
+            stage?.pawPuff(c.cx + 62, c.cy - 48, size: 14, rot: 0.3, vx: 34, vy: -40, life: 1.05)
         }
         behind.later(420) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.5)) { isDone = true }
             stage?.kira(c.maxX - 12, c.minY + 2, r: 14, life: 0.9)
         }
-        behind.later(2200) { withAnimation { isDone = false } }
+        behind.later(1800) { withAnimation { isDone = false } }
     }
 }
 
 // MARK: - Toggle
 
-/// A painted flip: the knob smears across and throws up a splash. A paw is
-/// stamped on the knob while it rests.
+/// A painted flip: the knob smears across and throws up a splash, a paw
+/// painted on the knob. Frames 0–42 turn it on; 43–47 drain the colour, then
+/// the first twelve play backwards, to turn it off.
 struct SakugaToggle: View {
     @Binding var isOn: Bool
     var label = "Toggle"
+    var scale: CGFloat = 1
 
     @State private var current = 0
     @State private var playing: Task<Void, Never>?
@@ -175,28 +221,20 @@ struct SakugaToggle: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let count = 43, columns = 8
-    private static let cell = CGSize(width: 150, height: 162.5)
+    private var cell: CGSize { CGSize(width: 150 * scale, height: 162.5 * scale) }
 
     var body: some View {
         Button { isOn.toggle() } label: {
             Image("SakugaToggle")
                 .resizable()
-                .frame(width: Self.cell.width * CGFloat(Self.columns), height: Self.cell.height * 6)
-                .offset(x: -CGFloat(current % Self.columns) * Self.cell.width, y: -CGFloat(current / Self.columns) * Self.cell.height)
-                .frame(width: Self.cell.width, height: Self.cell.height, alignment: .topLeading)
+                .frame(width: cell.width * CGFloat(Self.columns), height: cell.height * 6)
+                .offset(x: -CGFloat(current % Self.columns) * cell.width, y: -CGFloat(current / Self.columns) * cell.height)
+                .frame(width: cell.width, height: cell.height, alignment: .topLeading)
                 .clipped()
-                .overlay(alignment: .topLeading) {
-                    if current == 0 || current >= 36 {
-                        Image(systemName: "pawprint.fill")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundStyle(current == 0 ? SakugaInk.shade : SakugaInk.cherry)
-                            .position(x: current == 0 ? 48 : 107, y: 116)
-                            .transition(.scale(scale: 0.3))
-                    }
-                }
                 // The drawing is bigger than the switch.
-                .frame(width: 108, height: 54)
-                .offset(y: -34)
+                .frame(width: 108 * scale, height: 54 * scale)
+                .offset(y: -34 * scale)
+                .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .tracksFrame($frame)
@@ -206,17 +244,23 @@ struct SakugaToggle: View {
     }
 
     private func flip(_ on: Bool) {
-        feedback?.play(on ? .fill : .tap)
+        feedback?.play(.tap)
         playing?.cancel()
         guard !reduceMotion else { current = on ? Self.count - 1 : 0; return }
         playing = Task {
-            let frames = on ? Array(0..<Self.count) : Array((0..<12).reversed())
+            let frames = on ? Array(0..<Self.count) : Array(43..<48) + Array((0..<13).reversed())
             for f in frames {
                 guard !Task.isCancelled else { return }
-                if f == 18, on { stage?.sfx("SPLISH!", frame.cx + 4, frame.cy - 74, size: 30, rot: -0.16, life: 0.75, style: .cherry) }
-                withAnimation(f >= 36 && f < 38 ? .spring(response: 0.3, dampingFraction: 0.5) : nil) { current = f }
+                if f == 13, on {
+                    feedback?.play(.stamp)
+                }
+                if f == 41, on { stage?.kira(frame.maxX - 14, frame.minY - 2, r: 13, life: 0.7) }
+                if f == 18, on { stage?.sfx("SPLISH!", frame.cx + 4, frame.cy - 74 * scale, size: max(20, 30 * scale), rot: -0.16, life: 0.75, style: .cherry) }
+                current = f
                 try? await Task.sleep(for: .milliseconds(33))
             }
+            // Off is frame 0; on rests on the last settled frame.
+            current = on ? Self.count - 1 : 0
         }
     }
 }
@@ -335,43 +379,57 @@ struct SakugaSlider: View {
 struct SakugaCheckbox: View {
     let title: String
     @Binding var isOn: Bool
+
+    var body: some View {
+        Button { isOn.toggle() } label: {
+            HStack(spacing: 14) {
+                SakugaCheckMark(isOn: isOn, size: 34)
+                Text(title).font(manga(18, .semibold)).foregroundStyle(DS.Colors.textPrimary)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? [.isSelected] : [])
+    }
+}
+
+/// The box on its own, for rows that bring their own words.
+struct SakugaCheckMark: View {
+    let isOn: Bool
+    var size: CGFloat = 28
     @State private var frame: CGRect = .zero
     @State private var pop: CGFloat = 1
     @Environment(\.sakuga) private var stage
     @Environment(\.feedback) private var feedback
 
     var body: some View {
-        Button { isOn.toggle() } label: {
-            HStack(spacing: 14) {
-                RoundedRectangle(cornerRadius: 9, style: .continuous).fill(.clear)
-                    .frame(width: 34, height: 34)
-                    .paperCard(radius: 9, fill: isOn ? SakugaInk.cherry : SakugaInk.fill, drop: CGSize(width: 4, height: 5))
-                    .overlay {
-                        TickMark().trim(from: 0, to: isOn ? 1 : 0)
-                            .stroke(SakugaInk.fill, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
-                            .padding(8)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7).delay(isOn ? 0.14 : 0), value: isOn)
-                    }
-                    .scaleEffect(pop)
-                    .tracksFrame($frame)
-                Text(title).font(manga(18, .semibold)).foregroundStyle(DS.Colors.textPrimary)
+        let k = size / 34
+        RoundedRectangle(cornerRadius: 9 * k, style: .continuous).fill(.clear)
+            .frame(width: size, height: size)
+            .modifier(PaperCard(radius: 9 * k, fill: isOn ? SakugaInk.cherry : SakugaInk.fill, drop: CGSize(width: 3 * k, height: 4 * k), line: max(2, 3 * k)))
+            .overlay {
+                TickMark().trim(from: 0, to: isOn ? 1 : 0)
+                    .stroke(SakugaInk.fill, style: StrokeStyle(lineWidth: 5.5 * k, lineCap: .round, lineJoin: .round))
+                    .padding(8 * k)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7).delay(isOn ? 0.14 : 0), value: isOn)
             }
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isOn ? [.isSelected] : [])
-        .onChange(of: isOn) { _, on in
-            pop = on ? 0.6 : 0.85
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.35)) { pop = 1 }
-            guard let stage else { return }
-            let c = frame
-            guard on else { feedback?.play(.deselect); return stage.puff(c.cx, c.cy, n: 3, size: 7, life: 0.4) }
-            feedback?.play(.stamp)
-            stage.claws(c.cx + 6, c.cy, len: 130, ang: -0.42, thick: 10, life: 0.5, gap: 13)
-            stage.lines(c.cx - 34, c.cy + 26, n: 6, dir: 2.75, len: 60, spread: 14)
-            stage.shards(c.cx, c.cy, n: 7, speed: 190, size: 6, arc: 6.28, grav: 260)
-            stage.sfx("SCRATCH!", c.cx + 62, c.cy - 58, size: 32, rot: -0.12, style: .dotted)
-            stage.later(380) { stage.kira(c.cx + 24, c.cy - 22) }
-        }
+            .scaleEffect(pop)
+            .tracksFrame($frame)
+            .accessibilityHidden(true)
+            .onChange(of: isOn) { _, on in react(on, k) }
+    }
+
+    private func react(_ on: Bool, _ k: Double) {
+        pop = on ? 0.6 : 0.85
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.35)) { pop = 1 }
+        feedback?.play(on ? .stamp : .deselect)
+        guard let stage else { return }
+        let c = frame
+        guard on else { return stage.puff(c.cx, c.cy, n: 3, size: 7, life: 0.4) }
+        stage.claws(c.cx + 6, c.cy, len: 120 * k, ang: -0.42, thick: 10 * k, life: 0.5, gap: 13 * k)
+        stage.lines(c.cx - 28, c.cy + 22, n: 6, dir: 2.75, len: 50, spread: 12)
+        stage.shards(c.cx, c.cy, n: 7, speed: 180, size: 5, arc: 6.28, grav: 260)
+        stage.sfx("SCRATCH!", c.cx + 60, c.cy - 44, size: 28 * max(0.85, k), rot: -0.12, life: 0.8, style: .dotted)
+        stage.later(380) { stage.kira(c.cx + 20, c.cy - 18) }
     }
 
     struct TickMark: Shape {
@@ -390,8 +448,6 @@ struct SakugaCheckbox: View {
 struct SakugaRadio: View {
     let options: [String]
     @Binding var selection: Int
-    @State private var frames: [Int: CGRect] = [:]
-    @Environment(\.sakuga) private var stage
     @Environment(\.feedback) private var feedback
 
     var body: some View {
@@ -399,18 +455,7 @@ struct SakugaRadio: View {
             ForEach(options.indices, id: \.self) { i in
                 Button { selection = i } label: {
                     HStack(spacing: 12) {
-                        Circle().fill(SakugaInk.fill)
-                            .overlay(Circle().strokeBorder(SakugaInk.ink, lineWidth: 3))
-                            .overlay {
-                                Image(systemName: "pawprint.fill")
-                                    .font(.system(size: 15, weight: .bold))
-                                    .foregroundStyle(SakugaInk.cherry)
-                                    .scaleEffect(selection == i ? 1 : 0.01)
-                                    .rotationEffect(.degrees(selection == i ? 0 : -90))
-                                    .animation(.spring(response: 0.32, dampingFraction: 0.4), value: selection)
-                            }
-                            .frame(width: 30, height: 30)
-                            .tracksFrame(Binding(get: { frames[i] ?? .zero }, set: { frames[i] = $0 }))
+                        SakugaRadioMark(isOn: selection == i)
                         Text(options[i]).font(manga(18, .semibold)).foregroundStyle(DS.Colors.textPrimary)
                     }
                 }
@@ -418,15 +463,40 @@ struct SakugaRadio: View {
                 .accessibilityAddTraits(selection == i ? .isSelected : [])
             }
         }
-        .onChange(of: selection) { _, i in
-            feedback?.play(.select(i))
-            guard let stage, let c = frames[i] else { return }
-            stage.ticks(c.cx, c.cy, n: 4, r: 20, len: 15, dir: -2.3, life: 0.5, fan: 0.36)
-            stage.lines(c.cx - 26, c.cy + 18, n: 3, dir: 2.6, len: 26, spread: 6)
-            stage.pawPuff(c.cx + 30, c.cy - 24, size: 11, rot: 0.3, vx: 16, vy: -14, life: 0.75)
-            stage.later(120) { stage.puff(c.cx + 88, c.cy + 2, n: 3, size: 7, vx: 10, vy: -10, life: 0.6) }
-            stage.sfx("POP", c.cx + 78, c.cy - 46, size: 34, rot: 0.06, life: 0.8, style: .hollow)
-        }
+        .onChange(of: selection) { _, i in feedback?.play(.select(i)) }
+    }
+}
+
+/// The dot on its own: a paw spins in, with smoke.
+struct SakugaRadioMark: View {
+    let isOn: Bool
+    var size: CGFloat = 28
+    @State private var frame: CGRect = .zero
+    @Environment(\.sakuga) private var stage
+
+    var body: some View {
+        Circle().fill(SakugaInk.fill).strokeBorder(SakugaInk.ink, lineWidth: max(2, size / 10))
+            .overlay {
+                Image(systemName: "pawprint.fill")
+                    .font(.system(size: size * 0.5, weight: .bold))
+                    .foregroundStyle(SakugaInk.cherry)
+                    .scaleEffect(isOn ? 1 : 0.01)
+                    .rotationEffect(.degrees(isOn ? 0 : -90))
+                    .animation(.spring(response: 0.32, dampingFraction: 0.4), value: isOn)
+            }
+            .frame(width: size, height: size)
+            .tracksFrame($frame)
+            .accessibilityHidden(true)
+            .onChange(of: isOn) { _, on in
+                guard on, let stage else { return }
+                let c = frame, k = size / 30
+                // Away from the edge it's nearest, so it stays on screen.
+                let dir = c.cx > 250 ? -1.0 : 1.0
+                stage.ticks(c.cx, c.cy, n: 4, r: 20 * k, len: 14, dir: dir > 0 ? -2.3 : -0.84, life: 0.5, fan: 0.36)
+                stage.pawPuff(c.cx + dir * 28, c.cy - 22, size: 10 * k, rot: 0.3 * dir, vx: 16 * dir, vy: -14, life: 0.75)
+                stage.later(120) { stage.puff(c.cx + dir * 62, c.cy + 2, n: 3, size: 6, vx: 10 * dir, vy: -10, life: 0.6) }
+                stage.sfx("POP", c.cx + dir * 56, c.cy - 34, size: 28, rot: 0.06, life: 0.75, style: .hollow)
+            }
     }
 }
 
@@ -491,6 +561,9 @@ struct SakugaTabs: View {
                 Button { selection = i } label: {
                     Text(titles[i])
                         .font(manga(16))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .padding(.horizontal, 4)
                         .foregroundStyle(selection == i ? SakugaInk.fill : SakugaInk.ink)
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
@@ -516,6 +589,20 @@ struct SakugaTabs: View {
                 stage.pawPuff(c.cx - dir * (c.width / 2 + 16), c.cy + 18, size: 8, rot: -0.3, vx: -dir * 14, vy: -6, life: 0.6)
             }
         }
+    }
+
+    /// Over any set of values.
+    init<Value: Equatable>(values: [Value], title: (Value) -> String, selection: Binding<Value>) {
+        titles = values.map(title)
+        _selection = Binding(
+            get: { values.firstIndex(of: selection.wrappedValue) ?? 0 },
+            set: { selection.wrappedValue = values[$0] }
+        )
+    }
+
+    init(titles: [String], selection: Binding<Int>) {
+        self.titles = titles
+        _selection = selection
     }
 
     /// The raised tab, with ears. One piece, so it slides.
@@ -555,6 +642,7 @@ struct SakugaTabs: View {
 struct SakugaProgress: View {
     /// 0…1.
     let value: Double
+    var showsLabel = true
     @State private var shown: Double = 0
     @State private var frame: CGRect = .zero
     @State private var said = false
@@ -601,10 +689,10 @@ struct SakugaProgress: View {
                     .padding(-120)
                     .allowsHitTesting(false)
                 }
-            Text(isDone ? "All done!" : shown.formatted(.percent.precision(.fractionLength(0))))
+            if showsLabel { Text(isDone ? "All done!" : shown.formatted(.percent.precision(.fractionLength(0))))
                 .font(manga(18)).italic()
                 .foregroundStyle(DS.Colors.textPrimary)
-                .contentTransition(.numericText())
+                .contentTransition(.numericText()) }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Progress")
@@ -673,7 +761,8 @@ struct SakugaRating: View {
         .accessibilityLabel("Rating")
         .accessibilityValue("\(score) of 5")
         .accessibilityAdjustableAction { score = max(1, min(5, score + ($0 == .increment ? 1 : -1))) }
-        .onChange(of: score) { old, n in
+        .onAppear { lit = score }
+        .onChange(of: score) { _, n in
             guard n > lit else { withAnimation { lit = n }; return }
             for i in lit..<n {
                 stage?.later((i - lit) * 70) { light(i, last: i == n - 1, all: n == 5) }

@@ -127,29 +127,7 @@ struct DashboardTasksCard: View {
             onToggle(task)
         } label: {
             HStack(spacing: DS.Spacing.md) {
-                // Animated checkbox.
-                ZStack {
-                    Circle()
-                        .strokeBorder(
-                            task.isDone ? Color.clear : DS.Colors.outline,
-                            lineWidth: 1.5
-                        )
-                        .background(
-                            Circle().fill(
-                                task.isDone
-                                    ? AnyShapeStyle(DS.Gradients.success)
-                                    : AnyShapeStyle(Color.clear)
-                            )
-                        )
-                        .frame(width: 24, height: 24)
-
-                    if task.isDone {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(DS.Colors.textOnAccent)
-                            .transition(.scale.combined(with: .opacity))
-                    }
-                }
+                SakugaCheckMark(isOn: task.isDone, size: 26)
 
                 Image(systemName: task.icon)
                     .font(.system(size: 13, weight: .semibold))

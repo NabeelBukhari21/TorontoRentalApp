@@ -172,6 +172,8 @@ struct GettingStartedView: View {
         case .saving:
             VStack(spacing: 12) {
                 ForEach(viewModel.saveTasks) { OnboardingBuildPill(task: $0) }
+                SakugaProgress(value: saveProgress, showsLabel: false)
+                    .padding(.top, 54)
             }
             .frame(maxWidth: .infinity)
 
@@ -184,6 +186,12 @@ struct GettingStartedView: View {
         case .paywall:
             EmptyView()
         }
+    }
+
+    private var saveProgress: Double {
+        guard !viewModel.saveTasks.isEmpty else { return 0 }
+        let done = Double(viewModel.saveTasks.count { $0.state == .done })
+        return min(1, (done + 0.35) / Double(viewModel.saveTasks.count))
     }
 
     private var kinds: [OnboardingChoice] {

@@ -39,6 +39,7 @@ final class AppContainer {
     let feedback: FeedbackPlayer
     let weather: WeatherServiceProtocol
     let wardrobe: WardrobeStore
+    let repairRatings: RepairRatingStore
     let billing: BillingRepositoryProtocol
     let integrations: IntegrationsRepositoryProtocol
     let copilot: CopilotRepositoryProtocol
@@ -180,6 +181,7 @@ final class AppContainer {
         self.feedback = FeedbackPlayer(preferences: preferences)
         self.weather = OpenMeteoWeather()
         self.wardrobe = WardrobeStore(persistence: persistence)
+        self.repairRatings = RepairRatingStore(persistence: persistence)
         self.billing = billing
         self.integrations = integrations
         self.copilot = copilot

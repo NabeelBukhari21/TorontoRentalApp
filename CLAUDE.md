@@ -111,6 +111,13 @@ colourful, for students, on a white background.
 - Press styles and button motion: `Components/Motion/ButtonMotion.swift`.
 - Onboarding text is all Fredoka: `DS.Typography.brand(_ style:)`.
 
+## Sakuga effects
+- `Components/Sakuga`: anime-style controls and effects, ported from Sakuga
+  VFX (MIT; licence bundled and shown in Settings ▸ Appearance). A screen
+  or sheet gets its layer from `.sakugaScreen()`; `\.sakuga` plays on it.
+  `SakugaButton(impact: .full)` only for moments that matter. Toggle art:
+  `tools/mascot/sakuga_toggle.py`.
+
 ## Rules
 - After every change: build, fix all errors **and warnings**, and run on
   the simulator to check UI work. Use screenshots for UI.

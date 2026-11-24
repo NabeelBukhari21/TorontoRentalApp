@@ -24,7 +24,7 @@ struct OnboardingSignUpForm: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            row("person.fill", field: .name, hasError: auth.nameError != nil) {
+            row("person.fill", field: .name, text: auth.name, hasError: auth.nameError != nil) {
                 TextField("Name", text: $auth.name)
                     .textContentType(.name)
                     .submitLabel(.next)
@@ -32,7 +32,7 @@ struct OnboardingSignUpForm: View {
                     .onSubmit { focus.wrappedValue = .email }
                     .onChange(of: auth.name) { _, _ in auth.nameError = nil }
             }
-            row("envelope.fill", field: .email, hasError: auth.emailError != nil) {
+            row("envelope.fill", field: .email, text: auth.email, hasError: auth.emailError != nil) {
                 TextField("Email", text: $auth.email)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
@@ -43,7 +43,7 @@ struct OnboardingSignUpForm: View {
                     .onSubmit { focus.wrappedValue = .password }
                     .onChange(of: auth.email) { _, _ in auth.emailError = nil }
             }
-            row("lock.fill", field: .password, hasError: auth.passwordError != nil) {
+            row("lock.fill", field: .password, text: auth.password, hasError: auth.passwordError != nil) {
                 SecureField("Password", text: $auth.password)
                     .textContentType(.newPassword)
                     .submitLabel(.done)
@@ -84,7 +84,7 @@ struct OnboardingSignUpForm: View {
         ForEach(auth.passwordRequirements) { OnboardingRequirementChip(requirement: $0) }
     }
 
-    private func row(_ symbol: String, field: OnboardingField, hasError: Bool, @ViewBuilder input: () -> some View) -> some View {
+    private func row(_ symbol: String, field: OnboardingField, text: String, hasError: Bool, @ViewBuilder input: () -> some View) -> some View {
         let shape = RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
         let isFocused = focus.wrappedValue == field
         return HStack(spacing: 12) {
@@ -101,6 +101,7 @@ struct OnboardingSignUpForm: View {
         .background(shape.fill(DS.Colors.surface.shadow(.inner(color: DS.Colors.groundShadow.opacity(0.5), radius: 3, y: 2))))
         .overlay(shape.strokeBorder(hasError ? DS.Colors.danger : isFocused ? DS.Colors.brand : .clear, lineWidth: 2))
         .animation(DS.Motion.snappy, value: isFocused)
+        .sakugaKeys(text)
         .contentShape(shape)
         .onTapGesture { focus.wrappedValue = field }
     }
