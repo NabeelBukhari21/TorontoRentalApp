@@ -48,6 +48,8 @@ struct RentalAppApp: App {
             #if DEBUG
             if let still = PurrStillStudio.request {
                 PurrStillStudio(request: still)
+            } else if let direction = StudioDirection.requested {
+                OnboardingStudioView(direction: direction)
             } else {
                 app
             }
