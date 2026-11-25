@@ -35,6 +35,18 @@ struct DashboardView: View {
     ]
 
     var body: some View {
+        #if DEBUG
+        if let design = HomeDesign.requested {
+            HomeStudio(design: design, dashboard: viewModel, container: container)
+        } else {
+            home
+        }
+        #else
+        home
+        #endif
+    }
+
+    private var home: some View {
         ZStack {
             DSAmbientBackground()
 
