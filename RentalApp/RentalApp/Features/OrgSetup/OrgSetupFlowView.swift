@@ -12,40 +12,45 @@ struct OrgSetupFlowView: View {
 
     /// Called when setup completes, carrying the organization the
     /// session should be bound to.
-    let onFinished: (_ organizationID: String, _ organizationName: String) -> Void
+    let onFinished: (_ organizationID: String, _ recap: WorkspaceRecap) -> Void
+    /// Getting started shows the finished workspace itself.
+    private let showsCompletion: Bool
 
     @State private var viewModel: OrgSetupViewModel
 
     init(
         container: AppContainer = .shared,
-        suggestedSize: PortfolioSizeOption? = nil,
+        profile: OnboardingProfile = OnboardingProfile(),
         ownerName: String = "",
-        onFinished: @escaping (_ organizationID: String, _ organizationName: String) -> Void
+        showsCompletion: Bool = true,
+        onFinished: @escaping (_ organizationID: String, _ recap: WorkspaceRecap) -> Void
     ) {
+        self.showsCompletion = showsCompletion
         self.onFinished = onFinished
         _viewModel = State(initialValue: OrgSetupViewModel(
             service: container.organization,
-            suggestedSize: suggestedSize,
+            units: profile.unitRange,
+            journey: SetupJourney(profile: profile),
             ownerName: ownerName
         ))
     }
 
     var body: some View {
         PurrStage(
-            step: viewModel.isComplete ? -1 : viewModel.step.rawValue,
+            step: isDone ? -1 : viewModel.step.rawValue,
             accent: accent,
             mood: mood,
-            title: viewModel.isComplete ? "You're all set!" : viewModel.step.title,
-            line: viewModel.isComplete ? "\(viewModel.orgName) is ready to go." : viewModel.step.subtitle,
+            title: isDone ? "Your workspace is ready" : viewModel.step.title,
+            line: isDone ? "\(viewModel.orgName) is ready to go." : viewModel.step.subtitle,
             movesForward: viewModel.movesForward,
-            progress: viewModel.isComplete ? nil : viewModel.progress,
-            progressLabel: "Step \(viewModel.step.rawValue + 1) of \(OrgSetupStep.allCases.count)",
-            props: viewModel.isComplete ? ["star.fill", "sparkles"] : viewModel.step.props,
-            celebrates: viewModel.isComplete,
-            onBack: viewModel.step == .name || viewModel.isComplete ? nil : { viewModel.goBack() }
+            progress: viewModel.progress,
+            progressLabel: viewModel.progressLabel,
+            props: isDone ? ["star.fill", "sparkles"] : viewModel.step.props,
+            celebrates: isDone,
+            onBack: viewModel.step == .name || isDone ? nil : { viewModel.goBack() }
         ) {
-            if viewModel.isComplete {
-                OrgSummary(viewModel: viewModel)
+            if isDone {
+                OrgSummary(recap: viewModel.recap)
             } else {
                 stepContent
             }
@@ -53,23 +58,23 @@ struct OrgSetupFlowView: View {
             if let error = viewModel.submissionError {
                 AuthFormError(message: error)
             }
-            if viewModel.isComplete {
+            if isDone {
                 // "Continue", not "Go to Dashboard": a new account goes on
                 // to getting started (first property) before Home.
                 StageButton(title: "Continue") {
-                    onFinished(
-                        viewModel.createdOrganizationID ?? "org_unknown",
-                        viewModel.orgName.trimmingCharacters(in: .whitespaces)
-                    )
+                    finish()
                 }
             } else {
-                StageButton(title: viewModel.continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.isSubmitting) {
-                    Task { await viewModel.advance() }
+                StageButton(title: viewModel.continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.isSubmitting || viewModel.isComplete) {
+                    Task {
+                        await viewModel.advance()
+                        if viewModel.isComplete, !showsCompletion { finish() }
+                    }
                 }
             }
         }
         .overlay {
-            if viewModel.isComplete {
+            if isDone {
                 OrgConfettiBurst()
                     .allowsHitTesting(false)
                     .ignoresSafeArea()
@@ -78,24 +83,28 @@ struct OrgSetupFlowView: View {
         }
     }
 
+    private var isDone: Bool { viewModel.isComplete && showsCompletion }
+
+    private func finish() {
+        onFinished(viewModel.createdOrganizationID ?? "org_unknown", viewModel.recap)
+    }
+
     private var accent: DSAccent {
-        if viewModel.isComplete { return .gold }
+        if isDone { return .gold }
         return switch viewModel.step {
         case .name: .gold
         case .logo: .blush
         case .propertyType: .sky
-        case .portfolioSize: .mint
-        case .inviteTeam: .gold
+        case .inviteTeam: .mint
         }
     }
 
     private var mood: PurrMood {
-        if viewModel.isComplete { return .partyTime }
+        if isDone { return .partyTime }
         return switch viewModel.step {
         case .name: viewModel.canContinue ? .success : .editProfile
         case .logo: .profilePhoto
         case .propertyType: viewModel.propertyType == nil ? .properties : .keysReady
-        case .portfolioSize: viewModel.portfolioSize == nil ? .analytics : .clapping
         case .inviteTeam: viewModel.inviteEmails.isEmpty ? .inviteFriends : .thankYou
         }
     }
@@ -106,7 +115,6 @@ struct OrgSetupFlowView: View {
         case .name: OrgNameStep(viewModel: viewModel)
         case .logo: OrgLogoStep(viewModel: viewModel)
         case .propertyType: StageAnswers(choices: viewModel.typeChoices)
-        case .portfolioSize: StageAnswers(choices: viewModel.sizeChoices)
         case .inviteTeam: OrgInviteStep(viewModel: viewModel)
         }
     }
@@ -119,7 +127,6 @@ extension OrgSetupStep {
         case .name: ["hammer.fill", "paintbrush.fill"]
         case .logo: ["photo.fill", "paintbrush.fill"]
         case .propertyType: ["house.fill", "building.fill"]
-        case .portfolioSize: ["chart.bar.fill", "house.and.flag.fill"]
         case .inviteTeam: ["envelope.fill", "person.2.fill"]
         }
     }
@@ -132,15 +139,6 @@ extension OrgSetupViewModel {
             OnboardingChoice(id: option.id, title: option.title, subtitle: "", symbol: option.icon, accent: accent,
                              isSelected: propertyType == option) {
                 withAnimation(DS.Motion.bouncy) { self.propertyType = option }
-            }
-        }
-    }
-
-    var sizeChoices: [OnboardingChoice] {
-        zip(PortfolioSizeOption.allCases, [DSAccent.mint, .sky, .gold, .cherry]).map { option, accent in
-            OnboardingChoice(id: option.id, title: option.title, subtitle: option.subtitle, symbol: option.icon, accent: accent,
-                             isSelected: portfolioSize == option) {
-                withAnimation(DS.Motion.bouncy) { self.portfolioSize = option }
             }
         }
     }

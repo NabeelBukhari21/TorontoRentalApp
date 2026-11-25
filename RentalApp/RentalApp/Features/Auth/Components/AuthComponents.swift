@@ -223,35 +223,6 @@ struct BiometricUnlockOption {
     let action: () -> Void
 }
 
-struct AuthBiometricButton: View {
-
-    let option: BiometricUnlockOption
-
-    var body: some View {
-        Button(action: option.action) {
-            HStack(spacing: DS.Spacing.sm) {
-                Image(systemName: option.kind.icon)
-                    .font(.system(size: 17, weight: .medium))
-
-                Text("Unlock with \(option.kind.title)")
-                    .font(.system(size: 14.5, weight: .semibold, design: .rounded))
-            }
-            .foregroundStyle(DS.Colors.brand)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(
-                DS.Colors.brand.opacity(0.1),
-                in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                    .strokeBorder(DS.Colors.brand.opacity(0.35), lineWidth: 1)
-            )
-        }
-        .buttonStyle(DSPressStyle())
-    }
-}
-
 // MARK: - Selected Role Chip
 
 /// Shows the role chosen on the previous screen, and lets the user

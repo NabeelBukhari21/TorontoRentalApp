@@ -164,17 +164,18 @@ struct RootNavigation: View {
         case .needsOrganization(let account):
             OrgSetupFlowView(
                 container: container,
-                suggestedSize: container.onboardingProfile.profile.unitRange?.portfolioSize,
-                ownerName: account.fullName
-            ) { organizationID, organizationName in
+                profile: container.onboardingProfile.profile,
+                ownerName: account.fullName,
+                showsCompletion: !session.continuesToGettingStarted(account)
+            ) { organizationID, recap in
                 Task {
-                    await session.attachOrganization(id: organizationID, name: organizationName)
+                    await session.attachOrganization(id: organizationID, recap: recap)
                 }
             }
             .transition(.opacity)
 
         case .gettingStarted(let account):
-            GettingStartedView(container: container, session: account) { addedProperty in
+            GettingStartedView(container: container, session: account, recap: session.workspaceRecap) { addedProperty in
                 session.completeGettingStarted(addedProperty: addedProperty)
             }
             .transition(.opacity)

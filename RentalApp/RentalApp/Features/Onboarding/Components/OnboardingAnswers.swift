@@ -18,9 +18,12 @@ struct OnboardingAnswerCard: View {
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
+    /// Big enough that the words need to wrap.
+    private var isLarge: Bool { typeSize > .xLarge }
+
     var body: some View {
         Button(action: choice.select) {
-            HStack(spacing: 12) {
+            HStack(spacing: isLarge && isCompact ? 8 : 12) {
                 ClayToken(symbol: choice.symbol, accent: choice.accent, size: isCompact ? 42 : 48)
                     .shadow(color: DS.Colors.groundShadow, radius: 4, y: 4)
                     .rotationEffect(.degrees(choice.isSelected ? -10 : 0))
@@ -30,9 +33,9 @@ struct OnboardingAnswerCard: View {
                     Text(choice.title)
                         .font(DS.Typography.brand(isCompact ? 17 : 20, weight: .semibold, relativeTo: .headline))
                         .foregroundStyle(DS.Colors.textPrimary)
-                        .minimumScaleFactor(0.8).lineLimit(typeSize.isAccessibilitySize ? nil : isCompact && choice.subtitle.isEmpty ? 2 : 1)
+                        .minimumScaleFactor(0.8).lineLimit(isLarge ? nil : isCompact && choice.subtitle.isEmpty ? 2 : 1)
                     if !choice.subtitle.isEmpty {
-                        Text(choice.subtitle).font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(DS.Colors.textSecondary).lineLimit(typeSize.isAccessibilitySize ? nil : isCompact ? 2 : 1).minimumScaleFactor(0.75)
+                        Text(choice.subtitle).font(DS.Typography.brand(.footnote, weight: .regular)).foregroundStyle(DS.Colors.textSecondary).lineLimit(isLarge ? nil : isCompact ? 2 : 1).minimumScaleFactor(0.75)
                     }
                 }
                 Spacer(minLength: 0)
@@ -41,7 +44,7 @@ struct OnboardingAnswerCard: View {
                 }
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, typeSize.isAccessibilitySize ? 14 : 0)
+            .padding(.vertical, typeSize.isAccessibilitySize ? 14 : isLarge ? 9 : 0)
             .frame(minHeight: isCompact ? 66 : 72)
             .background {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -79,13 +82,16 @@ struct OnboardingAnswerKey: View {
                 Text(choice.title)
                     .font(DS.Typography.brand(17, weight: .semibold, relativeTo: .headline))
                     .multilineTextAlignment(.center).minimumScaleFactor(0.75).lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                 if !choice.subtitle.isEmpty {
                     Text(choice.subtitle).font(DS.Typography.brand(.caption)).lineLimit(1).minimumScaleFactor(0.8)
                 }
             }
             .foregroundStyle(choice.isSelected ? choice.accent.onFill : DS.Colors.textPrimary)
             .padding(.horizontal, 6)
-            .frame(maxWidth: .infinity).frame(height: 92)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 92)
+            .fixedSize(horizontal: false, vertical: true)
             .background(RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .fill(.clay(choice.isSelected ? choice.accent.fill : DS.Colors.surfaceRaised, shade: choice.accent.ink, size: 80)))
             .offset(y: choice.isSelected ? 6 : 0)

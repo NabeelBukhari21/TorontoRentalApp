@@ -20,6 +20,7 @@ struct OnboardingWelcomeStep: View {
 
     @State private var buttonFrame: CGRect = .zero
     @State private var flood: CGFloat = 0
+    @State private var isHolding = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -46,7 +47,7 @@ struct OnboardingWelcomeStep: View {
                     WelcomeFeatureMarquee(features: Array(features[6...8]), speed: 26, offset: 40)
                 }
                 Spacer(minLength: 24)
-                PawFillButton(action: start)
+                PawHoldButton(isHolding: $isHolding, action: start)
                     .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.space)) } action: { buttonFrame = $0 }
                 WelcomeTermsChip()
                     .padding(.top, 22)
@@ -76,7 +77,10 @@ struct OnboardingWelcomeStep: View {
 
     private var brand: some View {
         VStack(spacing: 6) {
-            PurrMascot(mood: .welcome, size: 168, surprisesOnTap: true)
+            // Winds up while the paw is held.
+            PurrMascot(mood: isHolding || flood > 0 ? .drumRoll : .welcome, size: 168, surprisesOnTap: true)
+                .scaleEffect(isHolding && !reduceMotion ? 1.16 : 1, anchor: .bottom)
+                .animation(isHolding ? .easeIn(duration: PawHoldButton.duration) : DS.Motion.bouncy, value: isHolding)
             PurrpertyWordmark(fontSize: 52)
             Text("Every rental, under one paw.")
                 .font(DS.Typography.brand(19, weight: .medium, relativeTo: .title3))
@@ -216,10 +220,22 @@ private struct IntroFilm: View {
     /// The closing frame: Purr cheering over the name.
     private static let posterTime = CMTime(value: 255, timescale: 30)
 
+    private static let captions = [
+        FlyoverCaption(id: 0, from: 0.3, to: 3.4, text: "Your whole portfolio, on one map"),
+        FlyoverCaption(id: 1, from: 3.9, to: 6.8, text: "Open any building, floor by floor"),
+    ]
+
     var body: some View {
         VideoClipSurface(player: player.player, gravity: .resizeAspectFill)
             .ignoresSafeArea()
             .accessibilityLabel("A map of Toronto tilts into 3D, a building opens floor by floor to show its units and tenants, then Purr cheers.")
+            .overlay {
+                if !reduceMotion {
+                    TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                        FlyoverCaptions(captions: Self.captions, time: player.player.currentTime().seconds)
+                    }
+                }
+            }
             .overlay(alignment: .bottom) {
                 if reduceMotion {
                     PrimaryActionButton(title: "Continue") { onFinished(false) }

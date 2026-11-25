@@ -170,6 +170,9 @@ colourful, for students, on a white background.
     (`-PurrpertyFlyoverFrames`): run ONE renderer at a time. Street
     lookup and check: `Services/Address/AddressSearch`. Tap-away keyboard:
     `Core/Keyboard`
+  - one progress bar from the quiz to the first property
+    (`SetupJourney`); units are asked once, in the quiz; the welcome's paw
+    is held for a second (`PawHoldButton`)
   - Rive Purr in four looks, red and gold palette
   - "Peek-a-roof" logo: layered Liquid Glass `AppIcon.icon` plus the
     in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`

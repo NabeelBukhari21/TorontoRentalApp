@@ -18,12 +18,14 @@ struct GettingStartedView: View {
     init(
         container: AppContainer,
         session: AuthSession,
+        recap: WorkspaceRecap? = nil,
         onFinished: @escaping (_ addedProperty: Bool) -> Void
     ) {
         self.container = container
         _viewModel = State(initialValue: GettingStartedViewModel(
             session: session,
             container: container,
+            recap: recap,
             onFinished: onFinished
         ))
     }
@@ -42,18 +44,18 @@ struct GettingStartedView: View {
                 title: title,
                 line: line,
                 movesForward: viewModel.movesForward,
-                progress: viewModel.step.isPropertyStep ? viewModel.progress : nil,
+                progress: viewModel.step.isPropertyStep || viewModel.step == .workspace ? viewModel.progress : nil,
                 progressLabel: viewModel.stepLabel,
                 props: props,
-                celebrates: viewModel.step == .celebration,
-                onBack: viewModel.step.isPropertyStep && viewModel.step != .kind ? { viewModel.goBack() } : nil
+                celebrates: viewModel.step == .celebration || viewModel.step == .workspace,
+                onBack: viewModel.canGoBack ? { viewModel.goBack() } : nil
             ) {
                 content
             } actions: {
                 actions
             }
             .overlay {
-                if viewModel.step == .celebration {
+                if viewModel.step == .celebration || viewModel.step == .workspace {
                     OrgConfettiBurst()
                         .allowsHitTesting(false)
                         .ignoresSafeArea()
@@ -70,6 +72,7 @@ struct GettingStartedView: View {
 
     private var title: String {
         switch viewModel.step {
+        case .workspace: "Your workspace is ready"
         case .saving: "Adding \(viewModel.draft.name)"
         case .celebration: "\(propertyName) is live"
         case .notifications: "Never miss a rent payment"
@@ -79,6 +82,7 @@ struct GettingStartedView: View {
 
     private var line: String {
         switch viewModel.step {
+        case .workspace: "Next, your first property. It takes about a minute."
         case .saving: "This takes a few seconds."
         case .celebration: "Your first property is on Purrperty."
         case .notifications: "A nudge when rent lands, a repair comes in or a tenant messages you. You choose which in Settings."
@@ -92,6 +96,7 @@ struct GettingStartedView: View {
 
     private var mood: PurrMood {
         switch viewModel.step {
+        case .workspace: .partyTime
         case .saving: .builder
         case .celebration: .propertyAdded
         case .notifications: .newNotification
@@ -101,7 +106,7 @@ struct GettingStartedView: View {
 
     private var accent: DSAccent {
         switch viewModel.step {
-        case .kind, .celebration: .gold
+        case .workspace, .kind, .celebration: .gold
         case .address: .sky
         case .name: .mint
         case .units, .saving: .blush
@@ -111,6 +116,7 @@ struct GettingStartedView: View {
 
     private var props: [String] {
         switch viewModel.step {
+        case .workspace: ["star.fill", "sparkles"]
         case .kind: ["house.fill", "building.2.fill"]
         case .address: ["mappin.and.ellipse", "map.fill"]
         case .name: ["pencil", "tag.fill"]
@@ -128,6 +134,9 @@ struct GettingStartedView: View {
         @Bindable var viewModel = viewModel
 
         switch viewModel.step {
+        case .workspace:
+            if let recap = viewModel.recap { OrgSummary(recap: recap) }
+
         case .kind:
             StageAnswers(choices: kinds)
 
@@ -180,7 +189,7 @@ struct GettingStartedView: View {
         case .saving:
             VStack(spacing: 12) {
                 ForEach(viewModel.saveTasks) { OnboardingBuildPill(task: $0) }
-                SakugaProgress(value: saveProgress, showsLabel: false)
+                SakugaProgress(value: saveProgress, showsLabel: false, wordsBelow: true)
                     .padding(.top, 54)
             }
             .frame(maxWidth: .infinity)
@@ -235,7 +244,7 @@ struct GettingStartedView: View {
             }
             StageLink(title: "Not now", action: viewModel.declineNotifications)
         default:
-            StageButton(title: continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.step == .address && viewModel.address.status == .checking) {
+            StageButton(title: continueTitle, isEnabled: viewModel.canContinue, isLoading: viewModel.isConfirmingAddress) {
                 viewModel.advance()
             }
         }

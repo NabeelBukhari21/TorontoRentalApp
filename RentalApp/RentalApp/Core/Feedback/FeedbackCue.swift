@@ -44,6 +44,8 @@ enum FeedbackCue: Equatable, Sendable {
     /// Felt, not heard: a dial tick while scrolling (0…1, how fast), the
     /// end of a list; and on the tab bar, a finger going down, crossing a
     /// tab, and choosing one.
+    /// Felt: holding something, 0…1 of the way.
+    case charge(Float)
     case scrollTick(Float), scrollEnd, tabPress, scrub, tabSelect
 
     /// The sound's file name; nil is only felt.
@@ -69,7 +71,7 @@ enum FeedbackCue: Equatable, Sendable {
         case .stamp: "stamp"
         case .stretch: "tap"
         case .pounce: "pounce"
-        case .scrollTick, .scrollEnd, .tabPress, .scrub, .tabSelect: nil
+        case .charge, .scrollTick, .scrollEnd, .tabPress, .scrub, .tabSelect: nil
         }
     }
 
@@ -119,6 +121,7 @@ enum FeedbackCue: Equatable, Sendable {
         case .coin: [.init(time: 0, intensity: 0.55, sharpness: 0.95)]
         case .stamp: [.init(time: 0, duration: 0.12, intensity: 0.05, sharpness: 0.1, endIntensity: 0.3), .init(time: 0.13, intensity: 1, sharpness: 0.15), .init(time: 0.16, intensity: 0.5, sharpness: 0.1)]
         case .scrollTick(let speed): [.init(time: 0, intensity: 0.22 + 0.25 * speed, sharpness: 0.75)]
+        case .charge(let amount): [.init(time: 0, intensity: 0.2 + 0.6 * amount, sharpness: 0.25 + 0.3 * amount)]
         case .scrollEnd: [.init(time: 0, intensity: 0.55, sharpness: 0.25)]
         case .tabPress: FeedbackCue.press.haptic
         case .tabSelect: FeedbackCue.select(0).haptic

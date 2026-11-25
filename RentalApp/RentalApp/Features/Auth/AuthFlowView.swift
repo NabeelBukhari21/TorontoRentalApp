@@ -66,21 +66,33 @@ struct AuthFlowView: View {
 
     var body: some View {
         ZStack {
+            if screen == .login {
+                LoginView(
+                    viewModel: viewModel,
+                    onNavigate: { navigate(to: $0) },
+                    onAuthenticated: onAuthenticated,
+                    biometricUnlock: biometricUnlock,
+                    onBack: onBack
+                )
+                .transition(.opacity)
+            } else {
+                otherScreens.transition(.opacity)
+            }
+        }
+    }
+
+    private var otherScreens: some View {
+        ZStack {
             SplashBackground()
             SplashParticleField(particleCount: 18)
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    if screen != .login || onBack != nil {
-                        HStack {
-                            AuthBackButton {
-                                if screen == .login { onBack?() } else { navigate(to: backDestination) }
-                            }
-                            Spacer()
-                        }
-                        .padding(.bottom, DS.Spacing.lg)
-                        .transition(.opacity)
+                    HStack {
+                        AuthBackButton { navigate(to: backDestination) }
+                        Spacer()
                     }
+                    .padding(.bottom, DS.Spacing.lg)
 
                     screenContent
                         .id(screen)
@@ -107,12 +119,7 @@ struct AuthFlowView: View {
     private var screenContent: some View {
         switch screen {
         case .login:
-            LoginView(
-                viewModel: viewModel,
-                onNavigate: { navigate(to: $0) },
-                onAuthenticated: onAuthenticated,
-                biometricUnlock: biometricUnlock
-            )
+            EmptyView()
         case .roleSelection:
             RoleSelectionView(
                 viewModel: viewModel,

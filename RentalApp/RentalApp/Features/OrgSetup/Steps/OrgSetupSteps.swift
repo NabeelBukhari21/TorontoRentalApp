@@ -13,16 +13,18 @@ import PhotosUI
 
 /// The workspace's logo, or its initials on the chosen gradient.
 private struct OrgMark: View {
-    let viewModel: OrgSetupViewModel
+    let recap: WorkspaceRecap
     let size: CGFloat
 
     var body: some View {
         ZStack {
-            Circle().fill(viewModel.monogramGradient)
-            if let image = viewModel.logoImage {
+            Circle().fill(LinearGradient(
+                colors: OrgSetupViewModel.monogramGradients[recap.colorIndex], startPoint: .topLeading, endPoint: .bottomTrailing
+            ))
+            if let image = recap.logo {
                 Image(uiImage: image).resizable().scaledToFill().clipShape(.circle)
             } else {
-                Text(viewModel.monogram)
+                Text(recap.monogram)
                     .font(DS.Typography.brandFixed(size * 0.38))
                     .foregroundStyle(DS.Colors.onFixedColor)
             }
@@ -157,15 +159,8 @@ struct OrgLogoStep: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            OrgMark(viewModel: viewModel, size: 92)
-                .jelly(on: viewModel.logoGradientIndex)
+            OrgMark(recap: viewModel.recap, size: 104)
                 .animation(DS.Motion.bouncy, value: viewModel.logoImage == nil)
-
-            // Monogram gradient choices (hidden once a photo is set).
-            if viewModel.logoImage == nil {
-                OrgColourPicker(selection: $viewModel.logoGradientIndex)
-                .transition(.opacity)
-            }
 
             // Read on the main actor; PhotosPicker's label closure isn't.
             let pickerTitle = viewModel.logoImage == nil ? "Upload a logo" : "Choose a different photo"
@@ -246,14 +241,14 @@ struct OrgInviteStep: View {
 
 /// The new workspace, summed up.
 struct OrgSummary: View {
-    let viewModel: OrgSetupViewModel
+    let recap: WorkspaceRecap
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 14) {
-                OrgMark(viewModel: viewModel, size: 54)
+                OrgMark(recap: recap, size: 54)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.orgName)
+                    Text(recap.name)
                         .font(DS.Typography.brand(.title3, weight: .semibold))
                         .foregroundStyle(DS.Colors.textPrimary)
                         .lineLimit(1)
@@ -262,10 +257,10 @@ struct OrgSummary: View {
                         .foregroundStyle(DS.Colors.textSecondary)
                 }
             }
-            if !viewModel.inviteEmails.isEmpty {
+            if !recap.invites.isEmpty {
                 HStack {
-                    DSAvatarStack(names: viewModel.inviteEmails, maxVisible: 4)
-                    Text("\(viewModel.inviteEmails.count) \(viewModel.inviteEmails.count == 1 ? "teammate" : "teammates") to invite")
+                    DSAvatarStack(names: recap.invites, maxVisible: 4)
+                    Text("\(recap.invites.count) \(recap.invites.count == 1 ? "teammate" : "teammates") to invite")
                         .font(DS.Typography.brand(.footnote, weight: .regular))
                         .foregroundStyle(DS.Colors.textSecondary)
                 }
@@ -276,10 +271,7 @@ struct OrgSummary: View {
     }
 
     private var summaryLine: String {
-        var parts: [String] = []
-        if let type = viewModel.propertyType { parts.append(type.title) }
-        if let size = viewModel.portfolioSize { parts.append("\(size.title) properties") }
-        return parts.isEmpty ? "Ready to add your first property" : parts.joined(separator: " · ")
+        recap.details.isEmpty ? "Ready for your first property" : recap.details.joined(separator: " · ")
     }
 }
 

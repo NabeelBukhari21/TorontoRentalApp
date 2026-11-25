@@ -71,6 +71,10 @@ final class AddressSearch: NSObject {
         completer.region = Self.home
     }
 
+    var isVerified: Bool {
+        if case .verified = status { true } else { false }
+    }
+
     /// Checked and not confirmed; carrying on keeps what was typed.
     var isUnconfirmed: Bool {
         switch status {

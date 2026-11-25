@@ -206,7 +206,8 @@ struct OnboardingScene: View {
             y = size.height + 30 - side * 0.97
         case .giant:
             let chin = size.height - Self.buttonRoom + 4
-            side = min(max((chin - top) / 0.47, 240), width * 1.6)
+            // Headroom for the poses that stretch.
+            side = min(max((chin - top - 24) / 0.47, 220), width * 1.45)
             y = chin - side * 0.66
         case .orbit:
             let room = size.height - Self.buttonRoom - top
@@ -292,7 +293,7 @@ struct OnboardingScene: View {
                         .rotationEffect(.degrees(index.isMultiple(of: 2) ? -3 : 3))
                         .offset(x: index.isMultiple(of: 2) ? -18 : 18)
                 }
-                SakugaProgress(value: buildProgress, showsLabel: false)
+                SakugaProgress(value: buildProgress, showsLabel: false, wordsBelow: true)
                     .padding(.horizontal, 44)
                     .padding(.top, 48)
             }
@@ -378,7 +379,7 @@ struct OnboardingScene: View {
             // Only where they leave his face clear.
             if step == .signUp, !isTyping, purr.size > 300 {
                 ZStack {
-                    sticker(viewModel.profile.persona == .tenant ? "Your landlord can invite you" : "Your answers are saved", .sky, tilt: 4)
+                    sticker(viewModel.profile.persona == .tenant ? "Landlord invites you" : "Your answers are saved", .sky, tilt: 4)
                         .floating(depth: 0.9, phase: 1, bob: 0.5)
                         .position(x: size.width * 0.75, y: edge - 64)
                     sticker("Free to start, no card needed", .gold, tilt: -3)

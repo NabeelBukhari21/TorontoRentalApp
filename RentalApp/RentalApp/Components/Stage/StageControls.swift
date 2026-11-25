@@ -47,6 +47,7 @@ extension View {
     func stageField(isFocused: Bool = false, hasError: Bool = false) -> some View {
         let shape = RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
         return padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .frame(minHeight: 52)
             .background(shape.fill(DS.Colors.surface.shadow(.inner(color: DS.Colors.groundShadow.opacity(0.5), radius: 3, y: 2))))
             .overlay(shape.strokeBorder(hasError ? DS.Colors.danger : isFocused ? DS.Colors.brand : .clear, lineWidth: 2))
@@ -67,7 +68,10 @@ struct StageField: View {
     let prompt: String
     @Binding var text: String
     var error: String? = nil
+    var isSecure = false
+    var onFocusChange: (Bool) -> Void = { _ in }
 
+    @State private var isRevealed = false
     @FocusState private var isFocused: Bool
     @Environment(\.feedback) private var feedback
 
@@ -78,10 +82,26 @@ struct StageField: View {
                     .foregroundStyle(DS.Colors.brandInk)
                     .frame(width: 24)
                     .accessibilityHidden(true)
-                TextField(prompt, text: $text)
+                Group {
+                    if isSecure, !isRevealed {
+                        SecureField(prompt, text: $text)
+                    } else {
+                        TextField(prompt, text: $text)
+                    }
+                }
                     .font(DS.Typography.brand(.body))
                     .multilineTextAlignment(.leading)
                     .focused($isFocused)
+                if isSecure {
+                    Button(isRevealed ? "Hide password" : "Show password", systemImage: isRevealed ? "eye.slash.fill" : "eye.fill") {
+                        isRevealed.toggle()
+                        isFocused = true
+                    }
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(DS.Colors.textSecondary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .padding(.vertical, -8)
+                }
             }
             .stageField(isFocused: isFocused, hasError: error != nil)
             .sakugaKeys(text)
@@ -93,7 +113,10 @@ struct StageField: View {
                     .foregroundStyle(DS.Colors.danger)
             }
         }
-        .onChange(of: isFocused) { _, focused in if focused { feedback?.play(.focus) } }
+        .onChange(of: isFocused) { _, focused in
+            if focused { feedback?.play(.focus) }
+            onFocusChange(focused)
+        }
     }
 }
 

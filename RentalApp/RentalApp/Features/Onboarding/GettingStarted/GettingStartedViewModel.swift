@@ -6,7 +6,7 @@
 //
 //  Runs once, right after a new account has its workspace:
 //
-//      first property (one field per step) → saving → celebration
+//      workspace ready → first property (one field per step) → saving → celebration
 //      → notification priming → trial paywall → Home
 //
 //  The property is created for real through the repository, so Home
@@ -18,6 +18,8 @@ import Observation
 import UserNotifications
 
 enum GettingStartedStep: String, CaseIterable {
+    /// The finished workspace.
+    case workspace
     case kind
     case address
     case name
@@ -39,7 +41,9 @@ final class GettingStartedViewModel {
 
     // MARK: State
 
-    private(set) var step: GettingStartedStep = .kind
+    private(set) var step: GettingStartedStep
+    private let journey: SetupJourney
+    let recap: WorkspaceRecap?
     private(set) var movesForward = true
     var draft = PropertyDraft()
     var unitCount = 1
@@ -48,6 +52,8 @@ final class GettingStartedViewModel {
     /// The name suggested from the street, replaced if the street changes.
     private var suggestedName = ""
     private var filledPostalCode = ""
+    /// Checking the address, or showing that it was found.
+    private(set) var isConfirmingAddress = false
     private(set) var saveTasks: [OnboardingBuildTask] = []
     private(set) var saveError: String?
     /// The draft starts on a kind; this says the person picked it.
@@ -74,8 +80,13 @@ final class GettingStartedViewModel {
     init(
         session: AuthSession,
         container: AppContainer,
+        recap: WorkspaceRecap? = nil,
         onFinished: @escaping (_ addedProperty: Bool) -> Void
     ) {
+        self.recap = recap
+        // Come back to after a relaunch, it starts at the property.
+        self.step = recap == nil ? .kind : .workspace
+        self.journey = SetupJourney(profile: container.onboardingProfile.profile)
         self.profile = container.onboardingProfile.profile
         self.firstName = session.fullName.split(separator: " ").first.map(String.init) ?? session.fullName
         self.properties = container.properties
@@ -91,13 +102,13 @@ final class GettingStartedViewModel {
     // MARK: Derived
 
     var progress: Double {
+        if step == .workspace { return journey.progress(journey.propertyStep(0)) }
         guard let index = GettingStartedStep.propertySteps.firstIndex(of: step) else { return 1 }
-        return 0.1 + 0.9 * Double(index) / Double(GettingStartedStep.propertySteps.count)
+        return journey.progress(journey.propertyStep(index))
     }
 
     var stepLabel: String {
-        let index = (GettingStartedStep.propertySteps.firstIndex(of: step) ?? 0) + 1
-        return "Step \(index) of \(GettingStartedStep.propertySteps.count)"
+        journey.label(journey.propertyStep(GettingStartedStep.propertySteps.firstIndex(of: step) ?? 0))
     }
 
     var canContinue: Bool {
@@ -127,7 +138,7 @@ final class GettingStartedViewModel {
 
     var mascotLine: String {
         switch step {
-        case .kind:    "Let's add your first property. It takes about a minute."
+        case .kind:    recap == nil ? "Let's add your first property. It takes about a minute." : "Pick the closest one."
         case .address: "Start typing and pick it from the list. I'll check it's real."
         case .name:    "A nickname helps once you have a few. The address works too."
         case .units:   unitCount == 1 ? "One unit, nice and simple." : "\(unitCount) units. I'll set each one up."
@@ -169,6 +180,8 @@ final class GettingStartedViewModel {
 
     func advance() {
         switch step {
+        case .workspace:
+            move(to: .kind)
         case .kind:
             move(to: .address)
         case .address:
@@ -194,10 +207,22 @@ final class GettingStartedViewModel {
     /// Moves on from a real address. One that can't be found says so once,
     /// then is kept as typed: new buildings aren't on every map.
     private func checkAddress() async {
+        guard !isConfirmingAddress else { return }
+        isConfirmingAddress = true
+        defer { isConfirmingAddress = false }
+        let wasVerified = address.isVerified
         guard await address.check(
             street: trimmed(draft.addressLine1), city: trimmed(draft.city), postalCode: trimmed(draft.postalCode)
         ) else { return }
-        if case .verified(let found) = address.status { use(found) }
+        if case .verified(let found) = address.status {
+            use(found)
+            if !wasVerified {
+                // Long enough to see it on the map. The map's arrival also
+                // has to finish before the page changes.
+                try? await Task.sleep(for: .seconds(1.3))
+            }
+        }
+        guard step == .address else { return }
         if trimmed(draft.name).isEmpty || draft.name == suggestedName {
             suggestedName = trimmed(draft.addressLine1)
             draft.name = suggestedName
@@ -222,7 +247,12 @@ final class GettingStartedViewModel {
         }
     }
 
+    var canGoBack: Bool {
+        step.isPropertyStep && (step != .kind || recap != nil) && !isConfirmingAddress
+    }
+
     func goBack() {
+        if step == .kind, recap != nil { return move(to: .workspace, forward: false) }
         guard let index = GettingStartedStep.propertySteps.firstIndex(of: step), index > 0 else { return }
         move(to: GettingStartedStep.propertySteps[index - 1], forward: false)
     }

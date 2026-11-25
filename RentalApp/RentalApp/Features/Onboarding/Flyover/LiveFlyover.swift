@@ -161,34 +161,7 @@ struct LiveFlyover: View {
     // MARK: Words
 
     private var caption: some View {
-        VStack {
-            ZStack {
-                ForEach(director.style.captions) { caption in
-                    if time > caption.from, time < caption.to {
-                        Text(caption.text)
-                            .font(DS.Typography.brand(27, weight: .bold))
-                            .foregroundStyle(DS.Colors.textPrimary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 22)
-                            .padding(.vertical, 12)
-                            .background {
-                                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                                    .fill(.clay(DS.Colors.surfaceRaised, shade: DSAccent.gold.ink, size: 60))
-                                    .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
-                            }
-                            .transition(.asymmetric(
-                                insertion: .scale(scale: 0.8, anchor: .top).combined(with: .opacity),
-                                removal: .opacity.combined(with: .offset(y: -14))
-                            ))
-                    }
-                }
-            }
-            .padding(.horizontal, 24)
-            // Clear of Skip.
-            .padding(.top, 66)
-            Spacer()
-        }
-        .animation(DS.Motion.bouncy, value: director.style.captions.map { time > $0.from && time < $0.to })
+        FlyoverCaptions(captions: director.style.captions, time: time)
     }
 
     // MARK: Finale
@@ -221,6 +194,46 @@ struct LiveFlyover: View {
             }
         }
         .animation(DS.Motion.bouncy, value: isFinale)
+    }
+}
+
+// MARK: - Captions
+
+/// The words over a flight or the film, on a solid card clear of Skip.
+struct FlyoverCaptions: View {
+    let captions: [FlyoverCaption]
+    let time: Double
+
+    var body: some View {
+        VStack {
+            ZStack {
+                ForEach(captions) { caption in
+                    if time > caption.from, time < caption.to {
+                        Text(caption.text)
+                            .font(DS.Typography.brand(27, weight: .bold))
+                            .foregroundStyle(DS.Colors.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 12)
+                            .background {
+                                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                                    .fill(.clay(DS.Colors.surfaceRaised, shade: DSAccent.gold.ink, size: 60))
+                                    .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+                            }
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.8, anchor: .top).combined(with: .opacity),
+                                removal: .opacity.combined(with: .offset(y: -14))
+                            ))
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            // Clear of Skip.
+            .padding(.top, 66)
+            Spacer()
+        }
+        .animation(DS.Motion.bouncy, value: captions.map { time > $0.from && time < $0.to })
+        .allowsHitTesting(false)
     }
 }
 

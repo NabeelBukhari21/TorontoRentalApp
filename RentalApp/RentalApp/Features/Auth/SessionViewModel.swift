@@ -111,6 +111,14 @@ final class SessionViewModel {
         transition(to: .unauthenticated)
     }
 
+    /// The workspace just set up, for getting started to show.
+    private(set) var workspaceRecap: WorkspaceRecap?
+
+    /// Getting started comes after workspace setup for this account.
+    func continuesToGettingStarted(_ account: AuthSession) -> Bool {
+        account.role.isStaff && onboarding.pendingActivationUserID == account.userID
+    }
+
     /// Sign-in was opened from the welcome, so it can go back there.
     private(set) var cameFromOnboarding = false
 
@@ -216,7 +224,9 @@ final class SessionViewModel {
     /// Called by the org-setup flow once the workspace exists. Binding
     /// the org to the session is what moves a staff user from
     /// `.needsOrganization` to `.authenticated`.
-    func attachOrganization(id: String, name: String) async {
+    func attachOrganization(id: String, recap: WorkspaceRecap) async {
+        let name = recap.name
+        workspaceRecap = recap
         do {
             let session = try await auth.attachOrganization(id: id, name: name)
             Task { await analytics.track(.organizationCreated(portfolioSize: 0)) }
@@ -277,7 +287,7 @@ final class SessionViewModel {
     /// goes straight in. Centralized so no caller has to remember it.
     private func route(for session: AuthSession) -> AuthState {
         if session.needsOrganization { return .needsOrganization(session) }
-        if session.role.isStaff, onboarding.pendingActivationUserID == session.userID {
+        if continuesToGettingStarted(session) {
             return .gettingStarted(session)
         }
         return .authenticated(session)

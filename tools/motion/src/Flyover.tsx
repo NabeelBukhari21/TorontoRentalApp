@@ -404,8 +404,7 @@ export const FlyoverDollhouse: React.FC = () => {
         <City />
         <HeroBuilding xray={xray} lit={lit} explode={explode} pins={pins} />
       </Stage>
-      <Caption text="Your whole portfolio, on one map" from={10} to={100} />
-      <Caption text="Open any building, floor by floor" from={118} to={200} />
+      {/* Captions are drawn by the app (IntroFilm), clear of its Skip button. */}
       <Chips start={176} picks={[6, 7, 0]} spots={[[60, 1700], [480, 1870], [70, 2040]]} />
       <Outro from={226} withCat />
     </AbsoluteFill>

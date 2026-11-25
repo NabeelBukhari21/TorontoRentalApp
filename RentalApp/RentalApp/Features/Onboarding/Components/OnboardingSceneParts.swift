@@ -314,6 +314,8 @@ struct OnboardingPlainPage<Actions: View>: View {
     let onSignIn: () -> Void
     let actions: Actions
 
+    private var isSignUp: Bool { viewModel.step == .signUp }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -326,7 +328,7 @@ struct OnboardingPlainPage<Actions: View>: View {
                     }
                     OnboardingProgressTube(progress: viewModel.progress, label: viewModel.stepLabel, fill: DS.Colors.brand, track: DS.Colors.track)
                 }
-                PurrMascot(mood: mood, size: 150)
+                PurrMascot(mood: mood, size: isSignUp ? 96 : 150)
                 Text(viewModel.sceneTitle)
                     .font(DS.Typography.brand(34))
                     .accessibilityAddTraits(.isHeader)
@@ -334,6 +336,8 @@ struct OnboardingPlainPage<Actions: View>: View {
                     Text(viewModel.sceneLine).font(DS.Typography.brand(.body, weight: .regular)).foregroundStyle(DS.Colors.textSecondary)
                 }
                 content
+                // Not pinned here, so the fields and rules get the room.
+                if isSignUp { actions }
             }
             .multilineTextAlignment(.center)
             .foregroundStyle(DS.Colors.textPrimary)
@@ -346,7 +350,7 @@ struct OnboardingPlainPage<Actions: View>: View {
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Colors.background)
         .safeAreaInset(edge: .bottom) {
-            if viewModel.step != .building {
+            if viewModel.step != .building, !isSignUp {
                 actions
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity)

@@ -52,7 +52,7 @@ struct OnboardingSignUpForm: View {
             }
 
             let layout = typeSize.isAccessibilitySize
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(spacing: 6))
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : typeSize > .xLarge ? AnyLayout(FlowLayoutCompat(spacing: 6)) : AnyLayout(HStackLayout(spacing: 6))
             layout { requirements }
             .animation(DS.Motion.bouncy, value: auth.password)
 
@@ -97,6 +97,7 @@ struct OnboardingSignUpForm: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(.horizontal, 16)
+        .padding(.vertical, 8)
         .frame(minHeight: 52)
         .background(shape.fill(DS.Colors.surface.shadow(.inner(color: DS.Colors.groundShadow.opacity(0.5), radius: 3, y: 2))))
         .overlay(shape.strokeBorder(hasError ? DS.Colors.danger : isFocused ? DS.Colors.brand : .clear, lineWidth: 2))
@@ -115,7 +116,7 @@ private struct OnboardingRequirementChip: View {
         HStack(spacing: 4) {
             Image(systemName: requirement.isMet ? "checkmark.circle.fill" : "circle")
                 .contentTransition(.symbolEffect(.replace))
-            Text(requirement.rule.title).lineLimit(1).minimumScaleFactor(0.75)
+            Text(requirement.rule.title).fixedSize(horizontal: false, vertical: true)
         }
         .font(DS.Typography.brand(.caption))
         .foregroundStyle(requirement.isMet ? DSAccent.mint.ink : DS.Colors.textSecondary)

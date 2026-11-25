@@ -136,53 +136,108 @@ struct WelcomeBackground: View {
 
 // MARK: - Paw Button
 
-/// The main button: a glass capsule with Purr's paw. Tapped, liquid rises
-/// inside it, the paw turns white, and then it calls `action`.
-struct PawFillButton: View {
+/// Get started: hold the paw for a second and it fills with liquid. Let go
+/// early and it drains, with a nudge to hold. Assistive technologies just
+/// activate it.
+struct PawHoldButton: View {
 
+    @Binding var isHolding: Bool
     let action: () -> Void
 
+    static let duration = 1.0
+
     @State private var level: CGFloat = 0
-    @State private var isPressed = false
+    @State private var isDone = false
+    @State private var nudges = 0
     @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        Button(action: press) {
+        VStack(spacing: 8) {
             ZStack {
-                TimelineView(.animation(paused: reduceMotion || level == 0)) { context in
-                    LiquidLevel(level: level, phase: context.date.timeIntervalSinceReferenceDate * 9)
-                        .fill(LinearGradient(colors: [DS.Colors.brand, DS.Colors.accentEmber], startPoint: .leading, endPoint: .trailing))
+                Capsule().fill(DS.Colors.surfaceRaised)
+                // The words sit on the paper until the liquid reaches them.
+                label(DS.Colors.brandInk)
+                TimelineView(.animation(paused: reduceMotion || (!isHolding && !isDone))) { context in
+                    let phase = context.date.timeIntervalSinceReferenceDate * 9
+                    LiquidLevel(level: level, phase: phase)
+                        .fill(LinearGradient(colors: [DS.Colors.brand, DS.Colors.brandDeep], startPoint: .leading, endPoint: .trailing))
+                        .overlay { label(DS.Colors.textOnBrand).mask { LiquidLevel(level: level, phase: phase) } }
                 }
-                Image(systemName: "pawprint.fill")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(level > 0.55 ? Color.white : DS.Colors.brand)
-                    .contentTransition(.symbolEffect(.replace))
-                    // Waves while it waits to be pressed.
-                    .symbolEffect(.wiggle.clockwise, options: .repeat(.periodic(delay: 2.2)), isActive: !isPressed && !reduceMotion)
             }
-            .frame(width: 200, height: 62)
+            .frame(width: typeSize.isAccessibilitySize ? 320 : 248, height: typeSize.isAccessibilitySize ? 84 : 66)
             .clipShape(.capsule)
             .contentShape(.capsule)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .shadow(color: DS.Colors.groundShadow, radius: 12, y: 7)
+            .scaleEffect(isHolding && !reduceMotion ? 0.96 : 1)
+            .animation(DS.Motion.snappy, value: isHolding)
+            .shake(on: nudges)
+            .onLongPressGesture(minimumDuration: Self.duration, maximumDistance: 80, perform: finish, onPressingChanged: pressing)
+            .accessibilityElement()
+            .accessibilityLabel("Get started")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { finish() }
+
+            Text(nudges > 0 && !isHolding ? "Keep holding for a second" : "Press and hold")
+                .font(DS.Typography.brand(.footnote))
+                .foregroundStyle(DS.Colors.textSecondary)
+                .contentTransition(.opacity)
+                .accessibilityHidden(true)
         }
-        .buttonStyle(SquishStyle(scale: 0.94, cue: .press))
-        .disabled(isPressed)
-        .accessibilityLabel("Get started")
+        .task(id: isHolding) { await rumble() }
     }
 
-    private func press() {
-        guard !isPressed else { return }
-        isPressed = true
+    private func label(_ color: Color) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "pawprint.fill")
+                .font(.system(size: 26, weight: .bold))
+                // Waves while it waits to be pressed.
+                .symbolEffect(.wiggle.clockwise, options: .repeat(.periodic(delay: 2.2)), isActive: !isHolding && !isDone && !reduceMotion)
+            Text("Get started")
+                .font(DS.Typography.brand(22, weight: .semibold, relativeTo: .title3))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, 22)
+    }
+
+    private func pressing(_ down: Bool) {
+        guard !isDone else { return }
+        if down {
+            feedback?.play(.press)
+            isHolding = true
+            withAnimation(.linear(duration: Self.duration)) { level = 1 }
+        } else {
+            isHolding = false
+            withAnimation(DS.Motion.bouncy) {
+                level = 0
+                nudges += 1
+            }
+        }
+    }
+
+    private func finish() {
+        guard !isDone else { return }
+        isDone = true
         feedback?.play(.fill)
-        let fill = reduceMotion ? 0.15 : 0.45
-        withAnimation(.easeInOut(duration: fill)) { level = 1 }
-        Task {
-            try? await Task.sleep(for: .seconds(fill))
-            action()
+        withAnimation(.easeOut(duration: 0.12)) { level = 1 }
+        isHolding = false
+        action()
+    }
+
+    /// Felt building up under the finger.
+    private func rumble() async {
+        guard isHolding else { return }
+        for pulse in 1...9 {
+            try? await Task.sleep(for: .milliseconds(100))
+            guard !Task.isCancelled, isHolding else { return }
+            feedback?.play(.charge(Float(pulse) / 9))
         }
     }
 }
+
 
 /// Liquid filling a shape from the bottom, its surface a moving wave.
 private struct LiquidLevel: Shape {

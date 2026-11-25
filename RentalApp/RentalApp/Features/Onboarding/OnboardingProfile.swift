@@ -126,14 +126,8 @@ enum OnboardingUnitRange: String, Codable, CaseIterable, Identifiable, Sendable 
         }
     }
 
-    /// Workspace setup asks the same question. Answered once, here.
-    var portfolioSize: PortfolioSizeOption {
-        switch self {
-        case .one, .twoToFive: .starter
-        case .sixToTwenty:     .growing
-        case .twentyPlus:      .established
-        }
-    }
+    /// "6–20 units".
+    var unitsLabel: String { self == .one ? "1 unit" : "\(title) units" }
 
     /// A sensible starting value for the first property's unit count.
     var suggestedUnitsPerProperty: Int {
@@ -336,7 +330,7 @@ struct OnboardingProfile: Codable, Equatable, Sendable {
             result.append(OnboardingUnlock(
                 icon: "square.grid.2x2.fill", tint: .purple,
                 title: "Your portfolio dashboard",
-                detail: "Set up for \(unitRange.title) \(unitRange == .one ? "unit" : "units")."
+                detail: "Set up for \(unitRange.unitsLabel)."
             ))
         }
         result += OnboardingHeadache.allCases

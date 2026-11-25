@@ -90,6 +90,7 @@ struct SakugaButton: View {
     @State private var tilt: Double = 0
     @Environment(\.sakuga) private var stage
     @Environment(\.feedback) private var feedback
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -100,7 +101,8 @@ struct SakugaButton: View {
         if isInverted { return kind == .dark ? (SakugaInk.cherry, SakugaInk.fill) : (SakugaInk.ink, SakugaInk.fill) }
         return switch kind {
         case .primary: (SakugaInk.cherry, SakugaInk.fill)
-        case .dark: (SakugaInk.ink, SakugaInk.fill)
+        // Ink would disappear into a dark page.
+        case .dark: colorScheme == .dark ? (SakugaInk.fill, SakugaInk.ink) : (SakugaInk.ink, SakugaInk.fill)
         case .plain: (SakugaInk.fill, SakugaInk.ink)
         }
     }
@@ -475,7 +477,8 @@ struct SakugaRadioMark: View {
     @Environment(\.sakuga) private var stage
 
     var body: some View {
-        Circle().fill(SakugaInk.fill).strokeBorder(SakugaInk.ink, lineWidth: max(2, size / 10))
+        // An outline until picked, in either theme.
+        Circle().fill(isOn ? SakugaInk.fill : .clear).strokeBorder(isOn ? SakugaInk.ink : DS.Colors.textPrimary, lineWidth: max(2, size / 10))
             .overlay {
                 Image(systemName: "pawprint.fill")
                     .font(.system(size: size * 0.5, weight: .bold))
@@ -643,6 +646,8 @@ struct SakugaProgress: View {
     /// 0…1.
     let value: Double
     var showsLabel = true
+    /// Where its sound words go, when there is a list above.
+    var wordsBelow = false
     @State private var shown: Double = 0
     @State private var frame: CGRect = .zero
     @State private var said = false
@@ -709,7 +714,7 @@ struct SakugaProgress: View {
             }
             if !said, new > 0.3, new < 0.9 {
                 said = true
-                stage.sfx("PURRRR…", frame.cx - 30, frame.minY - 70, size: 40, rot: -0.1, life: 2.2)
+                stage.sfx("PURRRR…", frame.cx - 30, wordsBelow ? frame.maxY + 40 : frame.minY - 70, size: 40, rot: -0.1, life: 2.2)
             }
             if new >= 1, !isDone {
                 stage.later(320) { finish() }
@@ -728,7 +733,7 @@ struct SakugaProgress: View {
             let a = Double(i) / 7 * 6.28
             stage.puff(x + cos(a) * 66, frame.cy + sin(a) * 32, n: 4, size: .random(in: 8...12), vx: cos(a) * 46, vy: sin(a) * 30 - 8, life: .random(in: 0.6...1))
         }
-        stage.sfx("MEOW!", frame.cx - 20, frame.minY - 58, size: 58, rot: -0.12, life: 1.2)
+        stage.sfx("MEOW!", frame.cx - 20, wordsBelow ? frame.maxY + 46 : frame.minY - 58, size: 58, rot: -0.12, life: 1.2)
     }
 }
 

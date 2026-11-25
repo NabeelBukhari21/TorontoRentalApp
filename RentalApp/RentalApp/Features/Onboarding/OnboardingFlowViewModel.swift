@@ -122,13 +122,17 @@ final class OnboardingFlowViewModel {
     /// Starts at ~10% on the first question so the bar already feels
     /// under way (playbook §5, endowed progress).
     var progress: Double {
-        let questions = Double(max(questionSteps.count - 1, 1))
-        return 0.1 + 0.9 * Double(questionIndex) / questions
+        SetupJourney.progress(step: questionIndex, of: journeyTotal)
     }
 
-    /// "Step 3 of 7" — the welcome and fly-over aren't counted.
+    /// Landlords go on to a workspace and a first property on the same bar.
+    private var journeyTotal: Int {
+        profile.persona == .tenant ? questionSteps.count - 1 : SetupJourney.full.total
+    }
+
+    /// "Step 3 of 16" — the welcome and fly-over aren't counted.
     var stepLabel: String {
-        "Step \(questionIndex + 1) of \(questionSteps.count)"
+        "Step \(questionIndex + 1) of \(max(journeyTotal, questionSteps.count))"
     }
 
     var canContinue: Bool {
@@ -163,7 +167,7 @@ final class OnboardingFlowViewModel {
             case nil: .assistantThinking
             case .landlord: .keysReady
             case .propertyManager: .superhero
-            case .tenant: .moveInDay
+            case .tenant: .tenants
             }
         case .units:
             switch profile.unitRange {
@@ -218,7 +222,7 @@ final class OnboardingFlowViewModel {
         case [.paperwork, .findingTenants]: .sneeze
         // Three
         case [.lateRent, .repairs, .tenantMessages]: .inProgress
-        case [.lateRent, .repairs, .paperwork]: .yogaStretch
+        case [.lateRent, .repairs, .paperwork]: .tasksWaiting
         case [.lateRent, .repairs, .findingTenants]: .peekaboo
         case [.lateRent, .tenantMessages, .paperwork]: .blankStare
         case [.lateRent, .tenantMessages, .findingTenants]: .favouriteTaken

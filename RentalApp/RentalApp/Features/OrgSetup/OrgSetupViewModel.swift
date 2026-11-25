@@ -21,7 +21,6 @@ enum OrgSetupStep: Int, CaseIterable {
     case name
     case logo
     case propertyType
-    case portfolioSize
     case inviteTeam
 
     var title: String {
@@ -29,7 +28,6 @@ enum OrgSetupStep: Int, CaseIterable {
         case .name: "Hang your sign"
         case .logo: "Add your logo"
         case .propertyType: "What do you manage?"
-        case .portfolioSize: "How many properties?"
         case .inviteTeam: "Invite your team"
         }
     }
@@ -37,9 +35,8 @@ enum OrgSetupStep: Int, CaseIterable {
     var subtitle: String {
         switch self {
         case .name: "The name your tenants and team will see."
-        case .logo: "Upload a logo, or pick a look for your monogram — you can change it anytime."
+        case .logo: "Upload one, or keep the letters from your sign."
         case .propertyType: "We'll tailor your dashboard to your portfolio."
-        case .portfolioSize: "Helps us set up the right views for your scale."
         case .inviteTeam: "Property managers and coordinators can join you — or skip for now."
         }
     }
@@ -87,40 +84,17 @@ enum PropertyTypeOption: String, CaseIterable, Identifiable {
     }
 }
 
-enum PortfolioSizeOption: String, CaseIterable, Identifiable {
-    case starter
-    case growing
-    case established
-    case large
+// MARK: - Recap
 
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .starter: "1–5"
-        case .growing: "6–20"
-        case .established: "21–50"
-        case .large: "50+"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .starter: "Just getting started"
-        case .growing: "Growing portfolio"
-        case .established: "Established operator"
-        case .large: "Large scale"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .starter: "leaf.fill"
-        case .growing: "chart.line.uptrend.xyaxis"
-        case .established: "building.2.fill"
-        case .large: "globe.americas.fill"
-        }
-    }
+/// A workspace that has just been set up.
+struct WorkspaceRecap {
+    let name: String
+    let monogram: String
+    let colorIndex: Int
+    let logo: UIImage?
+    /// "Condos", "6–20 units".
+    let details: [String]
+    let invites: [String]
 }
 
 // MARK: - View Model
@@ -147,13 +121,15 @@ final class OrgSetupViewModel {
 
     private let service: OrganizationServiceProtocol
     private let ownerName: String
+    let units: OnboardingUnitRange?
+    private let journey: SetupJourney
 
-    /// `suggestedSize` comes from the onboarding quiz, so a question
-    /// already answered there arrives pre-selected (still changeable).
-    init(service: OrganizationServiceProtocol, suggestedSize: PortfolioSizeOption? = nil, ownerName: String = "") {
+    /// `units` is the quiz's answer; it isn't asked again here.
+    init(service: OrganizationServiceProtocol, units: OnboardingUnitRange? = nil, journey: SetupJourney = .withoutQuestions, ownerName: String = "") {
+        self.units = units
+        self.journey = journey
         self.ownerName = ownerName
         self.service = service
-        self.portfolioSize = suggestedSize
     }
 
     // MARK: Answers
@@ -182,7 +158,6 @@ final class OrgSetupViewModel {
     var logoImage: UIImage?
     var logoGradientIndex = 0
     var propertyType: PropertyTypeOption?
-    var portfolioSize: PortfolioSizeOption?
     var inviteEmails: [String] = []
     var inviteInput = ""
     var inviteError: String?
@@ -209,7 +184,19 @@ final class OrgSetupViewModel {
     // MARK: Progress
 
     var progress: Double {
-        Double(step.rawValue + 1) / Double(OrgSetupStep.allCases.count)
+        journey.progress(journey.workspaceStep(isComplete ? OrgSetupStep.allCases.count : step.rawValue))
+    }
+
+    var progressLabel: String { journey.label(journey.workspaceStep(step.rawValue)) }
+
+    private var hasUnaddedInvite: Bool { !inviteInput.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// The finished workspace, for the screen that shows it off.
+    var recap: WorkspaceRecap {
+        WorkspaceRecap(
+            name: orgName.trimmingCharacters(in: .whitespaces), monogram: monogram, colorIndex: logoGradientIndex,
+            logo: logoImage, details: [propertyType?.title, units?.unitsLabel].compactMap { $0 }, invites: inviteEmails
+        )
     }
 
     var canContinue: Bool {
@@ -220,15 +207,15 @@ final class OrgSetupViewModel {
             true // optional steps
         case .propertyType:
             propertyType != nil
-        case .portfolioSize:
-            portfolioSize != nil
         }
     }
 
     var continueTitle: String {
         switch step {
         case .logo where logoImage == nil:
-            "Use Monogram"
+            "Keep my letters"
+        case .inviteTeam where hasUnaddedInvite:
+            "Add and finish"
         case .inviteTeam where inviteEmails.isEmpty:
             "Skip for Now"
         case .inviteTeam:
@@ -242,6 +229,10 @@ final class OrgSetupViewModel {
 
     /// Moves to the next step, or submits when there isn't one.
     func advance() async {
+        if step == .inviteTeam, hasUnaddedInvite {
+            addInvite()
+            guard inviteError == nil else { return }
+        }
         if let next = OrgSetupStep(rawValue: step.rawValue + 1) {
             movesForward = true
             withAnimation(DS.Motion.scene) { step = next }
@@ -263,7 +254,7 @@ final class OrgSetupViewModel {
         let draft = OrganizationDraft(
             name: orgName.trimmingCharacters(in: .whitespaces),
             propertyTypeID: propertyType?.rawValue,
-            portfolioSizeID: portfolioSize?.rawValue,
+            portfolioSizeID: units?.rawValue,
             inviteEmails: inviteEmails
         )
 
