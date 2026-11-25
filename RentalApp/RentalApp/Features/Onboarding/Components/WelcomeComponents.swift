@@ -151,25 +151,39 @@ struct PawHoldButton: View {
     @State private var nudges = 0
     @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             ZStack {
-                Capsule().fill(DS.Colors.surfaceRaised)
-                // The words sit on the paper until the liquid reaches them.
-                label(DS.Colors.brandInk)
+                // Light caught at the top, colour pooled at the bottom.
+                Capsule().fill(LinearGradient(colors: [.white.opacity(0.7), DS.Colors.accentBlush.opacity(0.06), DS.Colors.brand.opacity(0.2)], startPoint: .top, endPoint: .bottom))
+                Capsule()
+                    .fill(LinearGradient(colors: [.white.opacity(0.9), .white.opacity(0)], startPoint: .top, endPoint: .bottom))
+                    .frame(height: 24)
+                    .padding(.horizontal, 22)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 5)
+                paw(DS.Colors.brand)
                 TimelineView(.animation(paused: reduceMotion || (!isHolding && !isDone))) { context in
                     let phase = context.date.timeIntervalSinceReferenceDate * 9
                     LiquidLevel(level: level, phase: phase)
                         .fill(LinearGradient(colors: [DS.Colors.brand, DS.Colors.brandDeep], startPoint: .leading, endPoint: .trailing))
-                        .overlay { label(DS.Colors.textOnBrand).mask { LiquidLevel(level: level, phase: phase) } }
+                        .overlay { paw(DS.Colors.textOnBrand).mask { LiquidLevel(level: level, phase: phase) } }
                 }
             }
-            .frame(width: typeSize.isAccessibilitySize ? 320 : 248, height: typeSize.isAccessibilitySize ? 84 : 66)
+            .frame(width: 184, height: 76)
             .clipShape(.capsule)
             .contentShape(.capsule)
-            .shadow(color: DS.Colors.groundShadow, radius: 12, y: 7)
+            .glassEffect(.clear.interactive(), in: .capsule)
+            // A bright rim and a glint, so it reads as a glass bead.
+            .overlay {
+                Capsule().strokeBorder(
+                    LinearGradient(colors: [.white.opacity(0.95), .white.opacity(0.15), .white.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    lineWidth: 1.5
+                )
+                .allowsHitTesting(false)
+            }
+            .shadow(color: DS.Colors.brand.opacity(0.22), radius: 16, y: 9)
             .scaleEffect(isHolding && !reduceMotion ? 0.96 : 1)
             .animation(DS.Motion.snappy, value: isHolding)
             .shake(on: nudges)
@@ -179,8 +193,8 @@ struct PawHoldButton: View {
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { finish() }
 
-            Text(nudges > 0 && !isHolding ? "Keep holding for a second" : "Press and hold")
-                .font(DS.Typography.brand(.footnote))
+            Text(nudges > 0 && !isHolding ? "Keep holding for a second" : "Hold to get started")
+                .font(DS.Typography.brand(.subheadline, weight: .semibold))
                 .foregroundStyle(DS.Colors.textSecondary)
                 .contentTransition(.opacity)
                 .accessibilityHidden(true)
@@ -188,19 +202,12 @@ struct PawHoldButton: View {
         .task(id: isHolding) { await rumble() }
     }
 
-    private func label(_ color: Color) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "pawprint.fill")
-                .font(.system(size: 26, weight: .bold))
-                // Waves while it waits to be pressed.
-                .symbolEffect(.wiggle.clockwise, options: .repeat(.periodic(delay: 2.2)), isActive: !isHolding && !isDone && !reduceMotion)
-            Text("Get started")
-                .font(DS.Typography.brand(22, weight: .semibold, relativeTo: .title3))
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 22)
+    private func paw(_ color: Color) -> some View {
+        Image(systemName: "pawprint.fill")
+            .font(.system(size: 34, weight: .bold))
+            // Waves while it waits to be pressed.
+            .symbolEffect(.wiggle.clockwise, options: .repeat(.periodic(delay: 2.2)), isActive: !isHolding && !isDone && !reduceMotion)
+            .foregroundStyle(color)
     }
 
     private func pressing(_ down: Bool) {
