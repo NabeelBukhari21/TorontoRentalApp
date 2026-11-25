@@ -93,6 +93,12 @@ final class AuthViewModel {
         }
     }
 
+    var newPasswordRequirements: [PasswordRequirement] {
+        PasswordRequirement.Rule.allCases.map {
+            PasswordRequirement(rule: $0, isMet: $0.isMet(by: newPassword))
+        }
+    }
+
     private func meetsRequirements(_ value: String) -> Bool {
         PasswordRequirement.Rule.allCases.allSatisfy { $0.isMet(by: value) }
     }

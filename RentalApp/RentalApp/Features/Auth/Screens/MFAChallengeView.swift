@@ -26,65 +26,23 @@ struct MFAChallengeView: View {
     private var digits: Int { challenge.digitCount }
 
     var body: some View {
-        VStack(spacing: DS.Spacing.xxl) {
-            AuthHeader(
-                title: "Verify it's you",
-                subtitle: challenge.hint.map { "\(challenge.method.instruction) \($0)" }
-                    ?? challenge.method.instruction,
-                mood: session.mfaError == nil ? .twoFactor : .loginFailed
-            )
-            .dsEntrance(index: 0)
-
-            AuthCard {
-                VStack(spacing: DS.Spacing.lg) {
-                    codeBoxes
-
-                    if let error = session.mfaError {
-                        Text(error)
-                            .font(.system(size: 12.5, weight: .medium))
-                            .foregroundStyle(DS.Colors.danger)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-
-                    DSButton(
-                        title: "Verify",
-                        variant: .primary,
-                        size: .large,
-                        isFullWidth: true,
-                        isLoading: session.isVerifyingMFA
-                    ) {
-                        submit()
-                    }
-                    .disabled(code.count < digits)
-
-                    Button {
-                        resend()
-                    } label: {
-                        HStack(spacing: DS.Spacing.xs + 2) {
-                            if isResending {
-                                ProgressView()
-                                    .controlSize(.small)
-                                    .tint(DS.Colors.brand)
-                            }
-                            Text(isResending ? "Sending…" : "Send a new code")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(DS.Colors.brand)
-                        }
-                    }
-                    .buttonStyle(DSPressStyle(scale: 0.95))
-                    .disabled(isResending)
-                }
+        PurrStage(
+            step: 0, accent: .sky, mood: session.mfaError == nil ? .twoFactor : .loginFailed,
+            title: "Verify it's you",
+            line: challenge.hint.map { "\(challenge.method.instruction) \($0)" } ?? challenge.method.instruction,
+            props: ["lock.fill", "key.fill"],
+            onBack: { session.cancelMFA() }
+        ) {
+            VStack(spacing: 10) {
+                codeBoxes
+                AuthErrorLine(message: session.mfaError)
             }
-            .dsEntrance(index: 1)
-            .animation(DS.Motion.gentle, value: session.mfaError)
-
-            AuthFooterLink(prompt: "Wrong account?", actionTitle: "Sign in again") {
-                session.cancelMFA()
-            }
-            .dsEntrance(index: 2)
+        } actions: {
+            StageButton(title: "Verify", isEnabled: code.count == digits, isLoading: session.isVerifyingMFA, isProminent: true, action: submit)
+            StageLink(title: isResending ? "Sending…" : "Send a new code", action: resend)
+                .disabled(isResending)
         }
+        .animation(DS.Motion.gentle, value: session.mfaError)
         .onAppear { isFocused = true }
     }
 
@@ -152,10 +110,10 @@ private struct DigitBox: View {
     let isActive: Bool
 
     var body: some View {
-        RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+        RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
             .fill(isActive ? DS.Colors.surfaceRaised : DS.Colors.surfaceSecondary)
             .overlay(
-                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                RoundedRectangle(cornerRadius: DS.Radius.lg, style: .continuous)
                     .strokeBorder(
                         isActive ? DS.Colors.brand : DS.Colors.outline,
                         lineWidth: isActive ? 1.5 : 1
@@ -163,7 +121,7 @@ private struct DigitBox: View {
             )
             .overlay(
                 Text(character ?? "")
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .font(DS.Typography.brand(24, weight: .semibold, relativeTo: .title2))
                     .foregroundStyle(DS.Colors.textPrimary)
                     .contentTransition(.numericText())
             )

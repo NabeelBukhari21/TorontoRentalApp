@@ -158,7 +158,7 @@ struct RootNavigation: View {
             .transition(.opacity)
 
         case .awaitingMFA(let challenge):
-            MFAFlowView(challenge: challenge, session: session)
+            MFAChallengeView(challenge: challenge, session: session)
                 .transition(.opacity)
 
         case .needsOrganization(let account):
@@ -215,32 +215,6 @@ struct RootNavigation: View {
         }
         return BiometricUnlockOption(kind: session.biometricKind) {
             Task { await session.unlockWithBiometrics() }
-        }
-    }
-}
-
-// MARK: - MFA Flow
-
-/// Hosts the second-factor step on the same animated backdrop as the
-/// credential screens, so escalating to MFA reads as one continuous
-/// flow rather than a different part of the app.
-private struct MFAFlowView: View {
-
-    let challenge: MFAChallenge
-    let session: SessionViewModel
-
-    var body: some View {
-        ZStack {
-            SplashBackground()
-            SplashParticleField(particleCount: 18)
-
-            ScrollView(showsIndicators: false) {
-                MFAChallengeView(challenge: challenge, session: session)
-                    .padding(.horizontal, DS.Spacing.xl)
-                    .padding(.vertical, DS.Spacing.xxl)
-                    .frame(maxWidth: .infinity)
-            }
-            .scrollDismissesKeyboard(.interactively)
         }
     }
 }

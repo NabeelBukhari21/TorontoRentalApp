@@ -2,187 +2,16 @@
 //  AuthComponents.swift
 //  RentalApp
 //
-//  Auth — Shared chrome: glass card, header, social sign-in buttons,
-//  divider, footer links, back button, and animated success badge.
+//  Auth — Shared pieces: the form error banner, the biometric option and
+//  the demo accounts.
 //
 
 import SwiftUI
 
-// MARK: - Card
-
-/// The glass panel that hosts each auth form. Constrained for iPad.
-struct AuthCard<Content: View>: View {
-
-    private let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .padding(DS.Spacing.xxl)
-            .dsSurface(cornerRadius: DS.Radius.xxl, shadow: DS.Shadows.floating)
-            .frame(maxWidth: 460)
-    }
-}
-
-// MARK: - Header
-
-/// Purr acting out the step, with a title and subtitle above each form.
-struct AuthHeader: View {
-
-    let title: String
-    let subtitle: String
-    let mood: PurrMood
-
-    var body: some View {
-        VStack(spacing: DS.Spacing.md) {
-            PurrMascot(mood: mood, size: 128)
-
-            VStack(spacing: DS.Spacing.xs) {
-                Text(title)
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-
-                Text(subtitle)
-                    .font(DS.Typography.callout)
-                    .foregroundStyle(DS.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-    }
-}
-
-// MARK: - Social Sign-In
-
-struct AuthSocialButton: View {
-
-    let provider: SocialProvider
-    var isLoading: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: DS.Spacing.sm) {
-                if isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(DS.Colors.textPrimary)
-                } else {
-                    logo
-                }
-
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DS.Colors.textPrimary)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
-            .background(
-                DS.Colors.surfaceRaised,
-                in: RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                    .strokeBorder(DS.Colors.outline, lineWidth: 1)
-            )
-            .dsShadow(DS.Shadows.soft)
-        }
-        .buttonStyle(DSPressStyle())
-        .disabled(isLoading)
-    }
-
-    private var title: String { provider.title }
-
-    @ViewBuilder
-    private var logo: some View {
-        switch provider {
-        case .apple: AppleLogo(size: 19)
-        case .google: GoogleLogo(size: 18)
-        }
-    }
-}
-
-// MARK: - Divider
-
-struct AuthDivider: View {
-
-    var text: String = "or continue with"
-
-    var body: some View {
-        HStack(spacing: DS.Spacing.md) {
-            line
-            Text(text)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(DS.Colors.textSecondary)
-                .fixedSize()
-            line
-        }
-    }
-
-    private var line: some View {
-        LinearGradient(
-            colors: [DS.Colors.outline.opacity(0), DS.Colors.outline],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
-        .frame(height: 1)
-    }
-}
-
-// MARK: - Footer Link
-
-/// "New here? **Create account**" style footer.
-struct AuthFooterLink: View {
-
-    let prompt: String
-    let actionTitle: String
-    let action: () -> Void
-
-    var body: some View {
-        HStack(spacing: DS.Spacing.xs) {
-            Text(prompt)
-                .foregroundStyle(DS.Colors.textSecondary)
-
-            Button(action: action) {
-                Text(actionTitle)
-                    .foregroundStyle(DS.Colors.brand)
-                    .fontWeight(.semibold)
-            }
-            .buttonStyle(DSPressStyle(scale: 0.95))
-        }
-        .font(.system(size: 14, design: .rounded))
-    }
-}
-
-// MARK: - Back Button
-
-struct AuthBackButton: View {
-
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(DS.Colors.textPrimary)
-                .frame(width: 38, height: 38)
-                .background(DS.Colors.surfaceRaised, in: Circle())
-                .overlay(Circle().strokeBorder(DS.Colors.outline, lineWidth: 1))
-                .dsShadow(DS.Shadows.soft)
-        }
-        .buttonStyle(DSPressStyle(scale: 0.9))
-        .accessibilityLabel("Back")
-    }
-}
-
 // MARK: - Form Error
 
 /// Whole-form failure banner — wrong credentials, taken email, network.
-/// Distinct from `AuthTextField`'s inline errors, which belong to one
-/// field; this one belongs to the submission.
+/// Distinct from a field's own error; this one belongs to the submission.
 struct AuthFormError: View {
 
     let message: String
@@ -216,44 +45,11 @@ struct AuthFormError: View {
 // MARK: - Biometric Unlock
 
 /// What the login screen needs in order to offer Face ID / Touch ID.
-/// Passed down as a value so `LoginView` never has to know the session
+/// Passed down as a value so the login form never has to know the session
 /// coordinator exists.
 struct BiometricUnlockOption {
     let kind: BiometricKind
     let action: () -> Void
-}
-
-// MARK: - Selected Role Chip
-
-/// Shows the role chosen on the previous screen, and lets the user
-/// change it without losing the form they've already filled in.
-struct AuthSelectedRoleChip: View {
-
-    let role: AppRole
-    let onChange: () -> Void
-
-    var body: some View {
-        HStack(spacing: DS.Spacing.sm) {
-            Image(systemName: role.icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(DS.Colors.brandInk)
-
-            Text("Signing up as \(role.title)")
-                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                .foregroundStyle(DS.Colors.textSecondary)
-
-            Button(action: onChange) {
-                Text("Change")
-                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DS.Colors.brandInk)
-            }
-            .buttonStyle(DSPressStyle(scale: 0.94))
-        }
-        .padding(.horizontal, DS.Spacing.md)
-        .padding(.vertical, DS.Spacing.sm)
-        .background(DS.Colors.brand.opacity(0.10), in: Capsule())
-        .overlay(Capsule().strokeBorder(DS.Gradients.cardHairline, lineWidth: 1))
-    }
 }
 
 // MARK: - Demo Hint
@@ -279,22 +75,5 @@ struct AuthDemoHint: View {
                 .foregroundStyle(DS.Colors.textTertiary)
         }
         .padding(.horizontal, DS.Spacing.md)
-    }
-}
-
-// MARK: - Previews
-
-#Preview("Auth Components") {
-    ZStack {
-        SplashBackground()
-
-        VStack(spacing: DS.Spacing.xl) {
-            AuthHeader(title: "Welcome back", subtitle: "Sign in to manage your portfolio", mood: .login)
-            AuthSocialButton(provider: .apple) {}
-            AuthSocialButton(provider: .google) {}
-            AuthDivider()
-            AuthFooterLink(prompt: "New here?", actionTitle: "Create account") {}
-        }
-        .padding(DS.Spacing.xxl)
     }
 }

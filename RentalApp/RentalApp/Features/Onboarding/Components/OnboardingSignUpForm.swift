@@ -109,7 +109,7 @@ struct OnboardingSignUpForm: View {
 }
 
 /// One password rule, filling in with a light haptic as it's met.
-private struct OnboardingRequirementChip: View {
+struct OnboardingRequirementChip: View {
     let requirement: PasswordRequirement
 
     var body: some View {
