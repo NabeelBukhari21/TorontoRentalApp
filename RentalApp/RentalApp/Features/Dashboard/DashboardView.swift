@@ -25,6 +25,9 @@ struct DashboardView: View {
     @State private var isExploring = false
     @State private var tapThrough: CGPoint?
     @State private var showsWardrobe = false
+    @State private var day = Date.now
+    @State private var asked: PurrQuestion?
+    @State private var layout = HomeLayout.saved
 
     init(container: AppContainer = .shared) {
         let dashboard = DashboardViewModel(
@@ -73,12 +76,27 @@ struct DashboardView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
             }
+            .overlay(alignment: .bottom) {
+                if layout == .ask, selection == nil, !isExploring {
+                    PurrAskBar(asked: $asked).padding(.horizontal, 14).padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .overlay(alignment: .bottom) { popup.padding(.horizontal, 14).padding(.bottom, 10) }
+            #if DEBUG
+            .overlay(alignment: .trailing) { HomeLayoutSwitcher(layout: $layout).padding(.trailing, 4).offset(y: 30) }
+            #endif
         }
         .toolbar(.hidden, for: .navigationBar)
         .navigationTitle("Home")
         .animation(DS.Motion.smooth, value: selection)
-        .task { await model.load() }
+        .animation(DS.Motion.bouncy, value: layout)
+        .task {
+            await model.load()
+            // An empty today: open the plan on the next day with something.
+            let upcoming = dashboard.tasks.compactMap { HomeModel.date(of: $0) }.filter { $0 >= Calendar.current.startOfDay(for: .now) }.sorted()
+            if let next = upcoming.first, !Calendar.current.isDateInToday(next) { day = next }
+        }
         .sheet(isPresented: $showsWardrobe) { WardrobeView(wardrobe: dashboard.wardrobe) }
         .onChange(of: dashboard.newOutfits) { _, outfits in
             guard !outfits.isEmpty else { return }
@@ -128,17 +146,10 @@ struct DashboardView: View {
                 if let error = dashboard.error {
                     DSErrorView(error: error) { await model.refresh() }.homeGlass()
                 }
-                PawPanel(model: model, picked: $picked, pawSize: min(300, width - 80))
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                    GlassStat(symbol: "dollarsign", value: model.dollars(model.roll.collected), label: "Rent this month", accent: .mint) { router.push(.rentCollection) }
-                    GlassStat(symbol: "key.fill", value: "\(dashboard.occupiedUnits)/\(dashboard.unitCount)", label: "Units rented", accent: .gold) { router.select(.properties) }
-                    GlassStat(symbol: "wrench.fill", value: "\(model.requests)", label: "Repairs open", accent: .cherry) { router.select(.maintenance) }
-                    GlassStat(symbol: "bell.fill", value: "\(dashboard.unreadNotifications)", label: "Unread", accent: .sky) { router.push(.notifications) }
-                }
-                TodayGlass(model: model)
+                stack(width: width)
             }
             .padding(.horizontal, 14)
-            .padding(.bottom, 24)
+            .padding(.bottom, layout == .ask ? 130 : 24)
         }
         .scrollIndicators(.hidden)
         .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in
@@ -147,6 +158,47 @@ struct DashboardView: View {
             if stepped != offset { offset = stepped }
         }
         .purrRefreshable { await model.refresh() }
+    }
+
+    /// What sits under the map, in the chosen layout.
+    @ViewBuilder private func stack(width: CGFloat) -> some View {
+        switch layout {
+        case .now:
+            PawPanel(model: model, picked: $picked, pawSize: min(300, width - 80))
+            stats
+            TodayGlass(model: model)
+        case .day:
+            HomeWeekStrip(model: model, day: $day)
+            HomeBrief(model: model)
+            HomeQuickActions()
+            HomeDayPlan(model: model, day: day)
+            PawPanel(model: model, picked: $picked, pawSize: 170, compact: true)
+        case .money:
+            HomeQuickActions()
+            HomeCashFlow(model: model)
+            HomeDecisions(model: model)
+            PawPanel(model: model, picked: $picked, pawSize: 170, compact: true)
+            HomeActivity(model: model)
+        case .ask:
+            PurrQuestionRings(asked: $asked)
+            if let asked {
+                PurrAnswer(model: model, question: asked) { withAnimation(DS.Motion.bouncy) { self.asked = nil } }
+                    .id(asked)
+                    .transition(.scale(scale: 0.95, anchor: .top).combined(with: .opacity))
+            }
+            PawPanel(model: model, picked: $picked, pawSize: min(300, width - 80))
+            stats
+            TodayGlass(model: model)
+        }
+    }
+
+    private var stats: some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+            GlassStat(symbol: "dollarsign", value: model.dollars(model.roll.collected), label: "Rent this month", accent: .mint) { router.push(.rentCollection) }
+            GlassStat(symbol: "key.fill", value: "\(dashboard.occupiedUnits)/\(dashboard.unitCount)", label: "Units rented", accent: .gold) { router.select(.properties) }
+            GlassStat(symbol: "wrench.fill", value: "\(model.requests)", label: "Repairs open", accent: .cherry) { router.select(.maintenance) }
+            GlassStat(symbol: "bell.fill", value: "\(dashboard.unreadNotifications)", label: "Unread", accent: .sky) { router.push(.notifications) }
+        }
     }
 
     private var exploreBar: some View {
@@ -179,6 +231,59 @@ struct DashboardView: View {
         }
     }
 }
+
+// MARK: - Layouts
+
+/// Three ways to fill Home under the map, being compared.
+enum HomeLayout: String, CaseIterable {
+    /// The paw, the numbers and today.
+    case now = "Now"
+    /// The week and today's plan, with Purr's brief.
+    case day = "1"
+    /// Money over time and the decisions waiting.
+    case money = "2"
+    /// Ask Purr: questions he answers from what's here.
+    case ask = "3"
+
+    static let key = "PurrpertyHomeLayout"
+
+    static var saved: HomeLayout {
+        #if DEBUG
+        UserDefaults.standard.string(forKey: key).flatMap(HomeLayout.init(rawValue:)) ?? .day
+        #else
+        .now
+        #endif
+    }
+}
+
+#if DEBUG
+/// Test builds: flip between the layouts.
+private struct HomeLayoutSwitcher: View {
+    @Binding var layout: HomeLayout
+    @Environment(\.feedback) private var feedback
+
+    var body: some View {
+        VStack(spacing: 2) {
+            ForEach(HomeLayout.allCases, id: \.self) { option in
+                Button {
+                    feedback?.play(.tap)
+                    layout = option
+                    UserDefaults.standard.set(option.rawValue, forKey: HomeLayout.key)
+                } label: {
+                    Text(option.rawValue)
+                        .font(DS.Typography.brand(.caption, weight: .bold))
+                        .foregroundStyle(layout == option ? DS.Colors.textOnBrand : DS.Colors.textPrimary)
+                        .frame(minWidth: 34, minHeight: 30)
+                        .background(Capsule().fill(layout == option ? DS.Colors.brand : .clear))
+                }
+                .buttonStyle(SquishStyle(scale: 0.9))
+            }
+        }
+        .padding(3)
+        .glassEffect(.regular.interactive(), in: .capsule)
+    }
+}
+#endif
 
 // MARK: - Previews
 

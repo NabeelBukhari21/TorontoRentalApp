@@ -174,12 +174,16 @@ struct HomePin: View {
 
 extension View {
     /// A card of the app's glass: frosted, a warm tint, a bright rim.
-    func homeGlass(radius: CGFloat = 28, tint: Double = 0.45) -> some View {
+    func homeGlass(radius: CGFloat = 28, tint: Double = 0.72) -> some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        // Frosted material, not Liquid Glass: glass turns itself dark over
+        // dark parts of the satellite map, and the cards must stay light.
         return background {
-            shape.fill(DS.Colors.surfaceRaised.opacity(tint))
+            ZStack {
+                shape.fill(.ultraThinMaterial)
+                shape.fill(DS.Colors.surfaceRaised.opacity(tint))
+            }
         }
-        .glassEffect(.regular, in: shape)
         .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(0.8), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom), lineWidth: 1))
     }
 }

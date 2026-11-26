@@ -20,11 +20,13 @@ final class HomeModel {
 
     private let propertyRepository: PropertyRepositoryProtocol
     private let payments: PaymentRepositoryProtocol
+    private let reminders: RentReminderSender
 
     init(dashboard: DashboardViewModel, container: AppContainer) {
         self.dashboard = dashboard
         propertyRepository = container.properties
         payments = container.payments
+        reminders = RentReminderSender(messages: container.messages, payments: container.payments, analytics: container.analytics)
     }
 
     func load() async {
@@ -66,6 +68,68 @@ final class HomeModel {
         if roll.owingCount == 0 { return "Everyone has paid." }
         if roll.outstanding == 0 { return "This month is in. \(roll.owingCount) still owe \(dollars(roll.arrears)) from before." }
         return "\(roll.owingCount) still to pay, \(dollars(roll.outstanding + roll.arrears)) to come."
+    }
+
+    /// Who owes, most first.
+    var owing: [RentRollRow] { roll.rows.filter(\.isOwing).sorted { $0.totalOwing > $1.totalOwing } }
+
+    /// Homes with urgent repairs, most first.
+    var urgentHomes: [Property] { properties.filter { $0.urgentRequests > 0 }.sorted { $0.urgentRequests > $1.urgentRequests } }
+
+    /// Homes with empty units, most first.
+    var emptyHomes: [Property] { properties.filter { $0.vacantCount > 0 }.sorted { $0.vacantCount > $1.vacantCount } }
+
+    /// Sends the same reminder the Rent screen does. Nil when it went.
+    func remind(_ row: RentRollRow) async -> String? {
+        guard let conversation = row.conversationID else { return "No conversation with \(row.firstName) yet." }
+        let text = RentReminderSender.message(firstName: row.firstName, owing: row.totalOwing,
+                                              oldestDueOn: row.arrears.first?.dueOn ?? row.dueOn, unitName: row.unitName)
+        do {
+            try await reminders.send(text, toTenantID: row.tenantID, conversationID: conversation, month: roll.month)
+            roll = (try? await payments.rentRoll(for: .now, forceRefresh: true)) ?? roll
+            return nil
+        } catch {
+            return (error as? AppError ?? .unknown).errorDescription
+        }
+    }
+
+    /// When a task is due, read back from its label ("Today, 2:00 PM",
+    /// "Thu, 10:00 AM", "Dec 3").
+    static func date(of task: UpcomingTask, now: Date = .now) -> Date? {
+        let calendar = Calendar.current
+        // System times use narrow and no-break spaces ("2:00\u{202F}PM").
+        let label = task.due.replacingOccurrences(of: "\u{202F}", with: " ").replacingOccurrences(of: "\u{00A0}", with: " ")
+        let parts = label.components(separatedBy: ", ")
+        let time = parts.count > 1 ? parts[1] : nil
+        var day: Date?
+        switch parts[0] {
+        case "Today": day = calendar.startOfDay(for: now)
+        case "Tomorrow": day = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now))
+        default:
+            let weekdays = calendar.shortWeekdaySymbols
+            if let index = weekdays.firstIndex(of: parts[0]) {
+                let today = calendar.component(.weekday, from: now) - 1
+                let ahead = (index - today + 7) % 7
+                day = calendar.date(byAdding: .day, value: ahead == 0 ? 7 : ahead, to: calendar.startOfDay(for: now))
+            } else {
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_CA")
+                formatter.dateFormat = "MMM d"
+                if let parsed = formatter.date(from: parts[0]) {
+                    var c = calendar.dateComponents([.month, .day], from: parsed)
+                    c.year = calendar.component(.year, from: now)
+                    day = calendar.date(from: c)
+                }
+            }
+        }
+        guard let day else { return nil }
+        guard let time else { return day }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "h:mm a"
+        guard let clock = formatter.date(from: time.replacingOccurrences(of: "a.m.", with: "AM").replacingOccurrences(of: "p.m.", with: "PM")) else { return day }
+        let c = calendar.dateComponents([.hour, .minute], from: clock)
+        return calendar.date(bySettingHour: c.hour ?? 0, minute: c.minute ?? 0, second: 0, of: day)
     }
 
     var openTasks: [UpcomingTask] { dashboard.tasks.filter { !$0.isDone } }
@@ -116,7 +180,7 @@ struct HomeBar: View {
                     }
                     .font(DS.Typography.brand(.footnote))
                     .lineLimit(1)
-                    .fixedSize()
+                    .minimumScaleFactor(0.75)
                     .opacity(0.8)
                     Text(model.dashboard.greeting)
                         .font(DS.Typography.brand(.title2, weight: .bold))
