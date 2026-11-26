@@ -41,7 +41,9 @@ enum Projections {
                 openRequests: open.count,
                 urgentRequests: open.filter { $0.priority.isCritical }.count,
                 yearBuilt: property.yearBuilt ?? 1990,
-                paletteIndex: index
+                paletteIndex: index,
+                latitude: property.address.latitude,
+                longitude: property.address.longitude
             )
         }
     }

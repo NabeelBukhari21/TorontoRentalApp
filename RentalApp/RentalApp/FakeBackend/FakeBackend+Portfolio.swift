@@ -107,8 +107,9 @@ extension FakeBackend {
                 line1: "\(rng.int(3...2480)) \(street)",
                 city: "Toronto",
                 postalCode: TorontoSeeds.postalCode(fsa: hood.fsa, generator: &rng),
-                latitude: 43.60 + rng.double(0...0.20),
-                longitude: -79.55 + rng.double(0...0.35)
+                // In its own neighbourhood, a few streets from the middle.
+                latitude: hood.center.latitude + rng.double(-0.004...0.004),
+                longitude: hood.center.longitude + rng.double(-0.006...0.006)
             )
 
             properties.append(

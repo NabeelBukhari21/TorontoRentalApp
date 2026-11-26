@@ -362,7 +362,9 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
             openRequests: property.openRequests,
             urgentRequests: property.urgentRequests,
             yearBuilt: property.yearBuilt,
-            paletteIndex: property.paletteIndex
+            paletteIndex: property.paletteIndex,
+            latitude: property.latitude,
+            longitude: property.longitude
         )
     }
 
@@ -380,7 +382,9 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
             openRequests: property.openRequests,
             urgentRequests: property.urgentRequests,
             yearBuilt: draft.yearBuilt ?? property.yearBuilt,
-            paletteIndex: property.paletteIndex
+            paletteIndex: property.paletteIndex,
+            latitude: property.latitude,
+            longitude: property.longitude
         )
     }
 

@@ -54,6 +54,9 @@ struct Property: Identifiable, Hashable, Sendable, Codable {
     let urgentRequests: Int
     let yearBuilt: Int
     let paletteIndex: Int
+    /// Where it is, when known.
+    var latitude: Double? = nil
+    var longitude: Double? = nil
 
     var occupancyRate: Double {
         unitCount == 0 ? 0 : Double(occupiedCount) / Double(unitCount)

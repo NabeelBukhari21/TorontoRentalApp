@@ -3,9 +3,10 @@
 //  RentalApp (Purrperty)
 //
 //  Dashboard — Five directions for Home, side by side, on real data. DEBUG
-//  builds only, until one is chosen:
+//  builds only, until one is chosen. All three are the map with glass
+//  cards over it, and the paw as one feature:
 //
-//      -PurrpertyStartAt home -PurrpertyHome A|B|C|D|E
+//      -PurrpertyStartAt home -PurrpertyHome 1|2|3
 //
 
 #if DEBUG
@@ -13,13 +14,18 @@ import MapKit
 import SwiftUI
 
 enum HomeDesign: String, CaseIterable {
-    case place = "A", tower = "B", city = "C", deck = "D", paw = "E"
+    /// A glass sheet over the map, as in Maps.
+    case sheet = "1"
+    /// Glass cards floating at the map's edges.
+    case float = "2"
+    /// The map up top, the glass dashboard scrolling over it.
+    case hero = "3"
 
     static let key = "PurrpertyHome"
 
     /// Test builds open on the studio; "Now" is today's Home.
     static var requested: HomeDesign? {
-        let value = UserDefaults.standard.string(forKey: key) ?? HomeDesign.place.rawValue
+        let value = UserDefaults.standard.string(forKey: key) ?? HomeDesign.sheet.rawValue
         return HomeDesign(rawValue: value)
     }
 }
@@ -48,23 +54,22 @@ final class HomeStudioModel {
         properties = (try? await propertyRepository.properties(matching: PropertyQuery(filter: .all, sort: SortOrder(.name)), forceRefresh: false).items) ?? []
         roll = (try? await payments.rentRoll(for: .now, forceRefresh: false)) ?? .empty(.now)
         await dashboard.loadExtras()
+        await locate()
     }
 
-    /// Where each property is, for the map.
+    /// Where each property is, for the map: its own coordinates, or its
+    /// address looked up for one that has none.
     func locate() async {
         for property in properties where places[property.id] == nil {
-            // The street, or failing that the neighbourhood.
-            for query in ["\(property.address), Toronto, ON", "\(property.neighborhood), Toronto, ON"] {
-                let request = MKLocalSearch.Request()
-                request.naturalLanguageQuery = query
-                request.region = MKCoordinateRegion(center: .init(latitude: 43.66, longitude: -79.39), latitudinalMeters: 40000, longitudinalMeters: 40000)
-                do {
-                    let found = try await MKLocalSearch(request: request).start().mapItems.first?.location.coordinate
-                    if let found, abs(found.latitude - 43.7) < 0.3, abs(found.longitude + 79.4) < 0.4 {
-                        withAnimation(DS.Motion.bouncy) { places[property.id] = found }
-                        break
-                    }
-                } catch { continue }
+            if let latitude = property.latitude, let longitude = property.longitude {
+                places[property.id] = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                continue
+            }
+            let request = MKLocalSearch.Request()
+            request.naturalLanguageQuery = "\(property.address), ON"
+            request.region = MKCoordinateRegion(center: .init(latitude: 43.7, longitude: -79.4), latitudinalMeters: 60000, longitudinalMeters: 60000)
+            if let found = try? await MKLocalSearch(request: request).start().mapItems.first?.location.coordinate {
+                places[property.id] = found
             }
         }
     }
@@ -110,16 +115,14 @@ struct HomeStudio: View {
     var body: some View {
         Group {
             switch design {
-            case .place: PlaceHome(model: model)
-            case .tower: TowerHome(model: model)
-            case .city: CityHome(model: model)
-            case .deck: DeckHome(model: model)
-            case .paw: PawHome(model: model)
+            case .sheet: SheetHome(model: model)
+            case .float: FloatHome(model: model)
+            case .hero: HeroHome(model: model)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.load() }
-        .overlay(alignment: .bottom) { HomeDesignSwitcher(current: design.rawValue).padding(.bottom, 4) }
+        .overlay(alignment: .trailing) { HomeDesignSwitcher(current: design.rawValue).padding(.trailing, 4).offset(y: 40) }
     }
 }
 
@@ -131,7 +134,7 @@ struct HomeDesignSwitcher: View {
     @Environment(\.feedback) private var feedback
 
     var body: some View {
-        HStack(spacing: 2) {
+        VStack(spacing: 2) {
             ForEach(HomeDesign.allCases.map(\.rawValue) + ["Now"], id: \.self) { option in
                 Button {
                     feedback?.play(.tap)

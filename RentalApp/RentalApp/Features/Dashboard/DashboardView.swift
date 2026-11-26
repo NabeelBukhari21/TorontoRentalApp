@@ -44,11 +44,11 @@ struct DashboardView: View {
             if let design = HomeDesign(rawValue: studioChoice) {
                 HomeStudio(design: design, dashboard: viewModel, container: container).id(design)
             } else {
-                home.overlay(alignment: .bottom) { HomeDesignSwitcher(current: "Now").padding(.bottom, 4) }
+                home.overlay(alignment: .trailing) { HomeDesignSwitcher(current: "Now").padding(.trailing, 4).offset(y: 40) }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: HomeDesignSwitcher.changed)) { _ in
-            studioChoice = UserDefaults.standard.string(forKey: HomeDesign.key) ?? "A"
+            studioChoice = UserDefaults.standard.string(forKey: HomeDesign.key) ?? "1"
         }
         #else
         home
