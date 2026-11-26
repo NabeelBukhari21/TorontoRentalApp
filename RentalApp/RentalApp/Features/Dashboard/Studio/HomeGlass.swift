@@ -57,7 +57,9 @@ struct HomeMap: View {
         .onChange(of: selection) { _, id in
             if let id, let place = model.places[id] {
                 withAnimation(.easeInOut(duration: 1.3)) {
-                    camera = .camera(MapCamera(centerCoordinate: place, distance: 1100, heading: 20, pitch: 60))
+                    // Aim a little south, so the home sits above the cards.
+                    let shift = 0.0036 * Double(insets.bottom - insets.top) / 300
+                    camera = .camera(MapCamera(centerCoordinate: .init(latitude: place.latitude - shift, longitude: place.longitude), distance: 1100, heading: 0, pitch: 60))
                 }
             } else {
                 fitAll(animated: true)

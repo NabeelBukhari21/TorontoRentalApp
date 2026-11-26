@@ -23,7 +23,7 @@ struct SheetHome: View {
             let heights: [Detent: CGFloat] = [.peek: 300, .half: proxy.size.height * 0.62, .full: proxy.size.height - 70]
             let height = max(170, (heights[detent] ?? 300) - drag)
             ZStack(alignment: .bottom) {
-                HomeMap(model: model, selection: $selection, insets: EdgeInsets(top: 60, leading: 0, bottom: 300, trailing: 0))
+                HomeMap(model: model, selection: $selection, insets: EdgeInsets(top: 60, leading: 0, bottom: 520, trailing: 0))
                     .ignoresSafeArea()
                 LinearGradient(colors: [.black.opacity(0.55), .clear], startPoint: .top, endPoint: .bottom)
                     .frame(height: 170).frame(maxHeight: .infinity, alignment: .top).ignoresSafeArea().allowsHitTesting(false)
