@@ -167,9 +167,6 @@ struct DSAmbientBackground: View {
         DS.Colors.accentGold.opacity(0.10)
     ]
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animate = false
-
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
@@ -178,26 +175,23 @@ struct DSAmbientBackground: View {
                 DS.Colors.background
 
                 blob(0, width: size.width * 0.9,
-                     at: animate ? CGPoint(x: -0.25, y: -0.18) : CGPoint(x: 0.20, y: -0.32),
+                     at: CGPoint(x: 0.20, y: -0.32),
                      in: size)
                 blob(1, width: size.width * 0.8,
-                     at: animate ? CGPoint(x: 0.30, y: 0.05) : CGPoint(x: -0.22, y: 0.18),
+                     at: CGPoint(x: -0.22, y: 0.18),
                      in: size)
                 blob(2, width: size.width * 0.7,
-                     at: animate ? CGPoint(x: -0.10, y: 0.35) : CGPoint(x: 0.15, y: 0.22),
+                     at: CGPoint(x: 0.15, y: 0.22),
                      in: size)
                 blob(3, width: size.width * 0.6,
-                     at: animate ? CGPoint(x: 0.28, y: -0.30) : CGPoint(x: 0.05, y: 0.40),
+                     at: CGPoint(x: 0.05, y: 0.40),
                      in: size)
             }
             .blur(radius: 80)
             .ignoresSafeArea()
-            .onAppear {
-                guard !reduceMotion else { return }
-                withAnimation(.easeInOut(duration: 9).repeatForever(autoreverses: true)) {
-                    animate = true
-                }
-            }
+            // Still: a blur this size, moving forever, cost every screen
+            // that sits on it a steady share of the CPU.
+            .drawingGroup()
         }
     }
 

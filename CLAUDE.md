@@ -178,6 +178,14 @@ colourful, for students, on a white background.
     in-app mark, tile and wordmark, all from `tools/mascot/logo_icon.py`
   - onboarding's look past sign-up: `PurrStage` (`Components/Stage`)
     carries workspace setup, first property and the paywall
+  - Home (`Features/Dashboard`): Toronto in 3D with a pin per property
+    (`HomeMap`; a tap on the see-through top reaches the nearest pin, since
+    MapReader can't convert on 3D imagery), the day in glass over it
+    (`homeGlass`), and the paw as a gauge (`PawGauge`). A pin opens
+    `PropertyPopup`; the popup opens the property.
+  - Performance: nothing animates while idle. The tab bar's drop, the paw's
+    liquid and the ambient background rest when still; Purr draws at 30 fps.
+    Check idle CPU per screen before adding anything that moves forever.
   - `RentJarView` after a recorded payment, `SlideToFinish` + `PawStamp`
     on a repair, `RentStreak` (from the rent roll only), `purrRefreshable`,
     `HomeScene` (Toronto sky; Open-Meteo weather, no user data sent, free

@@ -180,9 +180,28 @@ private struct LiquidDrop: View {
         var lift: CGFloat
         @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+        /// The surface wobbles while the drop travels or the page scrolls,
+        /// then settles: a bar wobbling at 60 fps on every screen kept the
+        /// whole app busy.
+        @State private var isLive = true
+        @State private var nudges = 0
+
         var body: some View {
-            Drops(head: position, lift: lift, energy: energy, reduceMotion: reduceMotion)
+            Drops(head: position, lift: lift, energy: energy, isLive: isLive && !reduceMotion)
                 .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.72), value: position)
+                .onChange(of: position) { wake() }
+                .onChange(of: energy) { wake() }
+                .task { wake() }
+        }
+
+        private func wake() {
+            nudges += 1
+            let turn = nudges
+            isLive = true
+            Task {
+                try? await Task.sleep(for: .seconds(1.6))
+                if nudges == turn { isLive = false }
+            }
         }
     }
 
@@ -192,7 +211,7 @@ private struct LiquidDrop: View {
         /// Where the drop sits, down the bar: on a tab, and in the paw.
         private static let tabCenter: CGFloat = 89, pawCenter: CGFloat = 76
         let energy: CGFloat
-        let reduceMotion: Bool
+        let isLive: Bool
 
         nonisolated var animatableData: AnimatablePair<CGFloat, CGFloat> {
             get { AnimatablePair(head, lift) }
@@ -200,8 +219,8 @@ private struct LiquidDrop: View {
         }
 
         var body: some View {
-            TimelineView(.animation(minimumInterval: 1 / 60, paused: reduceMotion)) { context in
-                let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
+            TimelineView(.animation(minimumInterval: 1 / 60, paused: !isLive)) { context in
+                let t = context.date.timeIntervalSinceReferenceDate
                 Rectangle()
                     .fill(LinearGradient(colors: [DS.Colors.accentBlush, DS.Colors.brand, DS.Colors.brandDeep], startPoint: .top, endPoint: .bottom))
                     .mask {

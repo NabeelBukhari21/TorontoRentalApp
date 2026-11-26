@@ -123,6 +123,9 @@ struct PurrRigView: View {
 
     var body: some View {
         RiveUIViewRepresentable(rive: controller.rive)
+            // A drawn cat reads fine at 30; at the screen's 120 several of
+            // him kept the GPU busy on every screen he's on.
+            .frameRate(.fps(30))
             .paused(controller.isPaused)
             // Purr takes taps in SwiftUI; the Rive view must not eat them.
             .allowsHitTesting(false)
