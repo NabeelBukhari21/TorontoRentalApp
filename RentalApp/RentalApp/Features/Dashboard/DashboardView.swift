@@ -1,290 +1,187 @@
 //
 //  DashboardView.swift
-//  RentalApp
+//  RentalApp (Purrperty)
 //
-//  Dashboard — The AI-powered command center. Composes the hero chart,
-//  stat grid, quick actions, AI insights, occupancy & maintenance
-//  overviews, tasks, and live activity — all entering with a cascade.
+//  Dashboard — Home. Toronto fills the top with a pin on every property;
+//  the day scrolls up over it in glass: the paw (rent, homes, repairs,
+//  tasks, streak), the numbers, and today's tasks. Touch a pin for a quick
+//  look at that home; touch the look to go inside.
 //
 
-import Combine
 import SwiftUI
 
 struct DashboardView: View {
 
     @Environment(AppRouter.self) private var router
     @Environment(\.container) private var container
-    @State private var viewModel: DashboardViewModel
-    @State private var showsWardrobe = false
-    #if DEBUG
-    @State private var studioChoice = HomeDesign.requested?.rawValue ?? "Now"
-    #endif
     @Environment(\.feedback) private var feedback
     @Environment(\.toasts) private var toasts
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var model: HomeModel
+    @State private var selection: String?
+    @State private var picked: PawToe = .rent
+    @State private var offset: CGFloat = 0
+    @State private var isExploring = false
+    @State private var tapThrough: CGPoint?
+    @State private var showsWardrobe = false
 
     init(container: AppContainer = .shared) {
-        _viewModel = State(initialValue: DashboardViewModel(
+        let dashboard = DashboardViewModel(
             dashboard: container.dashboard,
             notifications: container.notifications,
             payments: container.payments,
             weather: container.weather,
             wardrobe: container.wardrobe,
             preferences: container.preferences
-        ))
+        )
+        _model = State(initialValue: HomeModel(dashboard: dashboard, container: container))
     }
 
-    private let statColumns = [
-        GridItem(.flexible(), spacing: DS.Spacing.md),
-        GridItem(.flexible(), spacing: DS.Spacing.md)
-    ]
+    private var dashboard: DashboardViewModel { model.dashboard }
 
     var body: some View {
-        #if DEBUG
-        Group {
-            if let design = HomeDesign(rawValue: studioChoice) {
-                HomeStudio(design: design, dashboard: viewModel, container: container).id(design)
-            } else {
-                home.overlay(alignment: .trailing) { HomeDesignSwitcher(current: "Now").padding(.trailing, 4).offset(y: 40) }
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: HomeDesignSwitcher.changed)) { _ in
-            studioChoice = UserDefaults.standard.string(forKey: HomeDesign.key) ?? "1"
-        }
-        #else
-        home
-        #endif
-    }
+        GeometryReader { proxy in
+            let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+            let mapHeight = proxy.size.height * 0.58
+            let underCards = screen - proxy.safeAreaInsets.top - mapHeight + 110
+            ZStack(alignment: .top) {
+                HomeMap(
+                    model: model, selection: $selection,
+                    insets: EdgeInsets(top: 160, leading: 0, bottom: isExploring ? 150 : underCards, trailing: 0),
+                    tapThrough: tapThrough,
+                    screenHeight: screen
+                )
+                .ignoresSafeArea()
 
-    private var home: some View {
-        ZStack {
-            DSAmbientBackground()
+                // The map fades behind the cards as they cover it. A wash,
+                // not a blur: blurring a live 3D map each frame is costly.
+                LinearGradient(colors: [DS.Colors.background.opacity(0), DS.Colors.background.opacity(0.92)], startPoint: .top, endPoint: .bottom)
+                    .opacity(isExploring ? 0 : min(1, max(0, offset / 160)))
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: DS.Spacing.lg) {
-
-                    // The mascot's brief: the one thing that matters most
-                    // right now, in a sentence.
-                    if !viewModel.isLoading {
-                        HomeScene(
-                            brief: DashboardBrief(
-                                urgentTasks: viewModel.tasks.filter { $0.isUrgent && !$0.isDone }.count,
-                                openRequests: viewModel.openRequestCount,
-                                openTasks: viewModel.tasks.filter { !$0.isDone }.count,
-                                occupancyRate: viewModel.occupancyRate,
-                                unitCount: viewModel.unitCount
-                            ),
-                            weather: viewModel.weather,
-                            outfit: viewModel.wardrobe.worn
-                        ) { showsWardrobe = true }
-                        .dsEntrance(index: 0)
-                    }
-
-                    // Hero analytics.
-                    DashboardHeroCard(
-                        portfolioValue: viewModel.portfolioValue,
-                        monthlyRevenue: viewModel.monthlyRevenue,
-                        revenueTrend: viewModel.revenueTrend,
-                        propertyCount: viewModel.propertyCount,
-                        unitCount: viewModel.unitCount,
-                        revenue: viewModel.revenue
-                    )
-                    .dsEntrance(index: 0)
-
-                    if !viewModel.streak.months.isEmpty {
-                        RentStreakCard(streak: viewModel.streak) { router.push(.rentCollection) }
-                            .dsEntrance(index: 1)
-                    }
-
-                    // Stats grid.
-                    LazyVGrid(columns: statColumns, spacing: DS.Spacing.md) {
-                        ForEach(Array(viewModel.stats.enumerated()), id: \.element.id) { index, stat in
-                            DSStatCard(
-                                title: stat.title,
-                                value: stat.value,
-                                icon: stat.icon,
-                                iconGradient: stat.gradient,
-                                trend: stat.trend,
-                                trendKind: stat.trendKind
-                            )
-                            .dsEntrance(index: 1 + index)
-                        }
-                    }
-
-                    // Quick actions.
-                    DashboardQuickActionsRow(actions: quickActions)
-                        .padding(.vertical, DS.Spacing.sm)
-                        .dsEntrance(index: 5)
-
-                    // AI insights.
-                    if !viewModel.insights.isEmpty {
-                        DashboardAIInsightsCard(insights: viewModel.insights) { _ in
-                            router.push(.assistant)
-                        }
-                        .dsEntrance(index: 6)
-                    }
-
-                    // Occupancy.
-                    DashboardOccupancyCard(
-                        rate: viewModel.occupancyRate,
-                        occupied: viewModel.occupiedUnits,
-                        vacant: viewModel.vacantUnits,
-                        turnover: viewModel.turnoverUnits
-                    )
-                    .dsEntrance(index: 7)
-
-                    // Maintenance.
-                    DashboardMaintenanceCard(counts: viewModel.maintenanceCounts) {
-                        router.select(.maintenance)
-                    }
-                    .dsEntrance(index: 8)
-
-                    // Upcoming tasks.
-                    DashboardTasksCard(tasks: viewModel.tasks) { task in
-                        Task { await viewModel.toggleTask(task) }
-                    }
-                    .dsEntrance(index: 9)
-
-                    // Live activity.
-                    DashboardActivityCard(items: viewModel.activity) {
-                        router.push(.notifications)
-                    }
-                    .dsEntrance(index: 10)
-
-                    if let error = viewModel.error {
-                        DSErrorView(error: error) { await viewModel.retry() }
-                    }
+                if isExploring {
+                    exploreBar.transition(.move(edge: .bottom).combined(with: .opacity))
+                } else {
+                    cards(mapHeight: mapHeight, width: proxy.size.width)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .padding(DS.Spacing.lg)
             }
-            .purrRefreshable { await viewModel.refresh() }
-
-            if viewModel.isLoading {
-                VStack(spacing: DS.Spacing.lg) {
-                    // Purr fetching while the portfolio loads.
-                    MascotGuide(
-                        mood: .loading,
-                        message: "Fetching your portfolio…",
-                        mascotSize: 100
-                    )
-                    DSCardSkeleton(cards: 3)
-                }
-                .padding(DS.Spacing.lg)
-                .frame(maxHeight: .infinity, alignment: .top)
-                .background(DSAmbientBackground())
+            .overlay(alignment: .top) {
+                HomeBar(model: model, onGlass: true) { showsWardrobe = true }
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
             }
+            .overlay(alignment: .bottom) { popup.padding(.horizontal, 14).padding(.bottom, 10) }
         }
-        .task { await viewModel.load() }
-        .task { await viewModel.loadExtras() }
-        .sheet(isPresented: $showsWardrobe) { WardrobeView(wardrobe: viewModel.wardrobe) }
-        .onChange(of: viewModel.newOutfits) { _, outfits in
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle("Home")
+        .animation(DS.Motion.smooth, value: selection)
+        .task { await model.load() }
+        .sheet(isPresented: $showsWardrobe) { WardrobeView(wardrobe: dashboard.wardrobe) }
+        .onChange(of: dashboard.newOutfits) { _, outfits in
             guard !outfits.isEmpty else { return }
             feedback?.play(.celebrate)
             toasts.success(
                 outfits.count == 1 ? "New outfit for Purr: \(outfits[0].title)" : "\(outfits.count) new outfits for Purr",
                 mood: outfits[0].mood ?? .celebrate
             )
-            viewModel.announcedOutfits()
+            dashboard.announcedOutfits()
         }
         .liveUpdates(container.sync) {
-            LiveList.reloadSubscription(topic: .properties) {
-                await viewModel.refresh()
-            }
+            LiveList.reloadSubscription(topic: .properties) { await model.refresh() }
         }
         .liveUpdates(container.sync) {
-            LiveList.reloadSubscription(topic: .maintenanceRequests) {
-                await viewModel.refresh()
-            }
+            LiveList.reloadSubscription(topic: .maintenanceRequests) { await model.refresh() }
         }
         .liveUpdates(container.sync) {
             // Leases and the payments against them: rent collected.
-            LiveList.reloadSubscription(topic: .leases) {
-                await viewModel.refresh()
-            }
-        }
-        .navigationTitle("Home")
-        .navigationSubtitle(viewModel.greeting)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Copilot", systemImage: AppSymbol.assistant.rawValue) {
-                    router.push(.assistant)
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Notifications", systemImage: AppSymbol.notifications.rawValue) {
-                    router.push(.notifications)
-                }
-                .badge(viewModel.unreadNotifications)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                // The account button opens Settings: profile is its first
-                // row and Sign Out its last, as in the system apps.
-                Button("Account and Settings", systemImage: AppSymbol.person.rawValue) {
-                    router.push(.settings)
-                }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu("New", systemImage: AppSymbol.add.rawValue) {
-                    Button("New property", systemImage: AppSymbol.properties.rawValue) {
-                        router.present(.newProperty)
-                    }
-                    Button("New maintenance request", systemImage: AppSymbol.maintenance.rawValue) {
-                        router.present(.newMaintenanceRequest)
-                    }
-                    Button("New message", systemImage: AppSymbol.messages.rawValue) {
-                        router.select(.messages)
-                    }
-                    Section("Go to") {
-                        Button("Rent", systemImage: AppSymbol.rent.rawValue) {
-                            router.push(.rentCollection)
-                        }
-                        Button("Tenants", systemImage: AppSymbol.tenants.rawValue) {
-                            router.push(.tenants)
-                        }
-                        Button("Documents", systemImage: AppSymbol.documents.rawValue) {
-                            router.push(.documents)
-                        }
-                    }
-                }
-            }
+            LiveList.reloadSubscription(topic: .leases) { await model.refresh() }
         }
     }
 
-    // MARK: Quick Actions
+    // MARK: Cards
 
-    private var quickActions: [DashboardQuickAction] {
-        [
-            DashboardQuickAction(
-                icon: DS.Icons.add,
-                title: "Property",
-                gradient: DS.Gradients.brand
-            ) { router.present(.newProperty) },
+    private func cards(mapHeight: CGFloat, width: CGFloat) -> some View {
+        ScrollView {
+            VStack(spacing: 14) {
+                // See-through: the map shows here. A tap is passed down to
+                // the nearest pin; the scroll view would otherwise take it.
+                Color.clear
+                    .frame(height: mapHeight - 110)
+                    .contentShape(.rect)
+                    .onTapGesture(coordinateSpace: .global) { tapThrough = $0 }
+                    .overlay(alignment: .bottomTrailing) {
+                        Button { withAnimation(DS.Motion.smooth) { isExploring = true } } label: {
+                            Label("Explore map", systemImage: "map.fill")
+                                .font(DS.Typography.brand(.subheadline, weight: .semibold))
+                                .foregroundStyle(DS.Colors.textPrimary)
+                                .padding(.horizontal, 14).frame(height: 40)
+                                .glassEffect(.regular.interactive(), in: .capsule)
+                        }
+                        .buttonStyle(SquishStyle())
+                        .padding(.bottom, 8)
+                    }
+                    .accessibilityHidden(true)
 
-            DashboardQuickAction(
-                icon: DS.Icons.maintenance,
-                title: "Request",
-                gradient: DS.Gradients.warm,
-                iconForeground: DS.Colors.textOnAccent
-            ) { router.present(.newMaintenanceRequest) },
+                if let error = dashboard.error {
+                    DSErrorView(error: error) { await model.refresh() }.homeGlass()
+                }
+                PawPanel(model: model, picked: $picked, pawSize: min(300, width - 80))
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                    GlassStat(symbol: "dollarsign", value: model.dollars(model.roll.collected), label: "Rent this month", accent: .mint) { router.push(.rentCollection) }
+                    GlassStat(symbol: "key.fill", value: "\(dashboard.occupiedUnits)/\(dashboard.unitCount)", label: "Units rented", accent: .gold) { router.select(.properties) }
+                    GlassStat(symbol: "wrench.fill", value: "\(model.requests)", label: "Repairs open", accent: .cherry) { router.select(.maintenance) }
+                    GlassStat(symbol: "bell.fill", value: "\(dashboard.unreadNotifications)", label: "Unread", accent: .sky) { router.push(.notifications) }
+                }
+                TodayGlass(model: model)
+            }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 24)
+        }
+        .scrollIndicators(.hidden)
+        .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in
+            // Only what the wash needs: rounding stops a redraw per point.
+            let stepped = (min(160, max(0, y)) / 8).rounded() * 8
+            if stepped != offset { offset = stepped }
+        }
+        .purrRefreshable { await model.refresh() }
+    }
 
-            DashboardQuickAction(
-                icon: DS.Icons.messages,
-                title: "Message",
-                gradient: DS.Gradients.ai
-            ) { router.select(.messages) },
+    private var exploreBar: some View {
+        VStack {
+            Spacer()
+            Button { withAnimation(DS.Motion.smooth) { isExploring = false; selection = nil } } label: {
+                Label("Back to my day", systemImage: "chevron.up")
+                    .font(DS.Typography.brand(.headline, weight: .semibold))
+                    .foregroundStyle(DS.Colors.textPrimary)
+                    .padding(.horizontal, 18).frame(height: 50)
+                    .homeGlass(radius: 25)
+            }
+            .buttonStyle(SquishStyle())
+            .padding(.bottom, selection == nil ? 12 : 230)
+        }
+    }
 
-            DashboardQuickAction(
-                icon: DS.Icons.payment,
-                title: "Collect",
-                gradient: DS.Gradients.success,
-                iconForeground: DS.Colors.textOnAccent
-            ) { router.push(.rentCollection) }
-        ]
+    // MARK: Popup
+
+    @ViewBuilder private var popup: some View {
+        if let id = selection, let index = model.properties.firstIndex(where: { $0.id == id }) {
+            let property = model.properties[index]
+            PropertyPopup(
+                property: property, accent: HomeMap.accents[index % HomeMap.accents.count],
+                onOpen: { router.push(.propertyDetail(propertyID: property.id)) },
+                onClose: { selection = nil }
+            )
+            .id(property.id)
+            .transition(.scale(scale: 0.9, anchor: .bottom).combined(with: .opacity))
+        }
     }
 }
 
 // MARK: - Previews
 
-#Preview("Dashboard") {
+#Preview("Home") {
     RootNavigationView()
 }

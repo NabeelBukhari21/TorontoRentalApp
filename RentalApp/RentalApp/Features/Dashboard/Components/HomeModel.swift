@@ -1,39 +1,17 @@
 //
-//  HomeStudio.swift
+//  HomeModel.swift
 //  RentalApp (Purrperty)
 //
-//  Dashboard — Five directions for Home, side by side, on real data. DEBUG
-//  builds only, until one is chosen. All three are the map with glass
-//  cards over it, and the paw as one feature:
-//
-//      -PurrpertyStartAt home -PurrpertyHome 1|2|3
+//  Dashboard — What Home shows, and the bar across its top.
 //
 
-#if DEBUG
 import MapKit
 import SwiftUI
 
-enum HomeDesign: String, CaseIterable {
-    /// A glass sheet over the map, as in Maps.
-    case sheet = "1"
-    /// Glass cards floating at the map's edges.
-    case float = "2"
-    /// The map up top, the glass dashboard scrolling over it.
-    case hero = "3"
-
-    static let key = "PurrpertyHome"
-
-    /// Test builds open on the studio; "Now" is today's Home.
-    static var requested: HomeDesign? {
-        let value = UserDefaults.standard.string(forKey: key) ?? HomeDesign.sheet.rawValue
-        return HomeDesign(rawValue: value)
-    }
-}
-
-/// What every direction draws from.
 @MainActor
 @Observable
-final class HomeStudioModel {
+final class HomeModel {
+
 
     let dashboard: DashboardViewModel
     private(set) var properties: [Property] = []
@@ -54,6 +32,13 @@ final class HomeStudioModel {
         properties = (try? await propertyRepository.properties(matching: PropertyQuery(filter: .all, sort: SortOrder(.name)), forceRefresh: false).items) ?? []
         roll = (try? await payments.rentRoll(for: .now, forceRefresh: false)) ?? .empty(.now)
         await dashboard.loadExtras()
+        await locate()
+    }
+
+    func refresh() async {
+        await dashboard.refresh()
+        properties = (try? await propertyRepository.properties(matching: PropertyQuery(filter: .all, sort: SortOrder(.name)), forceRefresh: true).items) ?? properties
+        roll = (try? await payments.rentRoll(for: .now, forceRefresh: true)) ?? roll
         await locate()
     }
 
@@ -103,78 +88,36 @@ final class HomeStudioModel {
     func dollars(_ amount: Int) -> String { amount.formatted(.currency(code: "CAD").precision(.fractionLength(0)).presentation(.narrow)) }
 }
 
-struct HomeStudio: View {
-    let design: HomeDesign
-    @State private var model: HomeStudioModel
 
-    init(design: HomeDesign, dashboard: DashboardViewModel, container: AppContainer) {
-        self.design = design
-        _model = State(initialValue: HomeStudioModel(dashboard: dashboard, container: container))
-    }
-
-    var body: some View {
-        Group {
-            switch design {
-            case .sheet: SheetHome(model: model)
-            case .float: FloatHome(model: model)
-            case .hero: HeroHome(model: model)
-            }
-        }
-        .toolbar(.hidden, for: .navigationBar)
-        .task { await model.load() }
-        .overlay(alignment: .trailing) { HomeDesignSwitcher(current: design.rawValue).padding(.trailing, 4).offset(y: 40) }
-    }
-}
-
-// MARK: - Switcher
-
-/// Test builds: flip between the directions, and today's Home.
-struct HomeDesignSwitcher: View {
-    let current: String
-    @Environment(\.feedback) private var feedback
-
-    var body: some View {
-        VStack(spacing: 2) {
-            ForEach(HomeDesign.allCases.map(\.rawValue) + ["Now"], id: \.self) { option in
-                Button {
-                    feedback?.play(.tap)
-                    UserDefaults.standard.set(option, forKey: HomeDesign.key)
-                    NotificationCenter.default.post(name: HomeDesignSwitcher.changed, object: nil)
-                } label: {
-                    Text(option)
-                        .font(DS.Typography.brand(.caption, weight: .bold))
-                        .foregroundStyle(current == option ? DS.Colors.textOnBrand : DS.Colors.textPrimary)
-                        .frame(minWidth: 30, minHeight: 26)
-                        .background(Capsule().fill(current == option ? DS.Colors.brand : .clear))
-                }
-                .buttonStyle(SquishStyle(scale: 0.9))
-            }
-        }
-        .padding(3)
-        .glassEffect(.regular.interactive(), in: .capsule)
-    }
-
-    static let changed = Notification.Name("HomeDesignChanged")
-}
-
-// MARK: - Shared
+// MARK: - Bar
 
 /// The way to everything that isn't on the page.
 struct HomeBar: View {
-    let model: HomeStudioModel
+    let model: HomeModel
     var ink: Color = DS.Colors.textPrimary
     var showsGreeting = true
     /// Over a picture: the greeting gets its own glass.
     var onGlass = false
+    var onWardrobe: () -> Void = {}
     @Environment(AppRouter.self) private var router
 
     var body: some View {
         HStack(spacing: 10) {
             if showsGreeting {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(Date.now, format: .dateTime.weekday(.wide).day().month(.wide))
-                        .font(DS.Typography.brand(.footnote))
-                        .opacity(0.8)
+                    // The date, and Toronto's weather when it's on.
+                    HStack(spacing: 4) {
+                        Text(Date.now, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated))
+                        if let weather = model.dashboard.weather {
+                            // Credited, as Open-Meteo asks.
+                            Link("· \(weather.summary), Open-Meteo", destination: OpenMeteoWeather.attribution)
+                                .accessibilityLabel("Toronto weather, \(weather.summary), from Open-Meteo")
+                        }
+                    }
+                    .font(DS.Typography.brand(.footnote))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .opacity(0.8)
                     Text(model.dashboard.greeting)
                         .font(DS.Typography.brand(.title2, weight: .bold))
                         .lineLimit(1)
@@ -191,6 +134,7 @@ struct HomeBar: View {
                     Button("New property", systemImage: AppSymbol.properties.rawValue) { router.present(.newProperty) }
                     Button("New request", systemImage: AppSymbol.maintenance.rawValue) { router.present(.newMaintenanceRequest) }
                     Button("Ask Copilot", systemImage: AppSymbol.assistant.rawValue) { router.push(.assistant) }
+                    Button("Purr's wardrobe", systemImage: "tshirt.fill", action: onWardrobe)
                     Section("Go to") {
                         Button("Rent", systemImage: AppSymbol.rent.rawValue) { router.push(.rentCollection) }
                         Button("Tenants", systemImage: AppSymbol.tenants.rawValue) { router.push(.tenants) }
@@ -221,4 +165,3 @@ struct HomeBar: View {
             .frame(width: 42, height: 44)
     }
 }
-#endif

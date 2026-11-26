@@ -6,20 +6,31 @@
 //  property, and the glass cards that sit over it.
 //
 
-#if DEBUG
 import MapKit
 import SwiftUI
 
 // MARK: - Map
 
 struct HomeMap: View {
-    let model: HomeStudioModel
+    let model: HomeModel
     @Binding var selection: String?
     /// Room taken by what sits over the map, so the city fits between.
     var insets = EdgeInsets()
+    /// A tap that reached the map through something laid over it: the
+    /// nearest pin to it, if any, is picked.
+    var tapThrough: CGPoint? = nil
+    /// The whole screen's height, safe areas included.
+    var screenHeight: CGFloat = 874
 
     @State private var camera: MapCameraPosition = .camera(MapCamera(centerCoordinate: .init(latitude: 43.67, longitude: -79.39), distance: 30_000, heading: 0, pitch: 40))
     @State private var hasFit = false
+    /// Zoomed out over the city: small pins, so neighbours don't pile up.
+    @State private var isFar = true
+    /// What the map shows, and where it is on screen: enough to find a
+    /// pin under a finger. (MapReader's converter has nothing for 3D
+    /// imagery.)
+    @State private var shown: MKMapRect?
+    @State private var frame: CGRect = .zero
     @Environment(\.feedback) private var feedback
 
     static let accents: [DSAccent] = [.cherry, .gold, .mint, .sky, .blush]
@@ -39,7 +50,7 @@ struct HomeMap: View {
         Map(position: $camera, interactionModes: [.pan, .zoom, .rotate, .pitch]) {
             ForEach(pins) { pin in
                 Annotation(pin.property.name, coordinate: pin.place, anchor: .bottom) {
-                    HomePin(property: pin.property, accent: pin.accent, isSelected: selection == pin.id) {
+                    HomePin(property: pin.property, accent: pin.accent, isSelected: selection == pin.id, isSmall: isFar && selection != pin.id) {
                         feedback?.play(.select(0))
                         withAnimation(DS.Motion.smooth) { selection = selection == pin.id ? nil : pin.id }
                     }
@@ -49,6 +60,26 @@ struct HomeMap: View {
         }
         .mapStyle(.imagery(elevation: .realistic))
         .mapControls { }
+        .onMapCameraChange(frequency: .onEnd) { context in
+            let far = context.camera.distance > 9000
+            if far != isFar { withAnimation(DS.Motion.bouncy) { isFar = far } }
+            shown = context.rect
+        }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame = $0 }
+        .onChange(of: tapThrough) { _, point in
+            guard let point else { return }
+            let nearest = pins.compactMap { pin in
+                // The pin stands on its place; its middle is a little above.
+                screenPoint(pin.place).map { (pin.id, hypot($0.x - point.x, $0.y - (isFar ? 20 : 32) - point.y)) }
+            }
+            .min { $0.1 < $1.1 }
+            if let nearest, nearest.1 < 44 {
+                feedback?.play(.select(0))
+                withAnimation(DS.Motion.smooth) { selection = nearest.0 }
+            } else if selection != nil {
+                withAnimation(DS.Motion.smooth) { selection = nil }
+            }
+        }
         .task(id: pins.count) {
             guard pins.count > 0, !hasFit else { return }
             hasFit = true
@@ -58,7 +89,10 @@ struct HomeMap: View {
             if let id, let place = model.places[id] {
                 withAnimation(.easeInOut(duration: 1.3)) {
                     // Aim a little south, so the home sits above the cards.
-                    let shift = 0.006 * Double(insets.bottom - insets.top) / 300
+                    // From the screen's middle to the clear part's, at this
+                    // height and tilt about 0.0000147° a point (measured).
+                    let clearMiddle = (insets.top + screenHeight - insets.bottom) / 2
+                    let shift = Double(screenHeight / 2 - clearMiddle) * 0.0000147
                     camera = .camera(MapCamera(centerCoordinate: .init(latitude: place.latitude - shift, longitude: place.longitude), distance: 1100, heading: 0, pitch: 60))
                 }
             } else {
@@ -67,18 +101,29 @@ struct HomeMap: View {
         }
     }
 
+    /// Where a place is on screen, looking straight down; the overview is.
+    private func screenPoint(_ place: CLLocationCoordinate2D) -> CGPoint? {
+        guard let shown, shown.width > 0, frame.width > 0 else { return nil }
+        let p = MKMapPoint(place)
+        // The map fills its frame, cropping the longer side of the rect.
+        let scale = max(frame.width / shown.width, frame.height / shown.height)
+        return CGPoint(x: frame.midX + (p.x - shown.midX) * scale, y: frame.midY + (p.y - shown.midY) * scale)
+    }
+
     /// Every property in view, with room for the cards over the map.
     private func fitAll(animated: Bool) {
         let places = Array(model.places.values)
         guard !places.isEmpty else { return }
         let lats = places.map(\.latitude), lons = places.map(\.longitude)
         let latSpan = max(0.02, lats.max()! - lats.min()!), lonSpan = max(0.02, lons.max()! - lons.min()!)
-        // The visible part of the screen is what's between the cards; the
-        // region grows so the homes land there.
-        let visible = max(0.25, 1 - Double(insets.top + insets.bottom) / 860)
-        let height = latSpan * 1.25 / visible
+        // The homes go in the part of the screen the cards leave clear:
+        // the region is as many times taller as the screen is than that gap.
+        let screen = Double(screenHeight)
+        let clear = max(0.18, 1 - Double(insets.top + insets.bottom) / screen)
+        let height = latSpan * 1.35 / clear
         let middle = (lats.min()! + lats.max()!) / 2
-        let shift = height * Double(insets.bottom - insets.top) / 860 / 2
+        // From the screen's middle down to the gap's middle, in degrees.
+        let shift = height * Double(insets.bottom - insets.top) / screen / 2
         let region = MKCoordinateRegion(
             center: .init(latitude: middle - shift, longitude: (lons.min()! + lons.max()!) / 2),
             span: .init(latitudeDelta: height, longitudeDelta: lonSpan * 1.3)
@@ -92,6 +137,7 @@ struct HomePin: View {
     let property: Property
     let accent: DSAccent
     let isSelected: Bool
+    var isSmall = false
     let action: () -> Void
 
     var body: some View {
@@ -115,7 +161,8 @@ struct HomePin: View {
                 Image(systemName: "triangle.fill").font(.system(size: 12)).rotationEffect(.degrees(180)).foregroundStyle(DS.Colors.surfaceRaised)
             }
             .shadow(color: .black.opacity(0.4), radius: 7, y: 5)
-            .scaleEffect(isSelected ? 1.3 : 1, anchor: .bottom)
+            .scaleEffect(isSelected ? 1.3 : isSmall ? 0.6 : 1, anchor: .bottom)
+            .frame(width: isSmall ? 34 : 54, height: isSmall ? 40 : 64, alignment: .bottom)
             .animation(DS.Motion.bouncy, value: isSelected)
         }
         .buttonStyle(.plain)
@@ -134,13 +181,12 @@ extension View {
         }
         .glassEffect(.regular, in: shape)
         .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(0.8), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom), lineWidth: 1))
-        .shadow(color: .black.opacity(0.18), radius: 14, y: 8)
     }
 }
 
 /// The paw with Purr explaining the toe you picked.
 struct PawPanel: View {
-    let model: HomeStudioModel
+    let model: HomeModel
     @Binding var picked: PawToe
     var pawSize: CGFloat = 250
     var compact = false
@@ -180,41 +226,6 @@ struct PawPanel: View {
     }
 }
 
-/// One property as a glass card.
-struct PropertyGlassCard: View {
-    let property: Property
-    let accent: DSAccent
-    var isSelected = false
-    @Environment(AppRouter.self) private var router
-
-    var body: some View {
-        Button { router.push(.propertyDetail(propertyID: property.id)) } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
-                    ClayToken(symbol: property.kind.icon, accent: accent, size: 42)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(property.name).font(DS.Typography.brand(.headline, weight: .bold)).lineLimit(1)
-                        Text(property.neighborhood).font(DS.Typography.brand(.footnote)).foregroundStyle(DS.Colors.textSecondary).lineLimit(1)
-                    }
-                    Spacer(minLength: 0)
-                }
-                OnboardingProgressTube(progress: max(0.04, property.occupancyRate), label: "", fill: accent.fill, track: DS.Colors.track.opacity(0.6))
-                HStack {
-                    Text("\(property.occupiedCount)/\(property.unitCount) rented")
-                    Spacer()
-                    if property.openRequests > 0 { Label("\(property.openRequests)", systemImage: "wrench.fill").foregroundStyle(property.urgentRequests > 0 ? DS.Colors.brandInk : DS.Colors.textSecondary) }
-                }
-                .font(DS.Typography.brand(.footnote, weight: .semibold))
-            }
-            .foregroundStyle(DS.Colors.textPrimary)
-            .padding(14)
-            .homeGlass(radius: 24)
-            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(accent.fill, lineWidth: isSelected ? 3 : 0))
-        }
-        .buttonStyle(SquishStyle(scale: 0.97))
-    }
-}
-
 /// A number on glass that leads somewhere.
 struct GlassStat: View {
     let symbol: String
@@ -242,7 +253,7 @@ struct GlassStat: View {
 
 /// Today's tasks on glass; tap one to tick it off.
 struct TodayGlass: View {
-    let model: HomeStudioModel
+    let model: HomeModel
     var limit = 4
 
     var body: some View {
@@ -275,4 +286,3 @@ struct TodayGlass: View {
         .homeGlass()
     }
 }
-#endif

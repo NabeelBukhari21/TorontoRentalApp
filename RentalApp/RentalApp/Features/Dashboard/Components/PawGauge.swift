@@ -7,7 +7,6 @@
 //  the rent streak. Touch one to pick it.
 //
 
-#if DEBUG
 import SwiftUI
 
 enum PawToe: Int, CaseIterable, Identifiable {
@@ -45,7 +44,7 @@ enum PawToe: Int, CaseIterable, Identifiable {
     }
 }
 
-extension HomeStudioModel {
+extension HomeModel {
 
     /// How full the toe is, 0…1.
     func level(_ toe: PawToe) -> Double {
@@ -90,12 +89,14 @@ extension HomeStudioModel {
 }
 
 struct PawGauge: View {
-    let model: HomeStudioModel
+    let model: HomeModel
     @Binding var picked: PawToe
     /// The paw's width; it's about as tall as it is wide.
     var size: CGFloat = 300
 
     @State private var fill = 0.0
+    @State private var isSloshing = false
+    @State private var sloshes = 0
     @Environment(\.feedback) private var feedback
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -113,24 +114,38 @@ struct PawGauge: View {
         .task(id: model.dashboard.isLoading) {
             guard !model.dashboard.isLoading else { return }
             try? await Task.sleep(for: .milliseconds(300))
+            slosh()
             withAnimation(reduceMotion ? nil : .spring(response: 1.4, dampingFraction: 0.75)) { fill = 1 }
         }
     }
 
+    /// Liquid that moves for a few seconds after it changes, then rests:
+    /// five animating blobs all the time made Home sluggish.
     private func glass(_ toe: PawToe, _ shape: some Shape) -> some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
-            let phase = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate * 1.5 + Double(toe.rawValue)
-            ZStack {
-                shape.fill(.ultraThinMaterial)
-                shape.fill(DS.Colors.surfaceRaised.opacity(0.35))
+        ZStack {
+            shape.fill(.ultraThinMaterial)
+            shape.fill(DS.Colors.surfaceRaised.opacity(0.35))
+            TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion || !isSloshing)) { context in
+                let phase = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate * 1.5 + Double(toe.rawValue)
                 LiquidWave(level: max(0.08, model.level(toe) * fill * 0.94), phase: phase)
                     .fill(LinearGradient(colors: [toe.accent.fill.mix(with: .white, by: 0.2), toe.accent.fill], startPoint: .top, endPoint: .bottom))
-                    .clipShape(shape)
-                shape.fill(LinearGradient(colors: [.white.opacity(0.5), .clear, .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
-                shape.stroke(LinearGradient(colors: [.white, .white.opacity(0.25)], startPoint: .top, endPoint: .bottom), lineWidth: 2.5)
             }
+            .clipShape(shape)
+            shape.fill(LinearGradient(colors: [.white.opacity(0.5), .clear, .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
+            shape.stroke(LinearGradient(colors: [.white, .white.opacity(0.25)], startPoint: .top, endPoint: .bottom), lineWidth: 2.5)
         }
+        .compositingGroup()
         .shadow(color: toe.accent.fill.opacity(picked == toe ? 0.55 : 0.22), radius: picked == toe ? 18 : 9, y: 8)
+    }
+
+    private func slosh() {
+        sloshes += 1
+        let turn = sloshes
+        isSloshing = true
+        Task {
+            try? await Task.sleep(for: .seconds(4))
+            if sloshes == turn { isSloshing = false }
+        }
     }
 
     private func toe(_ toe: PawToe, w: CGFloat, h: CGFloat, tilt: Double) -> some View {
@@ -176,7 +191,7 @@ struct PawGauge: View {
 
     private func pick(_ toe: PawToe) {
         feedback?.play(.select(toe.rawValue))
+        slosh()
         withAnimation(DS.Motion.bouncy) { picked = toe }
     }
 }
-#endif

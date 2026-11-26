@@ -285,7 +285,7 @@ struct SettingsAppearancePage: View {
             SettingsSectionCard(title: "Home") {
                 SettingsToggleRow(
                     icon: "cloud.sun.fill", title: "Toronto weather",
-                    subtitle: "In the sky on Home. From Open-Meteo",
+                    subtitle: "Beside the date on Home. From Open-Meteo",
                     tint: DS.Colors.accentSkyInk, isOn: $viewModel.showsWeather
                 )
             }
