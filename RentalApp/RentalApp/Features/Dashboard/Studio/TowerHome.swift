@@ -50,7 +50,7 @@ struct TowerHome: View {
             }
 
             VStack(spacing: 10) {
-                HomeBar(model: model)
+                HomeBar(model: model, onGlass: true)
                 HStack(spacing: 8) {
                     chip("dollarsign.circle.fill", "\(Int((model.rentRate * 100).rounded()))% rent in", .mint)
                     chip("key.fill", "\(model.dashboard.occupiedUnits)/\(model.dashboard.unitCount) let", .gold)

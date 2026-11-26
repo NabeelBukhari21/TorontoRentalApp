@@ -15,8 +15,12 @@ import SwiftUI
 enum HomeDesign: String, CaseIterable {
     case place = "A", tower = "B", city = "C", deck = "D", paw = "E"
 
+    static let key = "PurrpertyHome"
+
+    /// Test builds open on the studio; "Now" is today's Home.
     static var requested: HomeDesign? {
-        UserDefaults.standard.string(forKey: "PurrpertyHome").flatMap(HomeDesign.init(rawValue:))
+        let value = UserDefaults.standard.string(forKey: key) ?? HomeDesign.place.rawValue
+        return HomeDesign(rawValue: value)
     }
 }
 
@@ -115,7 +119,39 @@ struct HomeStudio: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .task { await model.load() }
+        .overlay(alignment: .bottom) { HomeDesignSwitcher(current: design.rawValue).padding(.bottom, 4) }
     }
+}
+
+// MARK: - Switcher
+
+/// Test builds: flip between the directions, and today's Home.
+struct HomeDesignSwitcher: View {
+    let current: String
+    @Environment(\.feedback) private var feedback
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(HomeDesign.allCases.map(\.rawValue) + ["Now"], id: \.self) { option in
+                Button {
+                    feedback?.play(.tap)
+                    UserDefaults.standard.set(option, forKey: HomeDesign.key)
+                    NotificationCenter.default.post(name: HomeDesignSwitcher.changed, object: nil)
+                } label: {
+                    Text(option)
+                        .font(DS.Typography.brand(.caption, weight: .bold))
+                        .foregroundStyle(current == option ? DS.Colors.textOnBrand : DS.Colors.textPrimary)
+                        .frame(minWidth: 30, minHeight: 26)
+                        .background(Capsule().fill(current == option ? DS.Colors.brand : .clear))
+                }
+                .buttonStyle(SquishStyle(scale: 0.9))
+            }
+        }
+        .padding(3)
+        .glassEffect(.regular.interactive(), in: .capsule)
+    }
+
+    static let changed = Notification.Name("HomeDesignChanged")
 }
 
 // MARK: - Shared
@@ -125,6 +161,8 @@ struct HomeBar: View {
     let model: HomeStudioModel
     var ink: Color = DS.Colors.textPrimary
     var showsGreeting = true
+    /// Over a picture: the greeting gets its own glass.
+    var onGlass = false
     @Environment(AppRouter.self) private var router
 
     var body: some View {
@@ -140,6 +178,9 @@ struct HomeBar: View {
                         .minimumScaleFactor(0.7)
                 }
                 .foregroundStyle(ink)
+                .padding(.horizontal, onGlass ? 14 : 0)
+                .padding(.vertical, onGlass ? 6 : 0)
+                .glassEffect(onGlass ? .regular : .identity, in: .rect(cornerRadius: 20))
             }
             Spacer(minLength: 0)
             HStack(spacing: 2) {

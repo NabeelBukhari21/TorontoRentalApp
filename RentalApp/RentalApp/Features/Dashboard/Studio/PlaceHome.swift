@@ -80,6 +80,8 @@ struct PlaceHome: View {
             HStack(spacing: 26) {
                 ForEach(0..<12, id: \.self) { _ in Rectangle().fill(DS.Colors.background.opacity(0.28)).frame(width: 26) }
             }
+            .frame(width: w, alignment: .leading)
+            .clipped()
             VStack(spacing: 0) {
                 Spacer().frame(height: h * 0.78)
                 Rectangle().fill(DS.Colors.background).frame(height: 16).shadow(color: DS.Colors.groundShadow, radius: 4, y: 3)
@@ -93,8 +95,11 @@ struct PlaceHome: View {
                         }
                     }.stroke(Color(hex: 0x8A4F27).opacity(0.35), lineWidth: 2)
                 }
+                .frame(height: h * 0.7)
             }
         }
+        .frame(width: w, height: h, alignment: .top)
+        .clipped()
         .ignoresSafeArea()
     }
 

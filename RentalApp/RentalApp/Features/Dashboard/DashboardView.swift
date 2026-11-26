@@ -7,6 +7,7 @@
 //  overviews, tasks, and live activity — all entering with a cascade.
 //
 
+import Combine
 import SwiftUI
 
 struct DashboardView: View {
@@ -15,6 +16,9 @@ struct DashboardView: View {
     @Environment(\.container) private var container
     @State private var viewModel: DashboardViewModel
     @State private var showsWardrobe = false
+    #if DEBUG
+    @State private var studioChoice = HomeDesign.requested?.rawValue ?? "Now"
+    #endif
     @Environment(\.feedback) private var feedback
     @Environment(\.toasts) private var toasts
 
@@ -36,10 +40,15 @@ struct DashboardView: View {
 
     var body: some View {
         #if DEBUG
-        if let design = HomeDesign.requested {
-            HomeStudio(design: design, dashboard: viewModel, container: container)
-        } else {
-            home
+        Group {
+            if let design = HomeDesign(rawValue: studioChoice) {
+                HomeStudio(design: design, dashboard: viewModel, container: container).id(design)
+            } else {
+                home.overlay(alignment: .bottom) { HomeDesignSwitcher(current: "Now").padding(.bottom, 4) }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: HomeDesignSwitcher.changed)) { _ in
+            studioChoice = UserDefaults.standard.string(forKey: HomeDesign.key) ?? "A"
         }
         #else
         home
