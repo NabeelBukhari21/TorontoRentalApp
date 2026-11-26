@@ -2,7 +2,8 @@
 //  DashboardView.swift
 //  RentalApp (Purrperty)
 //
-//  Dashboard — Home. Toronto fills the top with a pin on every property;
+//  Dashboard — Home. Toronto fills the top (or, in layouts 4–6, the
+//  whole screen) with a pin on every property;
 //  the day scrolls up over it in glass: the paw (rent, homes, repairs,
 //  tasks, streak), the numbers, and today's tasks. Touch a pin for a quick
 //  look at that home; touch the look to go inside.
@@ -28,6 +29,11 @@ struct DashboardView: View {
     @State private var day = Date.now
     @State private var asked: PurrQuestion?
     @State private var layout = HomeLayout.saved
+    @State private var lens = HomeLens.owing
+    @State private var stop: Int?
+    @State private var toe: PawToe?
+    @State private var query = ""
+    @FocusState private var isSearching: Bool
 
     init(container: AppContainer = .shared) {
         let dashboard = DashboardViewModel(
@@ -48,32 +54,31 @@ struct DashboardView: View {
             let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
             let mapHeight = proxy.size.height * 0.58
             let underCards = screen - proxy.safeAreaInsets.top - mapHeight + 110
+            let route = layout == .route ? model.route : []
             ZStack(alignment: .top) {
                 HomeMap(
                     model: model, selection: $selection,
-                    insets: EdgeInsets(top: 160, leading: 0, bottom: isExploring ? 150 : underCards, trailing: 0),
+                    insets: layout.fillsMap ? layout.mapInsets : EdgeInsets(top: 160, leading: 0, bottom: isExploring ? 150 : underCards, trailing: 0),
                     tapThrough: tapThrough,
-                    screenHeight: screen
+                    screenHeight: screen,
+                    lens: mapLens,
+                    route: route.map(\.id),
+                    focus: focus(route: route)
                 )
                 .ignoresSafeArea()
 
-                // The map fades behind the cards as they cover it. A wash,
-                // not a blur: blurring a live 3D map each frame is costly.
-                LinearGradient(colors: [DS.Colors.background.opacity(0), DS.Colors.background.opacity(0.92)], startPoint: .top, endPoint: .bottom)
-                    .opacity(isExploring ? 0 : min(1, max(0, offset / 160)))
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
-
-                if isExploring {
-                    exploreBar.transition(.move(edge: .bottom).combined(with: .opacity))
+                if layout.fillsMap {
+                    fullMap(route: route)
                 } else {
-                    cards(mapHeight: mapHeight, width: proxy.size.width)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    underMap(mapHeight: mapHeight, width: proxy.size.width)
                 }
             }
             .overlay(alignment: .top) {
-                HomeBar(model: model, onGlass: true) { showsWardrobe = true }
-                .padding(.horizontal, 16)
+                VStack(spacing: 10) {
+                    HomeBar(model: model, onGlass: true) { showsWardrobe = true }
+                        .padding(.horizontal, 16)
+                    topExtras
+                }
                 .padding(.top, 4)
             }
             .overlay(alignment: .bottom) {
@@ -82,7 +87,9 @@ struct DashboardView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .overlay(alignment: .bottom) { popup.padding(.horizontal, 14).padding(.bottom, 10) }
+            .overlay(alignment: .bottom) {
+                if layout != .route { popup.padding(.horizontal, 14).padding(.bottom, 10) }
+            }
             #if DEBUG
             .overlay(alignment: .trailing) { HomeLayoutSwitcher(layout: $layout).padding(.trailing, 4).offset(y: 30) }
             #endif
@@ -91,6 +98,23 @@ struct DashboardView: View {
         .navigationTitle("Home")
         .animation(DS.Motion.smooth, value: selection)
         .animation(DS.Motion.bouncy, value: layout)
+        .animation(DS.Motion.bouncy, value: toe)
+        .animation(DS.Motion.smooth, value: query.isEmpty)
+        .onChange(of: layout) { _, _ in
+            selection = nil; stop = nil; toe = nil; query = ""; isExploring = false
+        }
+        .onChange(of: stop) { _, index in
+            // The route's stop and the map's selection follow each other.
+            let id = index.flatMap { i in model.route.indices.contains(i) ? model.route[i].id : nil }
+            if selection != id { selection = id }
+        }
+        .onChange(of: selection) { _, id in
+            guard layout == .route else { return }
+            let index = id.flatMap { id in model.route.firstIndex { $0.id == id } }
+            if index != stop { stop = index }
+        }
+        .onChange(of: toe) { _, _ in selection = nil }
+        .onChange(of: lens) { _, _ in selection = nil }
         .task {
             await model.load()
             // An empty today: open the plan on the next day with something.
@@ -116,6 +140,108 @@ struct DashboardView: View {
         .liveUpdates(container.sync) {
             // Leases and the payments against them: rent collected.
             LiveList.reloadSubscription(topic: .leases) { await model.refresh() }
+        }
+    }
+
+    // MARK: Under the map
+
+    /// Layouts Now to 3: the day scrolls up over the map.
+    @ViewBuilder private func underMap(mapHeight: CGFloat, width: CGFloat) -> some View {
+        // The map fades behind the cards as they cover it. A wash, not a
+        // blur: blurring a live 3D map each frame is costly.
+        LinearGradient(colors: [DS.Colors.background.opacity(0), DS.Colors.background.opacity(0.92)], startPoint: .top, endPoint: .bottom)
+            .opacity(isExploring ? 0 : min(1, max(0, offset / 160)))
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
+        if isExploring {
+            exploreBar.transition(.move(edge: .bottom).combined(with: .opacity))
+        } else {
+            cards(mapHeight: mapHeight, width: width)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    // MARK: Whole map
+
+    /// What a layout's pins report.
+    private var mapLens: HomeLens? {
+        switch layout {
+        case .lenses: lens
+        case .command: toe?.lens
+        default: nil
+        }
+    }
+
+    /// The homes the map fits when nothing is picked.
+    private func focus(route: [HomeStop]) -> [String] {
+        switch layout {
+        case .lenses: model.homes(lens).map(\.id)
+        case .route: route.map(\.id)
+        case .command: toe?.lens.map { model.homes($0).map(\.id) } ?? []
+        default: []
+        }
+    }
+
+    /// Under the bar, in the whole-map layouts.
+    @ViewBuilder private var topExtras: some View {
+        let search = query.trimmingCharacters(in: .whitespaces)
+        switch layout {
+        case .lenses:
+            HomeLensBar(model: model, lens: $lens)
+        case .command:
+            VStack(spacing: 8) {
+                HomeSearchField(query: $query, isFocused: $isSearching)
+                if !search.isEmpty {
+                    HomeSearchResults(model: model, query: search) { home in
+                        isSearching = false
+                        query = ""
+                        selection = home.id
+                    }
+                    .transition(.scale(scale: 0.96, anchor: .top).combined(with: .opacity))
+                }
+            }
+            .padding(.horizontal, 16)
+        default:
+            EmptyView()
+        }
+    }
+
+    /// Layouts 4 to 6: the map is the page; cards sit on its edges.
+    private func fullMap(route: [HomeStop]) -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            switch layout {
+            case .lenses where selection == nil:
+                HomeLensCard(model: model, lens: lens, selection: $selection)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            case .route:
+                if route.isEmpty {
+                    HStack(spacing: 10) {
+                        PurrMascot(mood: .allCaughtUp, size: 64, isInteractive: false).padding(-6)
+                        Text("No home needs a visit today.").font(DS.Typography.brand(.headline, weight: .semibold)).foregroundStyle(DS.Colors.textPrimary)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(16).homeGlass()
+                } else {
+                    HomeRouteCard(model: model, stops: route, current: $stop)
+                }
+            case .command where selection == nil:
+                if let toe {
+                    HomeToeCard(model: model, toe: toe) { self.toe = nil }
+                }
+            default:
+                EmptyView()
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 10)
+        .overlay(alignment: .leading) {
+            if layout == .command, query.isEmpty {
+                HomeToeRail(model: model, toe: $toe).padding(.leading, 12).offset(y: -30)
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+            }
         }
     }
 
@@ -163,7 +289,7 @@ struct DashboardView: View {
     /// What sits under the map, in the chosen layout.
     @ViewBuilder private func stack(width: CGFloat) -> some View {
         switch layout {
-        case .now:
+        case .now, .lenses, .route, .command:
             PawPanel(model: model, picked: $picked, pawSize: min(300, width - 80))
             stats
             TodayGlass(model: model)
@@ -244,12 +370,30 @@ enum HomeLayout: String, CaseIterable {
     case money = "2"
     /// Ask Purr: questions he answers from what's here.
     case ask = "3"
+    /// The whole map; lenses turn every pin into a number.
+    case lenses = "4"
+    /// The whole map; today's route through the homes that need you.
+    case route = "5"
+    /// The whole map; search on top, the paw's toes down the side.
+    case command = "6"
+
+    /// The map is the whole page, with nothing scrolling over it.
+    var fillsMap: Bool { [.lenses, .route, .command].contains(self) }
+
+    /// Room the cards take, so the homes fit between.
+    var mapInsets: EdgeInsets {
+        switch self {
+        case .lenses: EdgeInsets(top: 210, leading: 0, bottom: 320, trailing: 0)
+        case .route: EdgeInsets(top: 170, leading: 0, bottom: 420, trailing: 0)
+        default: EdgeInsets(top: 230, leading: 90, bottom: 160, trailing: 0)
+        }
+    }
 
     static let key = "PurrpertyHomeLayout"
 
     static var saved: HomeLayout {
         #if DEBUG
-        UserDefaults.standard.string(forKey: key).flatMap(HomeLayout.init(rawValue:)) ?? .day
+        UserDefaults.standard.string(forKey: key).flatMap(HomeLayout.init(rawValue:)) ?? .lenses
         #else
         .now
         #endif

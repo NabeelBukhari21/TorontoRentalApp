@@ -21,6 +21,13 @@ struct HomeMap: View {
     var tapThrough: CGPoint? = nil
     /// The whole screen's height, safe areas included.
     var screenHeight: CGFloat = 874
+    /// What each pin reports, when a lens is on; homes it has nothing
+    /// on fade back.
+    var lens: HomeLens? = nil
+    /// Homes in visiting order, drawn as a numbered route.
+    var route: [String] = []
+    /// The homes the overview fits; all of them when empty.
+    var focus: [String] = []
 
     @State private var camera: MapCameraPosition = .camera(MapCamera(centerCoordinate: .init(latitude: 43.67, longitude: -79.39), distance: 30_000, heading: 0, pitch: 40))
     @State private var hasFit = false
@@ -48,9 +55,22 @@ struct HomeMap: View {
             model.places[property.id].map { Pin(property: property, place: $0, accent: Self.accents[i % Self.accents.count]) }
         }
         Map(position: $camera, interactionModes: [.pan, .zoom, .rotate, .pitch]) {
+            if route.count > 1 {
+                MapPolyline(coordinates: route.compactMap { model.places[$0] })
+                    .stroke(DS.Colors.brand, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round, dash: [1, 11]))
+            }
+            // Over the whole city, only the biggest few get a word, so
+            // neighbours' labels don't pile up; closer in, all of them do.
+            let worded = lens.map { Set(model.ranked($0).prefix(isFar ? 4 : .max).map(\.id)) } ?? []
             ForEach(pins) { pin in
+                let badge = worded.contains(pin.id) || selection == pin.id ? lens.flatMap { model.badge($0, for: pin.property) } : nil
+                let isNoted = lens.map { model.badge($0, for: pin.property) != nil } ?? false
+                let stop = route.firstIndex(of: pin.id)
                 Annotation(pin.property.name, coordinate: pin.place, anchor: .bottom) {
-                    HomePin(property: pin.property, accent: pin.accent, isSelected: selection == pin.id, isSmall: isFar && selection != pin.id) {
+                    HomePin(property: pin.property, accent: pin.accent, isSelected: selection == pin.id,
+                            isSmall: isFar && selection != pin.id && badge == nil && stop == nil && !isNoted,
+                            badge: badge, stop: stop.map { $0 + 1 },
+                            isDimmed: (lens != nil && !isNoted) || (!route.isEmpty && stop == nil)) {
                         feedback?.play(.select(0))
                         withAnimation(DS.Motion.smooth) { selection = selection == pin.id ? nil : pin.id }
                     }
@@ -99,6 +119,9 @@ struct HomeMap: View {
                 fitAll(animated: true)
             }
         }
+        .onChange(of: focus) { _, _ in
+            if selection == nil { fitAll(animated: true) }
+        }
     }
 
     /// Where a place is on screen, looking straight down; the overview is.
@@ -112,7 +135,8 @@ struct HomeMap: View {
 
     /// Every property in view, with room for the cards over the map.
     private func fitAll(animated: Bool) {
-        let places = Array(model.places.values)
+        let focused = focus.compactMap { model.places[$0] }
+        let places = focused.isEmpty ? Array(model.places.values) : focused
         guard !places.isEmpty else { return }
         let lats = places.map(\.latitude), lons = places.map(\.longitude)
         let latSpan = max(0.02, lats.max()! - lats.min()!), lonSpan = max(0.02, lons.max()! - lons.min()!)
@@ -124,9 +148,12 @@ struct HomeMap: View {
         let middle = (lats.min()! + lats.max()!) / 2
         // From the screen's middle down to the gap's middle, in degrees.
         let shift = height * Double(insets.bottom - insets.top) / screen / 2
+        // Likewise across, for a rail down one side.
+        let side = frame.width > 0 ? Double(insets.leading - insets.trailing) / Double(frame.width) : 0
+        let width = lonSpan * 1.3 / max(0.4, 1 - abs(side))
         let region = MKCoordinateRegion(
-            center: .init(latitude: middle - shift, longitude: (lons.min()! + lons.max()!) / 2),
-            span: .init(latitudeDelta: height, longitudeDelta: lonSpan * 1.3)
+            center: .init(latitude: middle - shift, longitude: (lons.min()! + lons.max()!) / 2 - width * side / 2),
+            span: .init(latitudeDelta: height, longitudeDelta: width)
         )
         withAnimation(animated ? .easeInOut(duration: 1.2) : nil) { camera = .region(region) }
     }
@@ -138,17 +165,58 @@ struct HomePin: View {
     let accent: DSAccent
     let isSelected: Bool
     var isSmall = false
+    /// What a lens says about this home.
+    var badge: HomePinBadge? = nil
+    /// Its place on today's route.
+    var stop: Int? = nil
+    var isDimmed = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: -4) {
+            VStack(spacing: 3) {
+                if let badge, !isSmall {
+                    HStack(spacing: 4) {
+                        Image(systemName: badge.symbol).font(.system(size: 11, weight: .heavy)).foregroundStyle(badge.accent.fill)
+                        Text(badge.text).font(DS.Typography.brandFixed(13)).foregroundStyle(DS.Colors.textPrimary)
+                    }
+                    .padding(.horizontal, 9).frame(height: 26)
+                    .background(Capsule().fill(DS.Colors.surfaceRaised))
+                    .overlay(Capsule().strokeBorder(badge.accent.fill, lineWidth: 2))
+                    .fixedSize()
+                    .transition(.scale(scale: 0.6, anchor: .bottom).combined(with: .opacity))
+                }
+                pin
+            }
+            .opacity(isDimmed ? 0.45 : 1)
+            .saturation(isDimmed ? 0.2 : 1)
+            .animation(DS.Motion.bouncy, value: badge)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    private var label: String {
+        var parts = ["\(property.name), \(property.occupiedCount) of \(property.unitCount) rented"]
+        if let stop { parts.insert("Stop \(stop)", at: 0) }
+        if let badge { parts.append(badge.text) }
+        return parts.joined(separator: ". ")
+    }
+
+    private var pin: some View {
+        VStack(spacing: -4) {
                 ZStack {
                     Circle().fill(DS.Colors.surfaceRaised)
                     Circle().trim(from: 0, to: property.occupancyRate)
                         .stroke(accent.fill, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .rotationEffect(.degrees(-90)).padding(3.5)
-                    ClayToken(symbol: property.kind.icon, accent: accent, size: 32)
+                    if let stop {
+                        Text(stop, format: .number).font(DS.Typography.brandFixed(19))
+                            .foregroundStyle(DS.Colors.textOnBrand)
+                            .frame(width: 32, height: 32).background(Circle().fill(DS.Colors.brand))
+                    } else {
+                        ClayToken(symbol: property.kind.icon, accent: accent, size: 32)
+                    }
                 }
                 .frame(width: 50, height: 50)
                 .overlay(alignment: .topTrailing) {
@@ -164,10 +232,14 @@ struct HomePin: View {
             .scaleEffect(isSelected ? 1.3 : isSmall ? 0.6 : 1, anchor: .bottom)
             .frame(width: isSmall ? 34 : 54, height: isSmall ? 40 : 64, alignment: .bottom)
             .animation(DS.Motion.bouncy, value: isSelected)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("\(property.name), \(property.occupiedCount) of \(property.unitCount) rented")
     }
+}
+
+/// A word on a pin: what a lens found at that home.
+struct HomePinBadge: Equatable {
+    let text: String
+    let symbol: String
+    let accent: DSAccent
 }
 
 // MARK: - Glass
@@ -220,8 +292,13 @@ struct PawPanel: View {
         .homeGlass()
     }
 
-    private func go() {
-        switch picked {
+    private func go() { picked.open(with: router) }
+}
+
+extension PawToe {
+    /// Where this toe's number lives.
+    @MainActor func open(with router: AppRouter) {
+        switch self {
         case .rent, .streak: router.push(.rentCollection)
         case .homes: router.select(.properties)
         case .repairs: router.select(.maintenance)
