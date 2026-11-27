@@ -24,8 +24,6 @@ struct HomeMap: View {
     /// What each pin reports, when a lens is on; homes it has nothing
     /// on fade back.
     var lens: HomeLens? = nil
-    /// Homes in visiting order, drawn as a numbered route.
-    var route: [String] = []
     /// The homes the overview fits; all of them when empty.
     var focus: [String] = []
 
@@ -55,22 +53,16 @@ struct HomeMap: View {
             model.places[property.id].map { Pin(property: property, place: $0, accent: Self.accents[i % Self.accents.count]) }
         }
         Map(position: $camera, interactionModes: [.pan, .zoom, .rotate, .pitch]) {
-            if route.count > 1 {
-                MapPolyline(coordinates: route.compactMap { model.places[$0] })
-                    .stroke(DS.Colors.brand, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round, dash: [1, 11]))
-            }
             // Over the whole city, only the biggest few get a word, so
             // neighbours' labels don't pile up; closer in, all of them do.
             let worded = lens.map { Set(model.ranked($0).prefix(isFar ? 4 : .max).map(\.id)) } ?? []
             ForEach(pins) { pin in
                 let badge = worded.contains(pin.id) || selection == pin.id ? lens.flatMap { model.badge($0, for: pin.property) } : nil
                 let isNoted = lens.map { model.badge($0, for: pin.property) != nil } ?? false
-                let stop = route.firstIndex(of: pin.id)
                 Annotation(pin.property.name, coordinate: pin.place, anchor: .bottom) {
                     HomePin(property: pin.property, accent: pin.accent, isSelected: selection == pin.id,
-                            isSmall: isFar && selection != pin.id && badge == nil && stop == nil && !isNoted,
-                            badge: badge, stop: stop.map { $0 + 1 },
-                            isDimmed: (lens != nil && !isNoted) || (!route.isEmpty && stop == nil)) {
+                            isSmall: isFar && selection != pin.id && badge == nil && !isNoted,
+                            badge: badge, isDimmed: lens != nil && !isNoted) {
                         feedback?.play(.select(0))
                         withAnimation(DS.Motion.smooth) { selection = selection == pin.id ? nil : pin.id }
                     }
@@ -167,8 +159,6 @@ struct HomePin: View {
     var isSmall = false
     /// What a lens says about this home.
     var badge: HomePinBadge? = nil
-    /// Its place on today's route.
-    var stop: Int? = nil
     var isDimmed = false
     let action: () -> Void
 
@@ -198,7 +188,6 @@ struct HomePin: View {
 
     private var label: String {
         var parts = ["\(property.name), \(property.occupiedCount) of \(property.unitCount) rented"]
-        if let stop { parts.insert("Stop \(stop)", at: 0) }
         if let badge { parts.append(badge.text) }
         return parts.joined(separator: ". ")
     }
@@ -210,13 +199,7 @@ struct HomePin: View {
                     Circle().trim(from: 0, to: property.occupancyRate)
                         .stroke(accent.fill, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .rotationEffect(.degrees(-90)).padding(3.5)
-                    if let stop {
-                        Text(stop, format: .number).font(DS.Typography.brandFixed(19))
-                            .foregroundStyle(DS.Colors.textOnBrand)
-                            .frame(width: 32, height: 32).background(Circle().fill(DS.Colors.brand))
-                    } else {
-                        ClayToken(symbol: property.kind.icon, accent: accent, size: 32)
-                    }
+                    ClayToken(symbol: property.kind.icon, accent: accent, size: 32)
                 }
                 .frame(width: 50, height: 50)
                 .overlay(alignment: .topTrailing) {
@@ -304,66 +287,5 @@ extension PawToe {
         case .repairs: router.select(.maintenance)
         case .tasks: router.push(.notifications)
         }
-    }
-}
-
-/// A number on glass that leads somewhere.
-struct GlassStat: View {
-    let symbol: String
-    let value: String
-    let label: String
-    let accent: DSAccent
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 10) {
-                ClayToken(symbol: symbol, accent: accent, size: 40)
-                VStack(alignment: .leading, spacing: -2) {
-                    Text(value).font(DS.Typography.brandFixed(24)).foregroundStyle(DS.Colors.textPrimary).minimumScaleFactor(0.6).lineLimit(1)
-                    Text(label).font(DS.Typography.brand(.caption, weight: .semibold)).foregroundStyle(DS.Colors.textSecondary).lineLimit(1)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(12)
-            .homeGlass(radius: 22)
-        }
-        .buttonStyle(SquishStyle(scale: 0.95))
-    }
-}
-
-/// Today's tasks on glass; tap one to tick it off.
-struct TodayGlass: View {
-    let model: HomeModel
-    var limit = 4
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text("Today").font(DS.Typography.brand(.title3, weight: .bold))
-                Spacer()
-                Text("\(model.openTasks.count) left").font(DS.Typography.brand(.footnote, weight: .semibold)).foregroundStyle(DS.Colors.textSecondary)
-            }
-            .padding(.bottom, 4)
-            ForEach(model.dashboard.tasks.prefix(limit)) { task in
-                Button { Task { await model.dashboard.toggleTask(task) } } label: {
-                    HStack(spacing: 12) {
-                        SakugaCheckMark(isOn: task.isDone)
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(task.title).font(DS.Typography.brand(.subheadline, weight: .semibold)).strikethrough(task.isDone).lineLimit(1)
-                            Text(task.due).font(DS.Typography.brand(.caption)).foregroundStyle(task.isUrgent ? DS.Colors.brandInk : DS.Colors.textSecondary)
-                        }
-                        Spacer(minLength: 0)
-                        if task.isUrgent { Image(systemName: "flame.fill").foregroundStyle(DS.Colors.brandInk) }
-                    }
-                    .frame(minHeight: 48)
-                    .contentShape(.rect)
-                }
-                .buttonStyle(SquishStyle(scale: 0.98))
-            }
-        }
-        .foregroundStyle(DS.Colors.textPrimary)
-        .padding(16)
-        .homeGlass()
     }
 }

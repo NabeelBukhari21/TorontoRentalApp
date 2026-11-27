@@ -180,8 +180,12 @@ colourful, for students, on a white background.
     carries workspace setup, first property and the paywall
   - Home (`Features/Dashboard`): Toronto in 3D with a pin per property
     (`HomeMap`; a tap on the see-through top reaches the nearest pin, since
-    MapReader can't convert on 3D imagery), the day in glass over it
-    (`homeGlass`), and the paw as a gauge (`PawGauge`). A pin opens
+    MapReader can't convert on 3D imagery). Over the map: a search for
+    homes, tenants and units (`HomeSearchField`), and the paw's toes as a
+    gauge rail (`HomeToeRail`); a picked gauge lights its homes with lens
+    badges (`HomeLens`). The day scrolls up over it in glass (`homeGlass`):
+    week strip, Purr's brief, quick actions, day plan, compact paw
+    (`PawGauge`). "Explore map" clears the day away. A pin opens
     `PropertyPopup`; the popup opens the property.
   - Performance: nothing animates while idle. The tab bar's drop, the paw's
     liquid and the ambient background rest when still; Purr draws at 30 fps.
