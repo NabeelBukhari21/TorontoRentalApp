@@ -87,7 +87,7 @@ extension FakeBackend {
                 assignedVendorID: vendor?.id,
                 assignedUserID: coordinators.randomElement(using: &rng)?.id,
                 scheduledFor: status == .scheduled
-                    ? rng.date(daysAhead: 1...6)
+                    ? Self.daytime(rng.date(daysAhead: 1...6))
                     : nil,
                 estimatedCost: .init(Decimal(rng.int(90...1_400))),
                 actualCost: status == .completed ? .init(Decimal(rng.int(85...1_650))) : nil,
@@ -217,6 +217,16 @@ extension FakeBackend {
         case .medium: rng.double(0.32...0.57)
         default: rng.double(0.12...0.34)
         }
+    }
+
+    /// A booked visit on the hour between 9 a.m. and 5 p.m., inside
+    /// Ontario's 8-to-8 entry window, like the app's own bookings.
+    /// Derived from the date rather than drawn, so the rest of the seeded
+    /// portfolio stays exactly as it was.
+    private static func daytime(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        let hour = 9 + (calendar.component(.minute, from: date) + calendar.component(.hour, from: date)) % 9
+        return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: date) ?? date
     }
 
     /// A reply to the tenant: what they reported, how soon, and what
