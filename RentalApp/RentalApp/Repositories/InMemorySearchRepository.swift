@@ -21,9 +21,13 @@ import Foundation
 final class InMemorySearchRepository: SearchRepositoryProtocol {
 
     private let cache: RepositoryCache
+    /// Who owes comes from the rent roll, like Rent and Home, so payments
+    /// recorded in the app clear a tenant here too.
+    private let payments: PaymentRepositoryProtocol?
 
-    init(cache: RepositoryCache = .shared) {
+    init(cache: RepositoryCache = .shared, payments: PaymentRepositoryProtocol? = nil) {
         self.cache = cache
+        self.payments = payments
     }
 
     private static let namespace = "search"
@@ -36,8 +40,11 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
         try Task.checkCancellation()
 
         if let filter = query.filter {
-            return Self.sorted(Self.results(for: filter, kinds: query.kinds), by: query.sort)
-                .page(query.page)
+            var results = Self.results(for: filter, kinds: query.kinds)
+            if filter == .overdue, query.kinds.isEmpty || query.kinds.contains(.tenant), let payments {
+                results = try await Self.overdue(from: payments)
+            }
+            return Self.sorted(results, by: query.sort).page(query.page)
         }
 
         let term = query.trimmed.lowercased()
@@ -104,6 +111,25 @@ final class InMemorySearchRepository: SearchRepositoryProtocol {
     /// A filter keyword is answered by a predicate, not by text matching.
     /// Not cached: "ends within 60 days" goes stale with the clock and with
     /// every edit, and the walk is cheap next to the projection one.
+    /// Tenants who owe, from the rent roll: the same amounts Rent shows.
+    private static func overdue(from payments: PaymentRepositoryProtocol, now: Date = .now) async throws -> [SearchResult] {
+        let roll = try await payments.rentRoll(for: now, forceRefresh: false)
+        return roll.rows.filter(\.isOwing).map { row in
+            let since = row.arrears.first?.dueOn ?? row.dueOn
+            let daysLate = max(0, Calendar.current.dateComponents([.day], from: since, to: now).day ?? 0)
+            return SearchResult(
+                kind: .tenant,
+                entityID: row.tenantID,
+                title: row.tenantName,
+                subtitle: "\(row.propertyName) · \(row.unitName)",
+                headline: "«\(row.totalOwing.formatted(.currency(code: "CAD").precision(.fractionLength(0)).presentation(.narrow))) overdue» · \(daysLate) \(daysLate == 1 ? "day" : "days") late",
+                status: TenantStatus.overdue.rawValue,
+                updatedAt: since,
+                rank: Double(daysLate)
+            )
+        }
+    }
+
     private static func results(for filter: SearchFilter, kinds: Set<SearchKind>) -> [SearchResult] {
         guard kinds.isEmpty || kinds.contains(filter.kind) else { return [] }
         return Projections.searchResults(for: filter)
