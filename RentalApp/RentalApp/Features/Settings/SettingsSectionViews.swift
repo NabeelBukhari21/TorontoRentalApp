@@ -5,7 +5,9 @@
 //  Settings — Section dispatcher + Profile, Organization, and Team pages.
 //
 
+import PhotosUI
 import SwiftUI
+import UIKit
 
 // MARK: - Dispatcher
 
@@ -63,9 +65,16 @@ private extension SettingsSection {
 struct SettingsProfilePage: View {
 
     @State private var viewModel: ProfileSettingsViewModel
+    @State private var pickedPhoto: PhotosPickerItem?
+    @State private var isConfirmingReset = false
+    @Environment(\.toasts) private var toasts
 
     init(container: AppContainer = .shared) {
-        _viewModel = State(initialValue: ProfileSettingsViewModel(repository: container.profile))
+        _viewModel = State(initialValue: ProfileSettingsViewModel(repository: container.profile, auth: container.auth))
+    }
+
+    private var avatarImage: Image? {
+        viewModel.photo.flatMap(UIImage.init(data:)).map(Image.init(uiImage:))
     }
 
     var body: some View {
@@ -74,15 +83,28 @@ struct SettingsProfilePage: View {
         VStack(spacing: DS.Spacing.lg) {
             // Avatar.
             VStack(spacing: DS.Spacing.sm) {
-                DSAvatar(name: viewModel.fullName, size: .xlarge)
+                DSAvatar(name: viewModel.fullName, image: avatarImage, size: .xlarge)
                     .dsFloating(amplitude: 3, duration: 3.8)
 
-                Button {} label: {
+                PhotosPicker(selection: $pickedPhoto, matching: .images) {
                     Text("Change photo")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(DS.Colors.brand)
                 }
                 .buttonStyle(DSPressStyle(scale: 0.95))
+                .onChange(of: pickedPhoto) { _, item in
+                    guard let item else { return }
+                    Task {
+                        // Kept small: it's an avatar, not a gallery.
+                        if let data = try? await item.loadTransferable(type: Data.self),
+                           let image = UIImage(data: data),
+                           let small = image.preparingThumbnail(of: CGSize(width: 400, height: 400))?.jpegData(compressionQuality: 0.8) {
+                            viewModel.photo = small
+                            toasts.success("Photo updated", mood: .profilePhoto)
+                        }
+                        pickedPhoto = nil
+                    }
+                }
             }
             .dsEntrance(index: 0)
 
@@ -97,13 +119,24 @@ struct SettingsProfilePage: View {
             .dsEntrance(index: 1)
 
             SettingsSectionCard(title: "Security") {
-                SettingsNavRow(icon: "lock.fill", title: "Change password", subtitle: "Last changed 3 months ago") {}
-                SettingsRowDivider()
-                SettingsNavRow(icon: "faceid", title: "Face ID", subtitle: "Unlock Purrperty with Face ID") {}
+                SettingsNavRow(icon: "lock.fill", title: "Change password", subtitle: "We'll email you a link to set a new one") {
+                    isConfirmingReset = true
+                }
             }
             .dsEntrance(index: 2)
+            .confirmationDialog("Send a password reset link to \(viewModel.email)?", isPresented: $isConfirmingReset, titleVisibility: .visible) {
+                Button("Send Link") {
+                    Task {
+                        if let failure = await viewModel.sendPasswordReset() {
+                            toasts.failure(.validation(failure))
+                        } else {
+                            toasts.success("Reset link sent to \(viewModel.email)", mood: .resetEmailSent)
+                        }
+                    }
+                }
+            }
 
-            SettingsSaveButton(title: "Save Profile")
+            SettingsSaveButton(title: "Save Profile") { try await viewModel.save() }
                 .dsEntrance(index: 3)
         }
     }
@@ -181,7 +214,7 @@ struct SettingsOrganizationPage: View {
             .dsEntrance(index: 2)
             .task { await portfolio.load() }
 
-            SettingsSaveButton(title: "Save Organization")
+            SettingsSaveButton(title: "Save Organization") { try await viewModel.save() }
                 .dsEntrance(index: 3)
         }
     }

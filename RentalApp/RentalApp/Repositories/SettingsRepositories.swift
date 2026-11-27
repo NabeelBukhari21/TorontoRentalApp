@@ -23,6 +23,7 @@ final class InMemoryProfileRepository: ProfileRepositoryProtocol {
         var email: String
         var phone: String
         var jobTitle: String
+        var photo: Data?
         var orgName: String
         var orgSlug: String
         var orgCity: String
@@ -75,6 +76,10 @@ final class InMemoryProfileRepository: ProfileRepositoryProtocol {
     var jobTitle: String {
         get { record.jobTitle }
         set { record.jobTitle = newValue }
+    }
+    var photo: Data? {
+        get { record.photo }
+        set { record.photo = newValue }
     }
 
     // Workspace

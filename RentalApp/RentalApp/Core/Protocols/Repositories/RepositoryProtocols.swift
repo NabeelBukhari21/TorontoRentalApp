@@ -690,6 +690,8 @@ protocol ProfileRepositoryProtocol: AnyObject {
     var email: String { get set }
     var phone: String { get set }
     var jobTitle: String { get set }
+    /// The person's photo, small JPEG. Nil shows their initials.
+    var photo: Data? { get set }
 
     var orgName: String { get set }
     var orgSlug: String { get set }

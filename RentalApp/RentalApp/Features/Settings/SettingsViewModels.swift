@@ -71,9 +71,11 @@ final class SettingsHubViewModel {
 final class ProfileSettingsViewModel {
 
     private let repo: ProfileRepositoryProtocol
+    private let auth: AuthServiceProtocol?
 
-    init(repository: ProfileRepositoryProtocol) {
+    init(repository: ProfileRepositoryProtocol, auth: AuthServiceProtocol? = nil) {
         self.repo = repository
+        self.auth = auth
     }
 
     var fullName: String {
@@ -87,6 +89,24 @@ final class ProfileSettingsViewModel {
     }
     var jobTitle: String {
         get { repo.jobTitle } set { repo.jobTitle = newValue }
+    }
+    var photo: Data? {
+        get { repo.photo } set { repo.photo = newValue }
+    }
+
+    func save() async throws {
+        try await repo.save()
+    }
+
+    /// Emails a link to set a new password. Nil on success, or why not.
+    func sendPasswordReset() async -> String? {
+        guard let auth else { return "Password reset isn't available here." }
+        do {
+            try await auth.sendPasswordReset(to: email)
+            return nil
+        } catch {
+            return (error as? AppError ?? .unknown).errorDescription
+        }
     }
 
     var orgName: String {
