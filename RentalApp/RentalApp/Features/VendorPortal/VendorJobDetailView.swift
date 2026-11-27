@@ -171,14 +171,13 @@ struct VendorJobDetailView: View {
         } header: {
             Text("Where")
         } footer: {
-            if job.status != .done, job.access?.permissionToEnter != true, job.priority != .urgent {
+            if job.status != .done, job.access?.permissionToEnter != true {
                 Text("The tenant hasn't agreed to entry, so they need 24 hours' written notice, and the visit has to be between 8 a.m. and 8 p.m. The property manager sends the notice when you book.")
             }
         }
     }
 
     private func entryText(_ job: MaintenanceTicket) -> String {
-        if job.priority == .urgent { return "Emergency: no notice needed" }
         guard let access = job.access else { return "Notice needed" }
         return access.permissionToEnter ? "Tenant allows entry · \(access.window.rawValue)" : "Notice needed"
     }

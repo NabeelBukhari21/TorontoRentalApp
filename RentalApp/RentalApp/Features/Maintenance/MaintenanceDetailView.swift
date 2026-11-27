@@ -27,7 +27,8 @@ struct MaintenanceDetailView: View {
             ticketID: ticketID,
             repository: container.maintenance,
             messages: container.messages,
-            visitTracker: .shared
+            visitTracker: .shared,
+            sync: container.sync
         ))
     }
 

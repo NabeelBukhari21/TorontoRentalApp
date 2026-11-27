@@ -22,6 +22,20 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
     @ObservationIgnored @WorkspaceLocal private var overrides: [String: MaintenanceTicket] = [:]
     /// Requests created this session, newest first, with when they were made.
     @ObservationIgnored @WorkspaceLocal private var created: [(ticket: MaintenanceTicket, at: Date)] = []
+    /// What's been done to each request here, newest first, for its
+    /// timeline: assignments, status changes, replies, visits.
+    @ObservationIgnored @WorkspaceLocal private var logged: [String: [(event: LoggedEvent, at: Date)]] = [:]
+
+    private struct LoggedEvent {
+        let icon: String
+        let kind: DSStatusKind
+        let title: String
+        let detail: String
+    }
+
+    private func log(_ ticketID: String, _ icon: String, _ kind: DSStatusKind, _ title: String, _ detail: String = "") {
+        logged[ticketID, default: []].insert((LoggedEvent(icon: icon, kind: kind, title: title, detail: detail), .now), at: 0)
+    }
 
     init(cache: RepositoryCache = .shared) {
         self.cache = cache
@@ -67,8 +81,12 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     func timeline(forTicketID id: String) async throws -> [TenantEvent] {
         try await SimulatedLatency.wait(.detail)
+        let recent = (logged[id] ?? []).map {
+            TenantEvent(icon: $0.event.icon, kind: $0.event.kind, title: $0.event.title,
+                        detail: $0.event.detail, date: FakeDateFormat.relative($0.at))
+        }
         if let entry = created.first(where: { $0.ticket.id == id }) {
-            return [
+            return recent + [
                 TenantEvent(
                     icon: TicketStatus.new.icon, kind: .info,
                     title: "Request received",
@@ -77,7 +95,7 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
                 )
             ]
         }
-        return Projections.timeline(forTicketID: id)
+        return recent + Projections.timeline(forTicketID: id)
     }
 
     // MARK: Writes
@@ -127,6 +145,7 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     func move(_ ticketID: String, to status: TicketStatus) async throws {
         try await mutate(ticketID) { $0.status = status }
+        log(ticketID, status.icon, status == .done ? .success : .info, "Moved to \(status.title)")
     }
 
     func assign(_ vendorID: String, to ticketID: String) async throws {
@@ -137,6 +156,7 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
             ticket.vendor = vendor
             if ticket.status == .new { ticket.status = .inProgress }
         }
+        log(ticketID, "person.crop.circle.badge.checkmark", .info, "Assigned to \(vendor.company)", vendor.name)
     }
 
     func addComment(_ text: String, to ticketID: String) async throws {
@@ -149,6 +169,7 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
 
     func markReplySent(_ ticketID: String) async throws {
         try await mutate(ticketID) { $0.replySent = true }
+        log(ticketID, "paperplane.fill", .success, "Reply sent to the tenant")
     }
 
     func bookVisit(_ ticketID: String, at date: Date, note: String) async throws {
@@ -204,6 +225,8 @@ final class InMemoryMaintenanceRepository: MaintenanceRepositoryProtocol {
                 "\(rebooked ? "Rebooked" : "Booked") a visit for \(when)." + (note.isEmpty ? "" : " \(note)")
             ))
         }
+        log(ticketID, TicketStatus.scheduled.icon, .info, "Visit booked",
+            date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute()))
     }
 
     func complete(_ ticketID: String, by vendorName: String, notes: String) async throws {

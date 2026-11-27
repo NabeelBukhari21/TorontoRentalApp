@@ -155,6 +155,8 @@ final class MaintenanceDetailViewModel: VisitScheduling {
 
     private let repository: MaintenanceRepositoryProtocol
     private let messages: MessageRepositoryProtocol
+    /// Tells the inbox, Messages and Home when this request changes.
+    private let sync: SyncEngine?
     let visitTracker: RepairVisitTracker
     let ticketID: String
 
@@ -173,12 +175,14 @@ final class MaintenanceDetailViewModel: VisitScheduling {
         ticketID: String,
         repository: MaintenanceRepositoryProtocol,
         messages: MessageRepositoryProtocol,
-        visitTracker: RepairVisitTracker
+        visitTracker: RepairVisitTracker,
+        sync: SyncEngine? = nil
     ) {
         self.ticketID = ticketID
         self.repository = repository
         self.messages = messages
         self.visitTracker = visitTracker
+        self.sync = sync
     }
 
     var ticket: MaintenanceTicket? { state.value }
@@ -278,6 +282,7 @@ final class MaintenanceDetailViewModel: VisitScheduling {
         do {
             try await repository.bookVisit(job.id, at: date, note: note)
             await refresh()
+            await sync?.publishLocalChange(.maintenanceRequests)
             if let updated = ticket { await visitTracker.jobChanged(updated) }
             return true
         } catch {
@@ -290,7 +295,19 @@ final class MaintenanceDetailViewModel: VisitScheduling {
         await mutate { try await $0.assign(vendor.id, to: self.ticketID) }
     }
 
+    /// Sends the drafted reply into the tenant's thread, then marks it
+    /// sent. A request staff reported themselves has no tenant to write to.
     func markReplySent() async {
+        if let ticket, let draft = ticket.ai?.draftReply, let tenantID = ticket.tenantID {
+            do {
+                let thread = try await messages.conversationID(forTenantID: tenantID)
+                try await messages.send(draft, attachment: nil, in: thread)
+                await sync?.publishLocalChange(.conversations)
+            } catch {
+                errorMessage = (error as? AppError ?? .unknown).errorDescription
+                return
+            }
+        }
         await mutate { try await $0.markReplySent(self.ticketID) }
     }
 
@@ -315,6 +332,7 @@ final class MaintenanceDetailViewModel: VisitScheduling {
             timelineEvents = try await repository.timeline(forTicketID: ticketID)
             // A moved or finished job updates its Lock Screen visit.
             await visitTracker.jobChanged(updated)
+            await sync?.publishLocalChange(.maintenanceRequests)
         } catch {
             state = .failed(error as? AppError ?? .unknown)
         }

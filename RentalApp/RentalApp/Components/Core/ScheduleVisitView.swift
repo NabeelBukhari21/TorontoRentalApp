@@ -33,6 +33,10 @@ struct ScheduleVisitView: View {
 
     @State private var date: Date
     @State private var note = ""
+    /// Declared by whoever books it. Only a real emergency (a flood, no
+    /// heat in winter, a gas smell) allows entry without notice; an urgent
+    /// job still needs the tenant's agreement or 24 hours' notice.
+    @State private var isEmergency = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.toasts) private var toasts
 
@@ -43,7 +47,6 @@ struct ScheduleVisitView: View {
     }
 
     private var tenantConsented: Bool { job.access?.permissionToEnter == true }
-    private var isEmergency: Bool { job.priority == .urgent }
 
     private var problem: String? {
         OntarioTenancyRules.entryProblem(at: date, tenantConsented: tenantConsented, isEmergency: isEmergency)
@@ -56,12 +59,15 @@ struct ScheduleVisitView: View {
                     DatePicker("Visit", selection: $date, in: Date.now..., displayedComponents: [.date, .hourAndMinute])
                     TextField("Note for the tenant", text: $note, prompt: Text("Note (optional)"), axis: .vertical)
                         .lineLimit(1...4)
+                    if !tenantConsented, job.priority == .urgent {
+                        Toggle("Emergency entry", isOn: $isEmergency)
+                    }
                 } footer: {
                     if let problem {
                         Label(problem, symbol: .caution)
                             .foregroundStyle(.red)
                     } else if isEmergency {
-                        Text("Urgent job: in an emergency no notice is needed.")
+                        Text("In an emergency, entry needs no notice. Use it only for real emergencies, such as a flood or no heat.")
                     } else if tenantConsented {
                         Text("The tenant has agreed to entry\(job.access.map { " (\($0.window.rawValue.lowercased()))" } ?? "").")
                     } else {
@@ -103,13 +109,20 @@ struct ScheduleVisitView: View {
         }
     }
 
-    /// The next 9 a.m. that satisfies the notice rule, or an hour from now
-    /// when no notice is needed.
+    /// The next 9 a.m. that satisfies the notice rule or, when the tenant
+    /// has agreed to entry, the next hour on the clock during the day.
     private static func suggestedStart(for job: MaintenanceTicket) -> Date {
         let calendar = Calendar.current
-        if job.priority == .urgent || job.access?.permissionToEnter == true {
+        if job.access?.permissionToEnter == true {
             let nextHour = calendar.date(byAdding: .hour, value: 1, to: .now) ?? .now
-            return calendar.date(bySetting: .minute, value: 0, of: nextHour) ?? nextHour
+            let onTheHour = calendar.date(bySetting: .minute, value: 0, of: nextHour) ?? nextHour
+            let hour = calendar.component(.hour, from: onTheHour)
+            if OntarioTenancyRules.entryWindow.contains(hour) { return onTheHour }
+            // Evening or night: the next morning at nine.
+            let day = hour < OntarioTenancyRules.entryWindow.lowerBound
+                ? calendar.startOfDay(for: onTheHour)
+                : calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: onTheHour)) ?? onTheHour
+            return calendar.date(bySettingHour: 9, minute: 0, second: 0, of: day) ?? onTheHour
         }
         let earliest = Date.now.addingTimeInterval(TimeInterval(OntarioTenancyRules.entryNoticeHours * 3600))
         var day = calendar.startOfDay(for: earliest)

@@ -219,9 +219,19 @@ extension FakeBackend {
         }
     }
 
+    /// A reply to the tenant: what they reported, how soon, and what
+    /// happens next. The suggested actions are the landlord's to-do list,
+    /// not words for the tenant, so they stay out of it.
     private static func draftReply(tenantName: String, issue: TorontoSeeds.Issue) -> String {
-        "Hi \(tenantName) — thanks for reporting this. \(issue.aiActions.first ?? "We're on it.") "
-        + "I'll confirm the appointment window shortly."
+        let problem = issue.title.prefix(1).lowercased() + issue.title.dropFirst()
+        let timing = switch issue.priority {
+        case .emergency: "This is an emergency, so someone is on the way as soon as possible."
+        case .urgent: "We're treating this as urgent and arranging for someone to come out within a day or two."
+        case .high: "We're arranging a repair and will get it booked this week."
+        default: "We'll book a repair and fit it in with other work nearby."
+        }
+        return "Hi \(tenantName), thanks for letting us know about the \(problem). \(timing) "
+            + "I'll confirm the visit time with you shortly."
     }
 
     // MARK: - Conversations
