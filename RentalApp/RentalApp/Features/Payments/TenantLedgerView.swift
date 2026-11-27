@@ -35,7 +35,8 @@ struct TenantLedgerView: View {
             reminders: RentReminderSender(
                 messages: container.messages,
                 payments: container.payments,
-                analytics: container.analytics
+                analytics: container.analytics,
+                sync: container.sync
             ),
             landlordName: container.profile.orgName
         ))
@@ -143,10 +144,9 @@ struct TenantLedgerView: View {
             Button("Record Payment", systemImage: "checkmark.circle") { isRecording = true }
             if viewModel.canRemind {
                 Button("Send Reminder", systemImage: "bell") { isConfirmingReminder = true }
-            } else {
-                ShareLink(item: viewModel.reminderText) {
-                    Label("Share Reminder", systemImage: "bell")
-                }
+            }
+            ShareLink(item: viewModel.reminderText) {
+                Label("Share Reminder", systemImage: "square.and.arrow.up")
             }
         } footer: {
             if let since = ledger.oldestUnpaidMonth {

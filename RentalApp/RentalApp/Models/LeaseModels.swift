@@ -73,7 +73,9 @@ enum OntarioTenancyRules {
     static let guidelinePercent: [Int: Double] = [
         2024: 2.5,
         2025: 2.5,
-        2026: 2.1
+        2026: 2.1,
+        // Published summer 2026 (ontario.ca/page/residential-rent-increases).
+        2027: 1.9
     ]
 
     /// The most a landlord can charge for a returned cheque or debit, on top

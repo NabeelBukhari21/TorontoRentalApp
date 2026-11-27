@@ -95,11 +95,12 @@ final class RentCollectionViewModel {
     /// Owing, with a thread to send into. Owing without one, the reminder
     /// is shared instead (Messages, Mail).
     func canRemind(_ row: RentRollRow) -> Bool {
-        row.isOwing && row.conversationID != nil
+        row.isOwing
     }
 
+    /// The same words, sent another way (text, email).
     func canShareReminder(_ row: RentRollRow) -> Bool {
-        row.isOwing && row.conversationID == nil
+        row.isOwing
     }
 
     func reminderText(for row: RentRollRow) -> String {
@@ -111,9 +112,8 @@ final class RentCollectionViewModel {
 
     /// Nil on success, or why it failed.
     func sendReminder(to row: RentRollRow) async -> String? {
-        guard let conversationID = row.conversationID else { return "No conversation with \(row.firstName) yet." }
         do {
-            try await reminders.send(reminderText(for: row), toTenantID: row.tenantID, conversationID: conversationID, month: roll.month)
+            try await reminders.send(reminderText(for: row), toTenantID: row.tenantID, conversationID: row.conversationID, month: roll.month)
             await load()
             return nil
         } catch {

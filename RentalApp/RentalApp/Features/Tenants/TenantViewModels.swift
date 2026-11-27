@@ -222,8 +222,12 @@ final class CreateTenantViewModel {
     private(set) var isSaved = false
     private(set) var saveError: AppError?
 
-    init(repository: TenantRepositoryProtocol) {
+    /// Tells the tenant list, the property and Home that a unit filled.
+    private let sync: SyncEngine?
+
+    init(repository: TenantRepositoryProtocol, sync: SyncEngine? = nil) {
         self.repository = repository
+        self.sync = sync
     }
 
     var emailLooksValid: Bool {
@@ -261,6 +265,8 @@ final class CreateTenantViewModel {
         do {
             try await repository.create(draft)
             withAnimation(DS.Motion.bouncy) { isSaved = true }
+            await sync?.publishLocalChange(.tenants)
+            await sync?.publishLocalChange(.units)
         } catch {
             saveError = error as? AppError ?? .unknown
         }

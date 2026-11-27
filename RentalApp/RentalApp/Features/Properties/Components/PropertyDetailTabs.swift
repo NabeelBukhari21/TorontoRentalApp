@@ -151,7 +151,7 @@ struct PropertyUnitsTab: View {
                                 .font(DS.Typography.headline)
                                 .foregroundStyle(DS.Colors.textPrimary)
 
-                            Text("\(unit.beds) bd · \(unit.baths) ba · \(unit.sqft) sq ft")
+                            Text("\(unit.beds) bd · \(unit.baths) ba" + (unit.sqft > 0 ? " · \(unit.sqft.formatted()) sq ft" : ""))
                                 .font(DS.Typography.caption)
                                 .foregroundStyle(DS.Colors.textSecondary)
 

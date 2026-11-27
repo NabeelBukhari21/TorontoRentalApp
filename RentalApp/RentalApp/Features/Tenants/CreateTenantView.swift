@@ -17,7 +17,7 @@ struct CreateTenantView: View {
     @Environment(\.dismiss) private var dismiss
 
     init(container: AppContainer = .shared) {
-        _viewModel = State(initialValue: CreateTenantViewModel(repository: container.tenants))
+        _viewModel = State(initialValue: CreateTenantViewModel(repository: container.tenants, sync: container.sync))
     }
 
     var body: some View {

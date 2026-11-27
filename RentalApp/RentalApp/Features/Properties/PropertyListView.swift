@@ -166,7 +166,7 @@ struct PropertyListView: View {
             }
         }
         .navigationTitle("Properties")
-        .navigationSubtitle("\(viewModel.propertyCount) properties · \(viewModel.totalUnits) units")
+        .navigationSubtitle("\(viewModel.propertyCount) \(viewModel.propertyCount == 1 ? "property" : "properties") · \(viewModel.totalUnits) \(viewModel.totalUnits == 1 ? "unit" : "units")")
         .toolbar {
             if viewModel.isSelecting {
                 ToolbarItem(placement: .confirmationAction) {

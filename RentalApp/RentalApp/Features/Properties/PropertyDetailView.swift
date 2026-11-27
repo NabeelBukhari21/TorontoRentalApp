@@ -61,6 +61,7 @@ struct PropertyDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.toasts) private var toasts
+    @Environment(\.container) private var container
     @State private var viewModel: PropertyDetailViewModel
     @State private var showsEditSheet = false
     @State private var pendingConfirmation: DSConfirmation?
@@ -84,6 +85,14 @@ struct PropertyDetailView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .task(id: selectedTab) { await viewModel.loadTab(selectedTab) }
+        // Units and tenants change from other screens (a unit's own page,
+        // a move-in): keep the header's numbers and the open tab current.
+        .liveUpdates(container.sync) {
+            LiveList.reloadSubscription(topic: .units) { await viewModel.refresh(showing: selectedTab) }
+        }
+        .liveUpdates(container.sync) {
+            LiveList.reloadSubscription(topic: .leases) { await viewModel.refresh(showing: selectedTab) }
+        }
         .dsConfirmation($pendingConfirmation)
         .sheet(isPresented: $showsEditSheet) {
             if let property {

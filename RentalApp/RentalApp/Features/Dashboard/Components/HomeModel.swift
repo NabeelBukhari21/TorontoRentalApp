@@ -29,7 +29,7 @@ final class HomeModel {
         propertyRepository = container.properties
         payments = container.payments
         preferences = container.preferences
-        reminders = RentReminderSender(messages: container.messages, payments: container.payments, analytics: container.analytics)
+        reminders = RentReminderSender(messages: container.messages, payments: container.payments, analytics: container.analytics, sync: container.sync)
     }
 
     func load() async {
@@ -84,11 +84,10 @@ final class HomeModel {
 
     /// Sends the same reminder the Rent screen does. Nil when it went.
     func remind(_ row: RentRollRow) async -> String? {
-        guard let conversation = row.conversationID else { return "No conversation with \(row.firstName) yet." }
         let text = RentReminderSender.message(firstName: row.firstName, owing: row.totalOwing,
                                               oldestDueOn: row.arrears.first?.dueOn ?? row.dueOn, unitName: row.unitName)
         do {
-            try await reminders.send(text, toTenantID: row.tenantID, conversationID: conversation, month: roll.month)
+            try await reminders.send(text, toTenantID: row.tenantID, conversationID: row.conversationID, month: roll.month)
             roll = (try? await payments.rentRoll(for: .now, forceRefresh: true)) ?? roll
             return nil
         } catch {

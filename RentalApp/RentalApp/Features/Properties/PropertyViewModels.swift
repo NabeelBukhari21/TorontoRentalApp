@@ -337,6 +337,13 @@ final class PropertyDetailViewModel {
         }
     }
 
+    /// Re-reads the property and the tab on screen, after a change made
+    /// elsewhere (a unit edited on its own page, a tenant moved in).
+    func refresh(showing tab: PropertyDetailTab) async {
+        await refresh()
+        await loadTab(tab)
+    }
+
     /// Fetches a tab's data the first time it is shown.
     func loadTab(_ tab: PropertyDetailTab) async {
         guard !loadedTabs.contains(tab) else { return }

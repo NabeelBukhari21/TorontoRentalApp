@@ -57,7 +57,7 @@ final class TenantLedgerViewModel {
     /// The month a new payment is recorded against: the oldest still owing.
     var monthToRecord: Date { ledger?.oldestUnpaidMonth ?? .now.startOfMonth }
 
-    var canRemind: Bool { isOwing && ledger?.conversationID != nil }
+    var canRemind: Bool { isOwing }
 
     var reminderText: String {
         guard let ledger else { return "" }
@@ -72,11 +72,9 @@ final class TenantLedgerViewModel {
 
     /// Nil on success, or why it failed.
     func sendReminder() async -> String? {
-        guard let ledger, let conversationID = ledger.conversationID else {
-            return "No conversation with \(firstName) yet."
-        }
+        guard let ledger else { return "This rent account didn't load." }
         do {
-            try await reminders.send(reminderText, toTenantID: tenantID, conversationID: conversationID, month: .now)
+            try await reminders.send(reminderText, toTenantID: tenantID, conversationID: ledger.conversationID, month: .now)
             return nil
         } catch {
             return (error as? AppError ?? .unknown).errorDescription

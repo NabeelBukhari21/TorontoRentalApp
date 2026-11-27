@@ -139,6 +139,13 @@ struct DashboardView: View {
             LiveList.reloadSubscription(topic: .maintenanceRequests) { await model.refresh() }
         }
         .liveUpdates(container.sync) {
+            // Units added or filled change occupancy and the pins' rings.
+            LiveList.reloadSubscription(topic: .units) { await model.refresh() }
+        }
+        .liveUpdates(container.sync) {
+            LiveList.reloadSubscription(topic: .tenants) { await model.refresh() }
+        }
+        .liveUpdates(container.sync) {
             // Leases and the payments against them: rent collected.
             LiveList.reloadSubscription(topic: .leases) { await model.refresh() }
         }

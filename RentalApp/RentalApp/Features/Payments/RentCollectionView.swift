@@ -33,7 +33,8 @@ struct RentCollectionView: View {
             reminders: RentReminderSender(
                 messages: container.messages,
                 payments: container.payments,
-                analytics: container.analytics
+                analytics: container.analytics,
+                sync: container.sync
             )
         ))
     }
@@ -168,7 +169,8 @@ struct RentCollectionView: View {
         if viewModel.canRemind(row) {
             Button("Send Reminder", systemImage: "bell") { reminderTarget = row }
                 .tint(.orange)
-        } else if viewModel.canShareReminder(row) {
+        }
+        if viewModel.canShareReminder(row) {
             ShareLink(item: viewModel.reminderText(for: row)) {
                 Label("Share Reminder", systemImage: "bell")
             }
