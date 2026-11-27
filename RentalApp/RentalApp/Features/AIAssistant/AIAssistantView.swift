@@ -3,8 +3,9 @@
 //  RentalApp (Purrperty)
 //
 //  AI Assistant — The operations copilot. Analyzing state, a briefing
-//  that types itself, recommended actions, insights, portfolio health,
-//  quick actions, and a live activity log.
+//  that types itself, questions you ask and its answers, recommended
+//  actions, insights, portfolio health, quick actions, and a live
+//  activity log.
 //
 
 import SwiftUI
@@ -13,8 +14,13 @@ struct AIAssistantView: View {
 
     @Environment(AppRouter.self) private var router
     @State private var viewModel: AIAssistantViewModel
+    @State private var draft = ""
+    @FocusState private var isTyping: Bool
+    /// A question brought from elsewhere, asked once on arrival.
+    private let question: String?
 
-    init(container: AppContainer = .shared) {
+    init(question: String? = nil, container: AppContainer = .shared) {
+        self.question = question
         _viewModel = State(initialValue: AIAssistantViewModel(
             copilot: container.copilot,
             notifications: container.notifications
@@ -37,6 +43,7 @@ struct AIAssistantView: View {
 
                     case .ready:
                         briefingPanel
+                        conversation
                         readyContent
 
                     case .failed(let error):
@@ -50,8 +57,80 @@ struct AIAssistantView: View {
         .navigationTitle("Copilot")
         .navigationSubtitle("Your operations copilot")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.start() }
+        .safeAreaInset(edge: .bottom) {
+            if viewModel.phase == .ready { composer }
+        }
+        .task {
+            await viewModel.start()
+            if let question { viewModel.ask(question) }
+        }
         .refreshable { await viewModel.refresh() }
+    }
+
+    // MARK: Conversation
+
+    /// What's been asked here, each answer under its question.
+    @ViewBuilder
+    private var conversation: some View {
+        if !viewModel.turns.isEmpty {
+            VStack(alignment: .leading, spacing: DS.Spacing.md) {
+                ForEach(viewModel.turns) { turn in
+                    CopilotTurnView(turn: turn) { viewModel.retry(turn) }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+        }
+    }
+
+    /// The question box, with starters while nothing has been asked.
+    private var composer: some View {
+        VStack(spacing: DS.Spacing.sm) {
+            if viewModel.turns.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DS.Spacing.sm) {
+                        ForEach(AIAssistantViewModel.suggestions, id: \.self) { suggestion in
+                            Button(suggestion) { send(suggestion) }
+                                .font(DS.Typography.brand(.footnote, weight: .semibold))
+                                .foregroundStyle(DS.Colors.textPrimary)
+                                .padding(.horizontal, DS.Spacing.md)
+                                .frame(minHeight: 36)
+                                .background(DS.Colors.surfaceRaised, in: Capsule())
+                                .buttonStyle(DSPressStyle(scale: 0.93))
+                        }
+                    }
+                    .padding(.horizontal, DS.Spacing.lg)
+                }
+            }
+            HStack(spacing: DS.Spacing.sm) {
+                TextField("Ask about rent, repairs, units or leases", text: $draft, axis: .vertical)
+                    .font(DS.Typography.brand(.body))
+                    .lineLimit(1...4)
+                    .focused($isTyping)
+                    .submitLabel(.send)
+                    .onSubmit { send(draft) }
+                Button("Ask", systemImage: "arrow.up") { send(draft) }
+                    .labelStyle(.iconOnly)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(DS.Colors.textOnBrand)
+                    .frame(width: 38, height: 38)
+                    .background(Circle().fill(DS.Colors.brand))
+                    .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty || viewModel.isAsking)
+                    .opacity(draft.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
+            }
+            .padding(.leading, DS.Spacing.lg).padding(.trailing, 6).padding(.vertical, 6)
+            .frame(minHeight: 50)
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: 25, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 25, style: .continuous).strokeBorder(DS.Colors.brand.opacity(0.25), lineWidth: 1))
+            .padding(.horizontal, DS.Spacing.lg)
+        }
+        .padding(.vertical, DS.Spacing.sm)
+        .background(.bar)
+    }
+
+    private func send(_ text: String) {
+        viewModel.ask(text)
+        draft = ""
+        isTyping = false
     }
 
     // MARK: Briefing
@@ -131,7 +210,7 @@ struct AIAssistantView: View {
 
         // Quick actions.
         VStack(alignment: .leading, spacing: DS.Spacing.md) {
-            AISectionLabel(text: "Ask the copilot")
+            AISectionLabel(text: "Quick actions")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DS.Spacing.sm) {

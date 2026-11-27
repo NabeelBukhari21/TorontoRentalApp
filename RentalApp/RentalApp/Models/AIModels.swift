@@ -50,3 +50,11 @@ struct AIQuickAction: Identifiable {
     let title: String
     let logText: String
 }
+
+/// One question to Copilot and its answer.
+struct CopilotTurn: Identifiable, Equatable, Sendable {
+    let id = UUID()
+    let question: String
+    var answer: String?
+    var failed = false
+}

@@ -46,6 +46,12 @@ final class InMemoryCopilotRepository: CopilotRepositoryProtocol {
         return AIActivityEntry(icon: quickAction.icon, text: quickAction.logText, time: "Now")
     }
 
+    func ask(_ question: String, history: [CopilotTurn]) async throws -> String {
+        try await Task.sleep(for: .milliseconds(700))
+        try Task.checkCancellation()
+        return CopilotAnswers.answer(question)
+    }
+
     // MARK: - Content
 
     private static func narrative() -> String {

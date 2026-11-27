@@ -42,6 +42,12 @@ final class AIAssistantViewModel {
     private(set) var quickActions: [AIQuickAction] = []
     private(set) var healthScore = 0
     private(set) var healthFactors: [AIHealthFactor] = []
+    /// Questions asked on this screen and Copilot's answers, oldest first.
+    private(set) var turns: [CopilotTurn] = []
+    var isAsking: Bool { turns.last.map { $0.answer == nil && !$0.failed } ?? false }
+
+    /// Questions most landlords start with.
+    static let suggestions = ["Who hasn't paid?", "What's urgent?", "Which units are empty?", "Whose lease is ending?"]
 
     private var fullBriefing = ""
     private var hasStarted = false
@@ -135,6 +141,29 @@ final class AIAssistantViewModel {
             guard let entry = try? await copilot.run(quickAction) else { return }
             withAnimation(DS.Motion.bouncy) { activity.insert(entry, at: 0) }
         }
+    }
+
+    /// Asks Copilot a question; the answer lands on the same turn.
+    func ask(_ question: String) {
+        let question = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !question.isEmpty, !isAsking else { return }
+        let turn = CopilotTurn(question: question)
+        let history = turns.filter { $0.answer != nil }
+        withAnimation(DS.Motion.bouncy) { turns.append(turn) }
+
+        Task {
+            let answer = try? await copilot.ask(question, history: history)
+            guard let index = turns.firstIndex(where: { $0.id == turn.id }) else { return }
+            withAnimation(DS.Motion.bouncy) {
+                if let answer { turns[index].answer = answer } else { turns[index].failed = true }
+            }
+        }
+    }
+
+    /// Asks the same question again after a failure.
+    func retry(_ turn: CopilotTurn) {
+        withAnimation(DS.Motion.smooth) { turns.removeAll { $0.id == turn.id } }
+        ask(turn.question)
     }
 
     private func log(icon: String, text: String) {

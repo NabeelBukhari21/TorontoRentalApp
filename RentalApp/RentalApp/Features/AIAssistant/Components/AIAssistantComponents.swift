@@ -377,3 +377,54 @@ struct AILoadingState: View {
         }
     }
 }
+
+// MARK: - Question and answer
+
+/// A question you asked, and Copilot's answer under it.
+struct CopilotTurnView: View {
+    let turn: CopilotTurn
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: DS.Spacing.sm) {
+            Text(turn.question)
+                .font(DS.Typography.brand(.subheadline, weight: .semibold))
+                .foregroundStyle(DS.Colors.textOnBrand)
+                .padding(.horizontal, DS.Spacing.md).padding(.vertical, DS.Spacing.sm)
+                .background(DS.Colors.brand, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .frame(maxWidth: 300, alignment: .trailing)
+
+            HStack(alignment: .top, spacing: DS.Spacing.sm) {
+                PurrMascot(mood: mood, size: 48, isInteractive: false)
+                Group {
+                    if let answer = turn.answer {
+                        Text(answer)
+                            .foregroundStyle(DS.Colors.textPrimary)
+                    } else if turn.failed {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                            Text("Copilot couldn't answer that just now.")
+                                .foregroundStyle(DS.Colors.textPrimary)
+                            Button("Ask again", action: onRetry)
+                                .font(DS.Typography.brand(.subheadline, weight: .semibold))
+                                .foregroundStyle(DS.Colors.brandInk)
+                        }
+                    } else {
+                        Text("Looking through your records…")
+                            .foregroundStyle(DS.Colors.textSecondary)
+                    }
+                }
+                .font(DS.Typography.brand(.subheadline))
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(DS.Spacing.md)
+            .background(DS.Colors.surfaceRaised, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var mood: PurrMood {
+        if turn.failed { return .assistantConfused }
+        return turn.answer == nil ? .assistantThinking : .assistantAnswer
+    }
+}

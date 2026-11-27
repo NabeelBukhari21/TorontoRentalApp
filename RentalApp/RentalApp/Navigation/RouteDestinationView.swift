@@ -40,6 +40,8 @@ struct RouteDestinationView: View {
         switch route {
         case .assistant:
             AIAssistantView()
+        case .askCopilot(let question):
+            AIAssistantView(question: question)
         case .propertyDetail, .units, .unitDetail:
             PropertyNavigation.destination(for: route)
         case .tenants, .tenantDetail:

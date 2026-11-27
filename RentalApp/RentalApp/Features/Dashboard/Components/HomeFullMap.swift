@@ -116,8 +116,8 @@ struct HomeSearchResults: View {
                     trailing: "chevron.forward") { router.push(.tenantDetail(tenantID: tenant.tenantID)) }
             }
             Divider().padding(.vertical, 4)
-            row(symbol: "sparkles", accent: .cherry, title: "Ask Copilot", detail: "Open Copilot to ask anything", trailing: "chevron.forward") {
-                router.push(.assistant)
+            row(symbol: "sparkles", accent: .cherry, title: "Ask Copilot", detail: "“\(query)”", trailing: "chevron.forward") {
+                router.push(.askCopilot(question: query))
             }
         }
         .foregroundStyle(DS.Colors.textPrimary)

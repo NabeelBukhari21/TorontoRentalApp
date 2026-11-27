@@ -57,6 +57,8 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable, Codable {
 /// `Codable` so navigation state survives relaunch and deep links round-trip.
 enum AppRoute: Hashable, Codable {
     case assistant
+    /// Copilot, answering a question asked somewhere else (Home's search).
+    case askCopilot(question: String)
     case propertyDetail(propertyID: String)
     case units(propertyID: String)
     case unitDetail(unitID: String)
@@ -74,7 +76,7 @@ enum AppRoute: Hashable, Codable {
 
     var title: String {
         switch self {
-        case .assistant: "Copilot"
+        case .assistant, .askCopilot: "Copilot"
         case .propertyDetail: "Property Details"
         case .units: "Units"
         case .unitDetail: "Unit"
@@ -94,7 +96,7 @@ enum AppRoute: Hashable, Codable {
 
     var icon: String {
         switch self {
-        case .assistant: AppSymbol.assistant.rawValue
+        case .assistant, .askCopilot: AppSymbol.assistant.rawValue
         case .propertyDetail: DS.Icons.properties
         case .units, .unitDetail: DS.Icons.unit
         case .tenants: DS.Icons.tenants

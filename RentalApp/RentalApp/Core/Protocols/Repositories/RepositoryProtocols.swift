@@ -667,6 +667,10 @@ struct CopilotBriefing: Sendable {
 protocol CopilotRepositoryProtocol: AnyObject {
     func briefing(forceRefresh: Bool) async throws -> CopilotBriefing
     func run(_ quickAction: AIQuickAction) async throws -> AIActivityEntry
+    /// Answers a question about the portfolio in a sentence or three,
+    /// naming the numbers and people behind it. Earlier turns let a
+    /// follow-up refer back.
+    func ask(_ question: String, history: [CopilotTurn]) async throws -> String
 }
 
 // MARK: - Settings
