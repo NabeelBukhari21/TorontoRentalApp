@@ -21,11 +21,14 @@ final class HomeModel {
     private let propertyRepository: PropertyRepositoryProtocol
     private let payments: PaymentRepositoryProtocol
     private let reminders: RentReminderSender
+    /// Settings ▸ Appearance ▸ Show amounts on Home.
+    private let preferences: PreferencesRepositoryProtocol
 
     init(dashboard: DashboardViewModel, container: AppContainer) {
         self.dashboard = dashboard
         propertyRepository = container.properties
         payments = container.payments
+        preferences = container.preferences
         reminders = RentReminderSender(messages: container.messages, payments: container.payments, analytics: container.analytics)
     }
 
@@ -149,7 +152,12 @@ final class HomeModel {
                        occupancyRate: dashboard.occupancyRate, unitCount: dashboard.unitCount)
     }
 
-    func dollars(_ amount: Int) -> String { amount.formatted(.currency(code: "CAD").precision(.fractionLength(0)).presentation(.narrow)) }
+    /// Money as Home shows it: hidden behind dots when amounts are off,
+    /// for using the app in public.
+    func dollars(_ amount: Int) -> String {
+        guard preferences.showPortfolioValueOnHome else { return "$•••" }
+        return amount.formatted(.currency(code: "CAD").precision(.fractionLength(0)).presentation(.narrow))
+    }
 }
 
 
@@ -190,7 +198,7 @@ struct HomeBar: View {
                 .foregroundStyle(ink)
                 .padding(.horizontal, onGlass ? 14 : 0)
                 .padding(.vertical, onGlass ? 6 : 0)
-                .glassEffect(onGlass ? .regular : .identity, in: .rect(cornerRadius: 20))
+                .dsGlass(in: .rect(cornerRadius: 20), isEnabled: onGlass)
             }
             Spacer(minLength: 0)
             HStack(spacing: 2) {
@@ -218,7 +226,7 @@ struct HomeBar: View {
                     .accessibilityLabel("Account and Settings")
             }
             .padding(.horizontal, 4)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .dsGlass(.regular.interactive(), in: .capsule)
         }
     }
 

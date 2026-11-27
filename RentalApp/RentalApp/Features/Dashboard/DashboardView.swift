@@ -236,6 +236,7 @@ struct DashboardView: View {
             let property = model.properties[index]
             PropertyPopup(
                 property: property, accent: HomeMap.accents[index % HomeMap.accents.count],
+                monthly: model.dollars(Int(property.monthlyRevenue * 1000)),
                 onOpen: { router.push(.propertyDetail(propertyID: property.id)) },
                 onClose: { selection = nil }
             )

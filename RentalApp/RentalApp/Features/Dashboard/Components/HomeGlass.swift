@@ -233,12 +233,7 @@ extension View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         // Frosted material, not Liquid Glass: glass turns itself dark over
         // dark parts of the satellite map, and the cards must stay light.
-        return background {
-            ZStack {
-                shape.fill(.ultraThinMaterial)
-                shape.fill(DS.Colors.surfaceRaised.opacity(tint))
-            }
-        }
+        return dsFrost(in: shape, tint: tint)
         .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(0.8), .white.opacity(0.1)], startPoint: .top, endPoint: .bottom), lineWidth: 1))
     }
 }

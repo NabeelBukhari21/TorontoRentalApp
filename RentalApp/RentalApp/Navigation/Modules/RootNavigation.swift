@@ -96,6 +96,8 @@ struct RootNavigation: View {
         .preferredColorScheme(container.preferences.theme.colorScheme)
         // Purr's look, everywhere he appears (Settings ▸ Appearance).
         .environment(\.purrStyle, container.preferences.purrStyle)
+        // Solid surfaces instead of glass (Settings ▸ Appearance).
+        .environment(\.reducesGlass, container.preferences.reduceGlassEffects)
         // Haptics and sounds (Settings ▸ Appearance).
         .environment(\.feedback, container.feedback)
         .environment(session)

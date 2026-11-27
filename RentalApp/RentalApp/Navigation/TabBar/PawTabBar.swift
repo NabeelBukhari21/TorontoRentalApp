@@ -36,7 +36,7 @@ struct PawTabBar: View {
         ZStack(alignment: .top) {
             NotchedBar(dip: isOnPaw ? 52 : 44)
                 .fill(.clear)
-                .glassEffect(.regular, in: NotchedBar(dip: isOnPaw ? 52 : 44))
+                .dsGlass(.regular, in: NotchedBar(dip: isOnPaw ? 52 : 44))
                 .shadow(color: DS.Colors.groundShadow, radius: 18, y: 8)
                 .frame(height: model.isCollapsed ? 54 : 66)
                 .padding(.top, 22)
@@ -83,7 +83,8 @@ struct PawTabBar: View {
         return shape
             .fill(.clear)
             .frame(width: 76, height: 72)
-            .glassEffect(.regular.tint(isOnPaw ? .clear : DS.Colors.brand.opacity(colorScheme == .dark ? 0.6 : 0.28)), in: shape)
+            .dsGlass(.regular.tint(isOnPaw ? .clear : DS.Colors.brand.opacity(colorScheme == .dark ? 0.6 : 0.28)), in: shape,
+                     solid: isOnPaw ? DS.Colors.brand : DS.Colors.surfaceRaised)
             .overlay {
                 Image(systemName: AppTab.properties.icon)
                     .font(.system(size: 19, weight: .bold))

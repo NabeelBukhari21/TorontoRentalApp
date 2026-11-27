@@ -303,6 +303,6 @@ private extension View {
         font(.system(size: 17, weight: .bold))
             .foregroundStyle(DS.Colors.textPrimary)
             .frame(width: 44, height: 44)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .dsGlass(.regular.interactive(), in: .circle)
     }
 }

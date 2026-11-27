@@ -11,6 +11,8 @@ import SwiftUI
 struct PropertyPopup: View {
     let property: Property
     let accent: DSAccent
+    /// What it brings in a month, as Home shows money.
+    let monthly: String
     let onOpen: () -> Void
     let onClose: () -> Void
 
@@ -27,7 +29,7 @@ struct PropertyPopup: View {
                 }
                 HStack(spacing: 8) {
                     fact("\(property.occupiedCount)/\(property.unitCount)", "rented", .gold)
-                    fact("$\(property.monthlyRevenue.formatted(.number.precision(.fractionLength(1))))K", "a month", .mint)
+                    fact(monthly, "a month", .mint)
                     fact("\(property.openRequests)", property.urgentRequests > 0 ? "\(property.urgentRequests) urgent" : "repairs", property.urgentRequests > 0 ? .cherry : .sky)
                 }
                 HStack(spacing: 4) {

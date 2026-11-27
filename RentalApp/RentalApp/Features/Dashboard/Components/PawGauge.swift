@@ -123,8 +123,7 @@ struct PawGauge: View {
     /// five animating blobs all the time made Home sluggish.
     private func glass(_ toe: PawToe, _ shape: some Shape) -> some View {
         ZStack {
-            shape.fill(.ultraThinMaterial)
-            shape.fill(DS.Colors.surfaceRaised.opacity(0.35))
+            Color.clear.dsFrost(in: shape, tint: 0.35)
             TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion || !isSloshing)) { context in
                 let phase = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate * 1.5 + Double(toe.rawValue)
                 LiquidWave(level: max(0.08, model.level(toe) * fill * 0.94), phase: phase)

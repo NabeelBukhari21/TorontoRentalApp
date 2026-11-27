@@ -114,7 +114,7 @@ struct PurrpertyLogoTile: View {
                 LinearGradient(colors: [PurrpertyBrand.cream, PurrpertyBrand.honey], startPoint: .top, endPoint: .bottom)
             )
             .clipShape(shape)
-            .glassEffect(.clear, in: shape)
+            .dsGlass(.clear, in: shape)
             .shadow(color: PurrpertyBrand.ember.opacity(0.22), radius: size * 0.14, y: size * 0.06)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Purrperty")

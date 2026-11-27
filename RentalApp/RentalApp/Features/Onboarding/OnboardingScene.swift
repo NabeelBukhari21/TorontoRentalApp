@@ -226,7 +226,7 @@ struct OnboardingScene: View {
                     .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(topInk)
                     .frame(width: 44, height: 44)
-                    .glassEffect(.regular.interactive(), in: .circle)
+                    .dsGlass(.regular.interactive(), in: .circle)
             }
             .buttonStyle(SquishStyle(scale: 0.86))
             .opacity(step.allowsBack ? 1 : 0)
@@ -556,7 +556,7 @@ private struct GlassLine: ViewModifier {
             content
                 .padding(.horizontal, 18)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: .rect(cornerRadius: 22))
+                .dsGlass(.regular, in: .rect(cornerRadius: 22))
         } else {
             content
         }

@@ -174,7 +174,7 @@ struct PawHoldButton: View {
             .frame(width: 184, height: 76)
             .clipShape(.capsule)
             .contentShape(.capsule)
-            .glassEffect(.clear.interactive(), in: .capsule)
+            .dsGlass(.clear.interactive(), in: .capsule)
             // A bright rim and a glint, so it reads as a glass bead.
             .overlay {
                 Capsule().strokeBorder(
@@ -296,7 +296,7 @@ struct WelcomeTermsChip: View {
                     .foregroundStyle(DS.Colors.textSecondary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .dsGlass(.regular.interactive(), in: .capsule)
             }
             .simultaneousGesture(TapGesture().onEnded { feedback?.play(.tap) })
             .accessibilityLabel("Terms of Service and Privacy Policy")
@@ -337,7 +337,7 @@ struct SleepyPurrSignInButton: View {
             .padding(.leading, 6)
             .padding(.trailing, 14)
             .padding(.vertical, 6)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .dsGlass(.regular.interactive(), in: .capsule)
         }
         .buttonStyle(SquishStyle(scale: 0.93))
         .accessibilityLabel("Sign in")

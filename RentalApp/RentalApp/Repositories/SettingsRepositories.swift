@@ -161,8 +161,14 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     var showsWeather = InMemoryPreferencesRepository.storedFlag(weatherKey) {
         didSet { UserDefaults.standard.set(showsWeather, forKey: Self.weatherKey) }
     }
-    var reduceGlassEffects = false
-    var showPortfolioValueOnHome = true
+    /// Persisted: an accessibility choice has to stick.
+    var reduceGlassEffects = UserDefaults.standard.bool(forKey: reduceGlassKey) {
+        didSet { UserDefaults.standard.set(reduceGlassEffects, forKey: Self.reduceGlassKey) }
+    }
+    /// Persisted: a privacy choice has to stick.
+    var showPortfolioValueOnHome = InMemoryPreferencesRepository.storedFlag(amountsKey) {
+        didSet { UserDefaults.standard.set(showPortfolioValueOnHome, forKey: Self.amountsKey) }
+    }
 
     // Copilot behaviour
     var aiAutoTriage = true
@@ -182,6 +188,8 @@ final class InMemoryPreferencesRepository: PreferencesRepositoryProtocol {
     private static let weatherKey = "home.weather.v1"
     private static let scrollHapticsKey = "feedback.scrollHaptics.v1"
     private static let hapticsKey = "feedback.haptics.v1"
+    private static let reduceGlassKey = "appearance.reduceGlass.v1"
+    private static let amountsKey = "home.showAmounts.v1"
 
     /// On until someone turns it off.
     private static func storedFlag(_ key: String) -> Bool {

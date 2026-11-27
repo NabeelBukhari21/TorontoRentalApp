@@ -294,13 +294,13 @@ struct SettingsAppearancePage: View {
             SettingsSectionCard(title: "Display") {
                 SettingsToggleRow(
                     icon: "circle.hexagongrid.fill", title: "Reduce glass effects",
-                    subtitle: "Simpler surfaces, better battery",
+                    subtitle: "Solid surfaces instead of glass",
                     tint: DS.Colors.accentSkyInk, isOn: $viewModel.reduceGlassEffects
                 )
                 SettingsRowDivider()
                 SettingsToggleRow(
-                    icon: "eye.fill", title: "Show portfolio value on Home",
-                    subtitle: "Hide for privacy in public",
+                    icon: "eye.fill", title: "Show amounts on Home",
+                    subtitle: "Turn off to hide dollar figures in public",
                     isOn: $viewModel.showPortfolioValueOnHome
                 )
             }
