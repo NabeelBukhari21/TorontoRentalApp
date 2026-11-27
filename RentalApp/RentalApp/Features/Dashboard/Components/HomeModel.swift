@@ -172,6 +172,7 @@ struct HomeBar: View {
     var onGlass = false
     var onWardrobe: () -> Void = {}
     @Environment(AppRouter.self) private var router
+    @Environment(SessionViewModel.self) private var session
 
     var body: some View {
         HStack(spacing: 10) {
@@ -190,7 +191,7 @@ struct HomeBar: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
                     .opacity(0.8)
-                    Text(model.dashboard.greeting)
+                    Text(model.dashboard.greeting(for: session.session?.fullName))
                         .font(DS.Typography.brand(.title2, weight: .bold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)

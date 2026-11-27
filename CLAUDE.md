@@ -68,6 +68,9 @@ colourful, for students, on a white background.
   - `AppLog` (OSLog categories)
 
 ## Design system: always use tokens, never hardcoded colours
+- Glass goes through `dsGlass` / `dsFrost` (`DSGlass.swift`), never
+  `.glassEffect` directly, so Reduce glass effects and Reduce
+  Transparency turn it solid.
 - Palette (from Classic Purr; values and measured ratios in `DSColors`):
   - bg #FFFFFF, surface cream #FFF6EC, ink #2B1712, secondary #765A52
   - primary cherry #CC2E2E (dark #D63535); red text uses `brandInk`,
@@ -222,12 +225,17 @@ colourful, for students, on a white background.
   2. Fix the Home UI.
   3. Build new features.
 - Open items:
-  - The "Reduce glass effects" setting is now a no-op.
-  - AI tasks aren't wired to any screens.
+  - AI tasks aren't wired to any screens beyond Copilot's questions,
+    which `CopilotAnswers` answers from the records until a model-backed
+    repository uses `PortfolioCopilotTask`.
   - Paywall uses placeholder mock prices; `subscriptionsEnabled` is on in
     DEBUG only. Needs real StoreKit products before release.
   - Mock mode: each organization has its own workspace (seeded demo or
-    empty) and its own in-memory edits (`@WorkspaceLocal`), but sign-ups
-    and what a new account adds aren't persisted across relaunches.
+    empty). Sign-ups, invites (`MockDirectory`, salted password hashes)
+    and portfolio, tenant, lease and payment edits
+    (`@WorkspaceLocal(saved:)`) are kept on the phone
+    (`WorkspaceArchive`); repairs, messages, documents and notifications
+    still reset on relaunch. `-PurrpertyResetMockData YES` starts fresh.
+    An invited email that signs up joins that organization.
   - Supabase isn't configured.
   - The GitHub About description needs updating.

@@ -35,6 +35,14 @@ final class FakeBackend {
         /// A new organization with nothing in it yet.
         case empty(organizationID: String, organizationName: String, ownerName: String, ownerEmail: String)
 
+        /// The organization this world belongs to.
+        var organizationID: String {
+            switch self {
+            case .demo: MockAccountDirectory.demoOrganizationID
+            case .empty(let organizationID, _, _, _): organizationID
+            }
+        }
+
         /// Stable identity, for state kept per workspace (see `WorkspaceLocal`).
         var key: String {
             switch self {

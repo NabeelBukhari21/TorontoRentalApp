@@ -30,7 +30,7 @@ final class SupabaseOrganizationService: OrganizationServiceProtocol {
         self.client = client
     }
 
-    func createOrganization(_ draft: OrganizationDraft) async throws {
+    func createOrganization(_ draft: OrganizationDraft) async throws -> String {
         let name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard name.count >= 2 else {
             throw AppError.validation("Give your workspace a name of at least 2 characters.")
@@ -62,7 +62,7 @@ final class SupabaseOrganizationService: OrganizationServiceProtocol {
                     .execute()
             }
 
-            _ = organization
+            return organization.id.uuidString.lowercased()
         } catch {
             throw SupabaseErrorMapper.map(error)
         }

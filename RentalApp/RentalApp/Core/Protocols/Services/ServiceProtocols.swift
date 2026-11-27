@@ -73,7 +73,8 @@ struct OrganizationDraft: Sendable {
 
 @MainActor
 protocol OrganizationServiceProtocol: AnyObject {
-    func createOrganization(_ draft: OrganizationDraft) async throws
+    /// Creates the organization, sends its invites, and returns its id.
+    func createOrganization(_ draft: OrganizationDraft) async throws -> String
 }
 
 // MARK: - Persistence

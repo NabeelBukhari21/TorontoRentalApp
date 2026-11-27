@@ -15,7 +15,7 @@ import Foundation
 
 /// How a tenant paid. Mirrors `Domain.Payment.Method` without `.unknown`,
 /// which a person never picks.
-enum PaymentMethod: String, CaseIterable, Identifiable, Sendable {
+enum PaymentMethod: String, CaseIterable, Identifiable, Sendable, Codable {
     case eTransfer = "Interac e-Transfer"
     case preAuthorizedDebit = "Pre-authorized debit"
     case cheque = "Cheque"

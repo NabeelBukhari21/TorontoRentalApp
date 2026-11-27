@@ -11,7 +11,7 @@ import Foundation
 
 // MARK: - Term
 
-enum LeaseTermKind: String, CaseIterable, Identifiable, Sendable {
+enum LeaseTermKind: String, CaseIterable, Identifiable, Sendable, Codable {
     case fixedTerm = "Fixed term"
     case monthToMonth = "Month-to-month"
 
@@ -22,7 +22,7 @@ enum LeaseTermKind: String, CaseIterable, Identifiable, Sendable {
 
 /// The agreement a tenant is on now. `Tenant` carries display strings;
 /// this carries what a form needs to change it.
-struct LeaseSummary: Sendable, Equatable {
+struct LeaseSummary: Sendable, Equatable, Codable {
     let leaseID: String
     let tenantID: String
     let propertyID: String
@@ -51,7 +51,7 @@ struct LeaseSummary: Sendable, Equatable {
 // MARK: - Unit Option
 
 /// A vacant unit a tenant could move into.
-struct VacantUnit: Identifiable, Sendable, Hashable {
+struct VacantUnit: Identifiable, Sendable, Hashable, Codable {
     let id: String
     let propertyID: String
     let propertyName: String

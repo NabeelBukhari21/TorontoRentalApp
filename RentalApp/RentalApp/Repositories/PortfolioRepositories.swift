@@ -69,14 +69,14 @@ final class InMemoryPropertyRepository: PropertyRepositoryProtocol {
     // `.inMemory` get working buttons, not dead ones — without a second
     // source of truth for the seed data itself.
 
-    @ObservationIgnored @WorkspaceLocal private var created: [Property] = []
-    @ObservationIgnored @WorkspaceLocal private var edits: [String: PropertyDraft] = [:]
-    @ObservationIgnored @WorkspaceLocal private var archivedIDs: Set<String> = []
-    @ObservationIgnored @WorkspaceLocal private var deletedIDs: Set<String> = []
-    @ObservationIgnored @WorkspaceLocal private var unitOverlay: [String: [PropertyUnit]] = [:]
-    @ObservationIgnored @WorkspaceLocal private var deletedUnitIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.created") private var created: [Property] = []
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.edits") private var edits: [String: PropertyDraft] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.archived") private var archivedIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.deleted") private var deletedIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.units") private var unitOverlay: [String: [PropertyUnit]] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.deletedUnits") private var deletedUnitIDs: Set<String> = []
     /// Seeded units removed per property, so its unit count follows.
-    @ObservationIgnored @WorkspaceLocal private var removedSeededUnits: [String: Int] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "properties.removedSeededUnits") private var removedSeededUnits: [String: Int] = [:]
 
     func properties(matching query: PropertyQuery, forceRefresh: Bool) async throws -> Page<Property> {
         try await SimulatedLatency.wait(.list)
@@ -431,7 +431,7 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     /// Who owes rent comes from the rent roll, so recording a payment
     /// clears a tenant's overdue status everywhere at once.
     private let payments: PaymentRepositoryProtocol
-    @ObservationIgnored @WorkspaceLocal private var created: [Tenant] = []
+    @ObservationIgnored @WorkspaceLocal(saved: "tenants.created") private var created: [Tenant] = []
 
     // MARK: Leasing overlay
     //
@@ -439,9 +439,9 @@ final class InMemoryTenantRepository: TenantRepositoryProtocol {
     // property overlay: the current lease per tenant, the units taken and
     // freed by moves, and the events they add to each timeline.
 
-    @ObservationIgnored @WorkspaceLocal private var leaseOverrides: [String: LeaseSummary] = [:]
-    @ObservationIgnored @WorkspaceLocal private var occupiedUnitIDs: Set<String> = []
-    @ObservationIgnored @WorkspaceLocal private var freedUnits: [String: VacantUnit] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "tenants.leases") private var leaseOverrides: [String: LeaseSummary] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "tenants.occupiedUnits") private var occupiedUnitIDs: Set<String> = []
+    @ObservationIgnored @WorkspaceLocal(saved: "tenants.freedUnits") private var freedUnits: [String: VacantUnit] = [:]
     @ObservationIgnored @WorkspaceLocal private var addedEvents: [String: [TenantEvent]] = [:]
 
     init(payments: PaymentRepositoryProtocol, cache: RepositoryCache = .shared) {

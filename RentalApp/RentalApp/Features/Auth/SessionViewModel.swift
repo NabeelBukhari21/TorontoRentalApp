@@ -138,7 +138,9 @@ final class SessionViewModel {
     /// Sign-up from anywhere — onboarding or the auth screens. Flags the
     /// new account for the getting-started flow before routing it.
     func handleSignUp(_ outcome: SignInOutcome) {
-        if case .session(let session) = outcome, session.role.isStaff {
+        // Someone who joined through an invite is already in a workspace
+        // with its homes; getting started is for new organizations.
+        if case .session(let session) = outcome, session.role.isStaff, session.needsOrganization {
             onboarding.pendingActivationUserID = session.userID
         }
         handle(outcome)

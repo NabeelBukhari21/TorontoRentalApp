@@ -92,28 +92,38 @@ final class InMemoryProfileRepository: ProfileRepositoryProtocol {
     }
 
     // Team
-    var members: [TeamMember] { record.members }
+
+    /// The seeded team, then who joined through the app, then invites
+    /// still waiting (kept in `MockDirectory`, so they survive a relaunch
+    /// and turn into members when the teammate signs up).
+    var members: [TeamMember] {
+        let organizationID = FakeBackend.workspace.organizationID
+        var members = record.members
+        for account in MockDirectory.shared.members(of: organizationID) where !members.contains(where: { $0.email == account.email }) {
+            members.append(TeamMember(name: account.fullName, email: account.email,
+                                      role: account.role == .owner ? "Owner" : "Property Manager",
+                                      isOwner: account.role == .owner, status: "Active", statusKind: .success))
+        }
+        for invite in MockDirectory.shared.invites(to: organizationID) where !members.contains(where: { $0.email == invite.email }) {
+            members.append(TeamMember(name: invite.email.components(separatedBy: "@").first?.capitalized ?? "Invitee",
+                                      email: invite.email, role: "Property Manager", isOwner: false,
+                                      status: "Invited", statusKind: .warning))
+        }
+        return members
+    }
 
     /// Persists the profile. Local today; one call away from a PATCH.
     func save() async throws {
         try await Task.sleep(for: .milliseconds(700))
     }
 
+    /// Invites a property manager. When they sign up with this email,
+    /// they join this organization instead of making their own.
     func invite(email: String) {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
         guard trimmed.contains("@") else { return }
-
         withAnimation(DS.Motion.bouncy) {
-            record.members.append(
-                TeamMember(
-                    name: trimmed.components(separatedBy: "@").first?.capitalized ?? "Invitee",
-                    email: trimmed,
-                    role: "Property Manager",
-                    isOwner: false,
-                    status: "Invited",
-                    statusKind: .warning
-                )
-            )
+            MockDirectory.shared.invite(trimmed, to: FakeBackend.workspace.organizationID, named: orgName)
         }
     }
 }

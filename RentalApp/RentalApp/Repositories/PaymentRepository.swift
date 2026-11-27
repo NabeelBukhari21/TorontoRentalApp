@@ -17,7 +17,7 @@ import Observation
 final class InMemoryPaymentRepository: PaymentRepositoryProtocol {
 
     /// A payment recorded in the app.
-    private struct Recorded {
+    private struct Recorded: Codable {
         let id: String
         let tenantID: String
         let month: Date
@@ -28,9 +28,9 @@ final class InMemoryPaymentRepository: PaymentRepositoryProtocol {
         let note: String?
     }
 
-    @ObservationIgnored @WorkspaceLocal private var recorded: [Recorded] = []
+    @ObservationIgnored @WorkspaceLocal(saved: "payments.recorded") private var recorded: [Recorded] = []
     /// Tenant id + month → when a reminder went out.
-    @ObservationIgnored @WorkspaceLocal private var reminders: [String: Date] = [:]
+    @ObservationIgnored @WorkspaceLocal(saved: "payments.reminders") private var reminders: [String: Date] = [:]
 
     // MARK: Reads
 

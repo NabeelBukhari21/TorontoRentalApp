@@ -95,6 +95,13 @@ enum MockAccountDirectory {
     static let demoMFACode = "123456"
 }
 
+extension MockAccount {
+    init(_ saved: MockDirectory.Account) {
+        self.init(userID: saved.userID, email: saved.email, password: "", fullName: saved.fullName,
+                  role: saved.role, organizationID: saved.organizationID, organizationName: saved.organizationName)
+    }
+}
+
 // MARK: - Service
 
 @MainActor
@@ -106,9 +113,9 @@ final class MockAuthService: AuthServiceProtocol {
     private let latency: Duration
     private let sessionLifetime: TimeInterval
 
-    /// Accounts created during this run via sign-up. Not persisted —
-    /// a real provider owns the directory, not the client.
-    private var registeredAccounts: [MockAccount] = []
+    /// Accounts made in the app, and invites to join organizations.
+    /// Kept on the phone until a real provider owns the directory.
+    private let directory: MockDirectory
 
     /// Live MFA challenges keyed by ID, holding the account each one
     /// resolves into once its code is verified.
@@ -120,10 +127,12 @@ final class MockAuthService: AuthServiceProtocol {
 
     init(
         store: SessionStoring,
+        directory: MockDirectory? = nil,
         latency: Duration = .milliseconds(1200),
         sessionLifetime: TimeInterval = 60 * 60 * 24 * 7
     ) {
         self.store = store
+        self.directory = directory ?? .shared
         self.latency = latency
         self.sessionLifetime = sessionLifetime
     }
@@ -174,7 +183,11 @@ final class MockAuthService: AuthServiceProtocol {
     func signIn(email: String, password: String) async throws -> SignInOutcome {
         try await Task.sleep(for: latency)
 
-        guard let account = account(for: email), account.password == password else {
+        if let saved = directory.account(email: email) {
+            guard directory.checks(password, for: saved) else { throw AppError.invalidCredentials }
+            return issueOutcome(for: MockAccount(saved))
+        }
+        guard let account = MockAccountDirectory.account(email: email), account.password == password else {
             throw AppError.invalidCredentials
         }
         return issueOutcome(for: account)
@@ -187,33 +200,40 @@ final class MockAuthService: AuthServiceProtocol {
             throw AppError.validation("An account already exists for that email.")
         }
 
-        let account = MockAccount(
+        let email = MockDirectory.normalized(email)
+        // Invited staff join the organization that invited them, as a
+        // property manager. Everyone else starts with no organization,
+        // which is what routes staff into the org-setup flow.
+        let invite = role.isStaff ? directory.invite(for: email) : nil
+        let saved = MockDirectory.Account(
             userID: "usr_\(UUID().uuidString.prefix(8).lowercased())",
-            email: email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-            password: password,
+            email: email,
+            passwordHash: MockDirectory.hash(password, email: email),
             fullName: name,
-            role: role
+            role: invite == nil ? role : .propertyManager,
+            organizationID: invite?.organizationID,
+            organizationName: invite?.organizationName
         )
-        registeredAccounts.append(account)
-
-        // New accounts have no organization — that's what routes staff
-        // into the org-setup flow.
-        return issueOutcome(for: account)
+        directory.add(saved)
+        if let invite { directory.accept(invite) }
+        return issueOutcome(for: MockAccount(saved))
     }
 
     func signIn(with provider: SocialProvider) async throws -> SignInOutcome {
         try await Task.sleep(for: .milliseconds(900))
 
         let domain = provider == .apple ? "privaterelay.appleid.com" : "gmail.com"
-        let account = MockAccount(
+        let email = "amara.okonkwo@\(domain)"
+        if let saved = directory.account(email: email) { return issueOutcome(for: MockAccount(saved)) }
+        let saved = MockDirectory.Account(
             userID: "usr_\(provider.rawValue)_\(UUID().uuidString.prefix(6).lowercased())",
-            email: "amara.okonkwo@\(domain)",
-            password: "",
+            email: email,
+            passwordHash: "",
             fullName: "Amara Okonkwo",
             role: .owner
         )
-        registeredAccounts.append(account)
-        return issueOutcome(for: account)
+        directory.add(saved)
+        return issueOutcome(for: MockAccount(saved))
     }
 
     // MARK: Recovery
@@ -232,9 +252,7 @@ final class MockAuthService: AuthServiceProtocol {
             throw AppError.validation("This password reset link is no longer valid.")
         }
 
-        if let index = registeredAccounts.firstIndex(where: { $0.email == email }) {
-            registeredAccounts[index].password = newPassword
-        }
+        directory.setPassword(newPassword, email: email)
         recoveryEmail = nil
     }
 
@@ -275,6 +293,8 @@ final class MockAuthService: AuthServiceProtocol {
         try await Task.sleep(for: .milliseconds(500))
         session.organizationID = id
         session.organizationName = name
+        // Kept with the account, so signing in again goes straight to it.
+        directory.attach(email: session.email, organizationID: id, organizationName: name)
         return activate(session)
     }
 
@@ -330,9 +350,7 @@ final class MockAuthService: AuthServiceProtocol {
     // MARK: Internals
 
     private func account(for email: String) -> MockAccount? {
-        let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return registeredAccounts.first { $0.email == normalized }
-            ?? MockAccountDirectory.account(email: normalized)
+        directory.account(email: email).map(MockAccount.init) ?? MockAccountDirectory.account(email: email)
     }
 
     /// Either a session, or an MFA challenge when the account is enrolled.
@@ -392,8 +410,20 @@ final class MockAuthService: AuthServiceProtocol {
 @MainActor
 final class MockOrganizationService: OrganizationServiceProtocol {
 
-    func createOrganization(_ draft: OrganizationDraft) async throws {
+    private let directory: MockDirectory
+
+    init(directory: MockDirectory? = nil) {
+        self.directory = directory ?? .shared
+    }
+
+    /// Creates the organization and sends its invites; returns its id.
+    func createOrganization(_ draft: OrganizationDraft) async throws -> String {
         try await Task.sleep(for: .milliseconds(900))
+        let id = "org_\(UUID().uuidString.prefix(8).lowercased())"
+        for email in draft.inviteEmails {
+            directory.invite(email, to: id, named: draft.name)
+        }
+        return id
     }
 }
 

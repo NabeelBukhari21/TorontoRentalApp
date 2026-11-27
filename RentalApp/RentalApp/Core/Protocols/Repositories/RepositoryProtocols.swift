@@ -172,7 +172,7 @@ typealias DocumentQuery = QuerySpec<DocumentFilter, DocumentSortField>
 /// A draft, not a `Property`: the presentation model carries derived
 /// aggregates (occupancy, open requests) that the client has no business
 /// sending. Only the fields a human actually types travel to the server.
-struct PropertyDraft: Sendable, Equatable {
+struct PropertyDraft: Sendable, Equatable, Codable {
     var name: String
     var kind: PropertyKind
     var addressLine1: String

@@ -259,8 +259,7 @@ final class OrgSetupViewModel {
         )
 
         do {
-            try await service.createOrganization(draft)
-            createdOrganizationID = "org_\(UUID().uuidString.prefix(8).lowercased())"
+            createdOrganizationID = try await service.createOrganization(draft)
             withAnimation(DS.Motion.scene) { isComplete = true }
         } catch {
             submissionError = (error as? AppError)?.errorDescription

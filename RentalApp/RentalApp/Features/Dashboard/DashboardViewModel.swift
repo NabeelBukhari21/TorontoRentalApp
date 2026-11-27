@@ -75,10 +75,11 @@ final class DashboardViewModel {
         maintenanceCounts.filter { $0.kind != .success }.reduce(0) { $0 + $1.count }
     }
 
-    /// Time-aware greeting shown in the header.
-    var greeting: String {
+    /// Time-aware greeting shown in the header, to whoever is signed in
+    /// (a teammate isn't greeted by the owner's name).
+    func greeting(for person: String?) -> String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let name = snapshot?.portfolio.greetingName ?? "there"
+        let name = person?.split(separator: " ").first.map(String.init) ?? snapshot?.portfolio.greetingName ?? "there"
         switch hour {
         case 5..<12: return "Good morning, \(name)"
         case 12..<17: return "Good afternoon, \(name)"
