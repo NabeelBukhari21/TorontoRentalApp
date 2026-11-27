@@ -75,16 +75,21 @@ final class PropertyFormViewModel: ValidatedForm {
     /// Where a version clash goes. Optional so previews and the in-memory
     /// backend — neither of which can produce one — need not supply it.
     private let conflicts: ConflictCenter?
+    /// Tells the other screens on this device (the list, Home) that the
+    /// portfolio changed.
+    private let sync: SyncEngine?
 
     init(
         mode: Mode,
         repository: PropertyRepositoryProtocol,
         conflicts: ConflictCenter? = nil,
+        sync: SyncEngine? = nil,
         existing: Property? = nil
     ) {
         self.mode = mode
         self.repository = repository
         self.conflicts = conflicts
+        self.sync = sync
 
         if let existing {
             name.reset(to: existing.name)
@@ -130,12 +135,15 @@ final class PropertyFormViewModel: ValidatedForm {
         defer { isSubmitting = false }
 
         do {
+            let saved: Property
             switch mode {
             case .create:
-                return try await repository.createProperty(draft)
+                saved = try await repository.createProperty(draft)
             case .edit(let id):
-                return try await repository.updateProperty(id: id, with: draft)
+                saved = try await repository.updateProperty(id: id, with: draft)
             }
+            await sync?.publishLocalChange(.properties)
+            return saved
         } catch let conflict as PropertyConflict {
             // NOT an `AppError`. Flattening it would show "Something went
             // wrong. Please try again." and drop the user's edit on the
@@ -234,6 +242,7 @@ struct PropertyFormView: View {
             mode: mode,
             repository: container.properties,
             conflicts: container.conflicts,
+            sync: container.sync,
             existing: existing
         ))
     }

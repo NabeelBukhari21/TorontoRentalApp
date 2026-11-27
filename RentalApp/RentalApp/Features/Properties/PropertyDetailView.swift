@@ -54,7 +54,8 @@ struct PropertyDetailView: View {
         self.propertyID = propertyID
         _viewModel = State(initialValue: PropertyDetailViewModel(
             propertyID: propertyID,
-            repository: container.properties
+            repository: container.properties,
+            sync: container.sync
         ))
     }
 

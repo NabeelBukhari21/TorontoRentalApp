@@ -50,7 +50,11 @@ final class UnitFormViewModel: ValidatedForm {
 
     private let repository: PropertyRepositoryProtocol
 
-    init(mode: Mode, repository: PropertyRepositoryProtocol, existing: PropertyUnit? = nil) {
+    /// Tells the list and Home that occupancy may have changed.
+    private let sync: SyncEngine?
+
+    init(mode: Mode, repository: PropertyRepositoryProtocol, sync: SyncEngine? = nil, existing: PropertyUnit? = nil) {
+        self.sync = sync
         self.mode = mode
         self.repository = repository
 
@@ -84,12 +88,15 @@ final class UnitFormViewModel: ValidatedForm {
         defer { isSubmitting = false }
 
         do {
+            let saved: PropertyUnit
             switch mode {
             case .create(let propertyID):
-                return try await repository.createUnit(draft, propertyID: propertyID)
+                saved = try await repository.createUnit(draft, propertyID: propertyID)
             case .edit(let unitID):
-                return try await repository.updateUnit(id: unitID, with: draft)
+                saved = try await repository.updateUnit(id: unitID, with: draft)
             }
+            await sync?.publishLocalChange(.units)
+            return saved
         } catch {
             submitError = AppError.from(error)
             return nil
@@ -119,6 +126,7 @@ struct UnitFormView: View {
         _viewModel = State(initialValue: UnitFormViewModel(
             mode: mode,
             repository: container.properties,
+            sync: container.sync,
             existing: existing
         ))
     }

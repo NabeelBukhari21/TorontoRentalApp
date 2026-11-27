@@ -165,17 +165,31 @@ private struct LiveUpdatesModifier: ViewModifier {
     let makeSubscription: @MainActor () -> RealtimeSubscription
 
     @State private var token: UUID?
+    /// The topic's revision when this screen stopped listening, e.g.
+    /// because a screen was pushed over it.
+    @State private var leftAt: (topic: RealtimeTopic, revision: Int)?
+    @State private var topic: RealtimeTopic?
 
     func body(content: Content) -> some View {
         content
             .onAppear {
                 guard token == nil else { return }
-                token = engine.register(makeSubscription())
+                let subscription = makeSubscription()
+                token = engine.register(subscription)
+                topic = subscription.topic
                 engine.start()
+                // Changes made while covered (an archive on the pushed
+                // detail, a payment on the ledger) were dispatched to no
+                // one here: catch up once, as a reload.
+                if let leftAt, engine.revision(of: leftAt.topic) != leftAt.revision {
+                    Task { await subscription.apply([]) }
+                }
+                leftAt = nil
             }
             .onDisappear {
                 if let token { engine.unregister(token) }
                 token = nil
+                if let topic { leftAt = (topic, engine.revision(of: topic)) }
             }
     }
 }

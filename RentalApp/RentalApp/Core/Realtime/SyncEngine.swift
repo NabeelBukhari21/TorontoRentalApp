@@ -74,6 +74,11 @@ final class SyncEngine {
     // MARK: Internal state
 
     private var subscriptions: [UUID: RealtimeSubscription] = [:]
+    /// How many batches each topic has seen, so a screen that was covered
+    /// (and so not subscribed) can tell on return that it missed some.
+    @ObservationIgnored private var revisions: [RealtimeTopic: Int] = [:]
+
+    func revision(of topic: RealtimeTopic) -> Int { revisions[topic, default: 0] }
     private var cursor = SyncCursor()
     /// Per-record last-applied cursor, for stale rejection at row grain.
     /// Topic-level marks are too coarse: two rows in the same table move
@@ -311,6 +316,7 @@ final class SyncEngine {
     }
 
     private func dispatch(_ changes: [RealtimeChange], topic: RealtimeTopic) async {
+        revisions[topic, default: 0] += 1
         for subscription in subscriptions.values where subscription.topic == topic {
             await subscription.apply(changes)
         }

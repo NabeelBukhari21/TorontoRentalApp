@@ -299,9 +299,13 @@ final class PropertyDetailViewModel {
     /// Tabs load on demand — opening Overview shouldn't fetch analytics.
     private var loadedTabs: Set<PropertyDetailTab> = []
 
-    init(propertyID: String, repository: PropertyRepositoryProtocol) {
+    /// Tells the list and Home when this property changes from here.
+    private let sync: SyncEngine?
+
+    init(propertyID: String, repository: PropertyRepositoryProtocol, sync: SyncEngine? = nil) {
         self.propertyID = propertyID
         self.repository = repository
+        self.sync = sync
     }
 
     var property: Property? { state.value }
@@ -367,10 +371,12 @@ final class PropertyDetailViewModel {
 
     func archive() async throws {
         try await repository.archiveProperty(id: propertyID)
+        await sync?.publishLocalChange(.properties)
     }
 
     func delete() async throws {
         try await repository.deleteProperty(id: propertyID)
+        await sync?.publishLocalChange(.properties)
     }
 
     // MARK: - Unit Mutations
@@ -393,6 +399,7 @@ final class PropertyDetailViewModel {
 
         do {
             try await repository.deleteUnit(id: unit.id)
+            await sync?.publishLocalChange(.units)
             return .succeeded(undo: nil)
         } catch {
             units = before
